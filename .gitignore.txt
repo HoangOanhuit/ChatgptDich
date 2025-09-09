@@ -1,0 +1,44 @@
+# Bỏ các file tạm của NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+.nb-gradle/
+.nbm/
+
+# Bỏ các file tạm
+*.class
+.DS_Store
+target/
+
+
+# Bỏ thư mục Maven build
+/target/
+
+# Bỏ file log và backup
+*.log
+*.bak
+*.swp
+
+# Bỏ tệp hệ điều hành
+.DS_Store
+Thumbs.db
+
+# Bỏ thư viện IDE cụ thể
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# Bỏ cấu hình người dùng cá nhân
+*.class
+*.jar
+*.war
+
+
+
+# Nếu dùng FlatLaf hoặc libs ngoài có `.dll` hoặc `.so`
+*.dll
+*.so
+*.dylib
