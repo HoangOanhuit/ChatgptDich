@@ -9,19 +9,21 @@ import java.util.Objects;
  */
 public class Account {
     
-
     private Long id;
     private String username;
     private String email;
     private String password;
     private String note;
-    private String userId;
     private String uuid;
-    private String registed;
+    private String registered;
     private String activationKey;
-    private String auth2;
+    private String auth;
     private String versionIos;
-
+    private Integer totalBook;
+    private Integer postedHoan;
+    private String createdAt;
+    private String updatedAt;
+    private String status;
     public Account() {
     }
 
@@ -72,14 +74,6 @@ public class Account {
         this.note = note;
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     public String getUuid() {
         return uuid;
     }
@@ -88,12 +82,12 @@ public class Account {
         this.uuid = uuid;
     }
 
-    public String getRegisted() {
-        return registed;
+    public String getRegistered() {
+        return registered;
     }
 
-    public void setRegisted(String registed) {
-        this.registed = registed;
+    public void setRegistered(String registered) {
+        this.registered = registered;
     }
 
     public String getActivationKey() {
@@ -104,13 +98,14 @@ public class Account {
         this.activationKey = activationKey;
     }
 
-    public String getAuth2() {
-        return auth2;
+    public String getAuth() {
+        return auth;
     }
 
-    public void setAuth2(String auth2) {
-        this.auth2 = auth2;
+    public void setAuth(String auth) {
+        this.auth = auth;
     }
+
 
     public String getVersionIos() {
         return versionIos;
@@ -118,6 +113,45 @@ public class Account {
 
     public void setVersionIos(String versionIos) {
         this.versionIos = versionIos;
+    }
+   public Integer getTotalBook() {
+        return totalBook;
+    }
+
+    public void setTotalBook(Integer totalBook) {
+        this.totalBook = totalBook;
+    }
+
+    public Integer getPostedHoan() {
+        return postedHoan;
+    }
+
+    public void setPostedHoan(Integer postedHoan) {
+        this.postedHoan = postedHoan;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override

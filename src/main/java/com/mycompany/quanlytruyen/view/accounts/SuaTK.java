@@ -34,13 +34,13 @@ public class SuaTK extends javax.swing.JDialog {
             return;
         }
         txtName.setText(nullToEmpty(account.getUsername()));
-        txtAuthor2.setText(nullToEmpty(account.getUserId()));
+       // txtAuthor2.setText(nullToEmpty(account.getId()));
         txtAuthor.setText(nullToEmpty(account.getEmail()));
         txtAuthor1.setText(nullToEmpty(account.getPassword()));
         txtAuthor3.setText(nullToEmpty(account.getUuid()));
-        txtAuthor4.setText(nullToEmpty(account.getRegisted()));
+        txtAuthor4.setText(nullToEmpty(account.getRegistered()));
         txtAuthor5.setText(nullToEmpty(account.getActivationKey()));
-        txtAuthor6.setText(nullToEmpty(account.getAuth2()));
+        txtAuthor6.setText(nullToEmpty(account.getAuth()));
         txtAuthor7.setText(nullToEmpty(account.getVersionIos()));
     }
 
@@ -369,15 +369,14 @@ public class SuaTK extends javax.swing.JDialog {
         }
 
         account.setUsername(username);
-        account.setUserId(emptyToNull(textOf(txtAuthor2)));
+     //   account.setId(emptyToNull(textOf(txtAuthor2)));
         account.setEmail(emptyToNull(textOf(txtAuthor)));
         account.setPassword(emptyToNull(textOf(txtAuthor1)));
         account.setUuid(emptyToNull(textOf(txtAuthor3)));
-        account.setRegisted(emptyToNull(textOf(txtAuthor4)));
+        account.setRegistered(emptyToNull(textOf(txtAuthor4)));
         account.setActivationKey(emptyToNull(textOf(txtAuthor5)));
-        account.setAuth2(emptyToNull(textOf(txtAuthor6)));
+        account.setAuth(emptyToNull(textOf(txtAuthor6)));
         account.setVersionIos(emptyToNull(textOf(txtAuthor7)));
-        account.setNote(account.getRegisted());
 
         try {
             accountDao.updateAccount(account);

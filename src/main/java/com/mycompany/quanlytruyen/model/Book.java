@@ -19,11 +19,23 @@ public class Book {
     private PostStatus postStatus;
     private BigDecimal totalRevenue;
     
+    private Long accountId;              // ✨ MỚI - ID account đăng truyện
+    private String shortTitle;           // ✨ MỚI - Tên viết tắt
+    private Integer posted;              // ✨ MỚI - Chương cuối đã đăng
+    private BigDecimal price; 
+    
     // Translation metadata
     private String guidelines;
     private String nameTable;
     private String modelUsed;
     private LocalDateTime lastResumedAt;
+
+    // Statistics (computed fields, not in database)
+    private Integer totalChapters;
+    private Integer completedChapters;
+    private Integer pendingChapters;
+    private Integer errorChapters;
+    private Double completionPercentage;    
 
     // Enums for status fields
     public enum RawStatus {
@@ -107,6 +119,7 @@ public class Book {
         this.translateStatus = TranslateStatus.NOT_HOAN;
         this.postStatus = PostStatus.NOT_HOAN;
         this.totalRevenue = BigDecimal.ZERO;
+        this.posted = 0;
     }
     
     public Book(String title) {
@@ -114,6 +127,25 @@ public class Book {
         this.title = title;
     }
 
+    /**
+     * Constructor đầy đủ
+     */
+    public Book(Long id, String title, String author, String slug, 
+                String guidelines, String nameTable, String modelUsed,
+                Long accountId, String shortTitle, Integer posted, BigDecimal price) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.slug = slug;
+        this.guidelines = guidelines;
+        this.nameTable = nameTable;
+        this.modelUsed = modelUsed;
+        this.accountId = accountId;
+        this.shortTitle = shortTitle;
+        this.posted = posted != null ? posted : 0;
+        this.price = price != null ? price : BigDecimal.ZERO;
+    }
+    
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -156,6 +188,78 @@ public class Book {
     public LocalDateTime getLastResumedAt() { return lastResumedAt; }
     public void setLastResumedAt(LocalDateTime lastResumedAt) { this.lastResumedAt = lastResumedAt; }
 
+    public Long getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
+    }
+
+    public String getShortTitle() {
+        return shortTitle;
+    }
+
+    public void setShortTitle(String shortTitle) {
+        this.shortTitle = shortTitle;
+    }
+
+    public Integer getPosted() {
+        return posted;
+    }
+
+    public void setPosted(Integer posted) {
+        this.posted = posted;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }   
+// STATISTICS FIELDS
+    
+    public Integer getTotalChapters() {
+        return totalChapters;
+    }
+
+    public void setTotalChapters(Integer totalChapters) {
+        this.totalChapters = totalChapters;
+    }
+
+    public Integer getCompletedChapters() {
+        return completedChapters;
+    }
+
+    public void setCompletedChapters(Integer completedChapters) {
+        this.completedChapters = completedChapters;
+    }
+
+    public Integer getPendingChapters() {
+        return pendingChapters;
+    }
+
+    public void setPendingChapters(Integer pendingChapters) {
+        this.pendingChapters = pendingChapters;
+    }
+
+    public Integer getErrorChapters() {
+        return errorChapters;
+    }
+
+    public void setErrorChapters(Integer errorChapters) {
+        this.errorChapters = errorChapters;
+    }
+
+    public Double getCompletionPercentage() {
+        return completionPercentage;
+    }
+
+    public void setCompletionPercentage(Double completionPercentage) {
+        this.completionPercentage = completionPercentage;
+    }    
     // Utility methods
     public String getFormattedRevenue() {
         if (totalRevenue == null) return "0 VNĐ";
@@ -196,7 +300,87 @@ public class Book {
             return "Chưa hoàn thiện";
         }
     }
-
+    /**
+     * Kiểm tra xem book có được gán cho account nào chưa
+     * @return true nếu đã gán account
+     */
+    public boolean hasAccount() {
+        return accountId != null;
+    }
+    
+    /**
+     * Kiểm tra xem đã đăng chương nào chưa
+     * @return true nếu đã đăng ít nhất 1 chương
+     */
+    public boolean hasPostedChapters() {
+        return posted != null && posted > 0;
+    }
+    
+    /**
+     * Kiểm tra xem có giá chưa
+     * @return true nếu đã set giá
+     */
+    public boolean hasPrice() {
+        return price != null && price.compareTo(BigDecimal.ZERO) > 0;
+    }
+    
+    /**
+     * Lấy tên hiển thị (ưu tiên short_title, fallback về title)
+     * @return Tên hiển thị
+     */
+    public String getDisplayName() {
+        if (shortTitle != null && !shortTitle.trim().isEmpty()) {
+            return shortTitle;
+        }
+        return title;
+    }
+    
+    /**
+     * Format giá tiền theo định dạng VNĐ
+     * @return Chuỗi giá đã format (ví dụ: "15,000 VNĐ")
+     */
+    public String getFormattedPrice() {
+        if (price == null) {
+            return "0 VNĐ";
+        }
+        return String.format("%,.0f VNĐ", price);
+    }
+ 
+    /**
+     * Lấy trạng thái hoàn thành dịch dưới dạng phần trăm
+     * @return Phần trăm hoàn thành
+     */
+    public String getCompletionStatus() {
+        if (totalChapters == null || totalChapters == 0) {
+            return "0%";
+        }
+        if (completedChapters == null) {
+            return "0%";
+        }
+        double percentage = (completedChapters * 100.0) / totalChapters;
+        return String.format("%.1f%%", percentage);
+    }
+    
+    /**
+     * Kiểm tra xem đã dịch xong chưa
+     * @return true nếu tất cả chương đã dịch xong
+     */
+    public boolean isTranslationComplete() {
+        return "hoan".equals(translateStatus) ||
+               (totalChapters != null && completedChapters != null && 
+                totalChapters.equals(completedChapters));
+    }
+    
+    /**
+     * Kiểm tra xem đã đăng xong chưa
+     * @return true nếu tất cả chương đã đăng
+     */
+    public boolean isPostingComplete() {
+        return "hoan".equals(postStatus) ||
+               (totalChapters != null && posted != null && 
+                totalChapters.equals(posted));
+    }    
+    
     @Override
     public String toString() {
         return String.format("Book{id=%d, title='%s', overall=%s, revenue=%s}", 

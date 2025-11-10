@@ -346,15 +346,17 @@ public class ThemTK extends javax.swing.JDialog {
 
         Account account = new Account();
         account.setUsername(username);
-        account.setUserId(emptyToNull(textOf(txtAuthor2)));
+      //  account.setId(emptyToNull(textOf(txtAuthor2)));
         account.setEmail(emptyToNull(textOf(txtAuthor)));
         account.setPassword(emptyToNull(textOf(txtAuthor1)));
         account.setUuid(emptyToNull(textOf(txtAuthor3)));
-        account.setRegisted(emptyToNull(textOf(txtAuthor4)));
+        account.setRegistered(emptyToNull(textOf(txtAuthor4)));
         account.setActivationKey(emptyToNull(textOf(txtAuthor5)));
-        account.setAuth2(emptyToNull(textOf(txtAuthor6)));
+        account.setAuth(emptyToNull(textOf(txtAuthor6)));
         account.setVersionIos(emptyToNull(textOf(txtAuthor7)));
-        account.setNote(account.getRegisted());
+        account.setTotalBook(0);
+        account.setPostedHoan(0);
+        account.setStatus("active");
 
         try {
             accountDao.insertAccount(account);

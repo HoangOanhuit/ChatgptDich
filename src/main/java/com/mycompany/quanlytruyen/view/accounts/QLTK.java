@@ -112,7 +112,7 @@ public class QLTK extends javax.swing.JPanel {
                 account.getUsername(),
                 account.getEmail(),
                 account.getPassword(),
-                account.getNote() != null ? account.getNote() : account.getUserId()
+                account.getNote()
             });
         }
     }
@@ -152,7 +152,36 @@ public class QLTK extends javax.swing.JPanel {
         dialog.setLocationRelativeTo(frame);
         dialog.setVisible(true);
     }
+    
+    private void deleteSelectedAccount() {
+        if (accountDao == null) {
+            JOptionPane.showMessageDialog(this, "Chưa kết nối được tới cơ sở dữ liệu");
+            return;
+        }
+        if (selectedAccount == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần xóa");
+            return;
+        }
 
+        int choice = JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc chắn muốn xóa tài khoản '" + selectedAccount.getUsername() + "' ?",
+            "Xác nhận xóa",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (choice != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            accountDao.deleteAccount(selectedAccount.getId());
+            JOptionPane.showMessageDialog(this, "Xóa tài khoản thành công");
+            loadAccounts();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Không thể xóa tài khoản: " + e.getMessage());
+        }
+    }
     private void performSearch() {
         String keyword = txtSearch.getText().trim();
         if (keyword.isEmpty()) {
@@ -163,7 +192,9 @@ public class QLTK extends javax.swing.JPanel {
         for (Account account : accounts) {
             if (containsIgnoreCase(account.getUsername(), keyword)
                 || containsIgnoreCase(account.getEmail(), keyword)
-                || containsIgnoreCase(account.getUserId(), keyword)) {
+                || containsIgnoreCase(account.getUuid(), keyword)
+                || containsIgnoreCase(account.getStatus(), keyword)) {
+                
                 filtered.add(account);
             }
         }
@@ -348,7 +379,7 @@ public class QLTK extends javax.swing.JPanel {
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
-
+        deleteSelectedAccount();
  
     }//GEN-LAST:event_btnDeleteActionPerformed
 

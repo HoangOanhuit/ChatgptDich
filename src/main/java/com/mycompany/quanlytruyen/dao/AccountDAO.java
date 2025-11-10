@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.quanlytruyen.dao;
 
 import com.mycompany.quanlytruyen.model.Account;
@@ -12,8 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  *
@@ -38,8 +38,8 @@ public class AccountDAO {
     }
 
     public List<Account> getAllAccounts() throws SQLException {
-        String sql = "SELECT id, username, email, password, note, user_id, uuid, registed, activation_key, auth2, version_ios " +
-            "FROM " + tableName + " ORDER BY username";
+        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
+            "FROM " + tableName + " ORDER BY ten_tk";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -52,8 +52,8 @@ public class AccountDAO {
     }
 
     public List<Account> searchAccounts(String keyword) throws SQLException {
-        String sql = "SELECT id, username, email, password, note, user_id, uuid, registed, activation_key, auth2, version_ios " +
-            "FROM " + tableName + " WHERE username LIKE ? OR email LIKE ? OR user_id LIKE ? ORDER BY username";
+        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
+            "FROM " + tableName + " WHERE ten_tk LIKE ? OR email LIKE ? OR uuid LIKE ? ORDER BY ten_tk";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String like = "%" + keyword + "%";
@@ -72,8 +72,8 @@ public class AccountDAO {
 
     public long insertAccount(Account account) throws SQLException {
         String sql = "INSERT INTO " + tableName +
-            " (username, email, password, note, user_id, uuid, registed, activation_key, auth2, version_ios) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            " (ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, status) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             bindAccountParams(ps, account);
@@ -91,18 +91,18 @@ public class AccountDAO {
 
     public void updateAccount(Account account) throws SQLException {
         String sql = "UPDATE " + tableName +
-            " SET username = ?, email = ?, password = ?, note = ?, user_id = ?, uuid = ?, registed = ?, activation_key = ?, auth2 = ?, version_ios = ?" +
-            " WHERE id = ?";
+            " SET ten_tk = ?, email = ?, mat_khau = ?, uuid = ?, registered = ?, activation_key = ?, auth = ?, version_ios = ?, ghi_chu = ?, total_book = ?, posted_hoan = ?, status = ?" +
+            " WHERE account_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             bindAccountParams(ps, account);
-            ps.setLong(11, account.getId());
+            ps.setLong(13, account.getId());
             ps.executeUpdate();
         }
     }
 
     public void deleteAccount(long id) throws SQLException {
-        String sql = "DELETE FROM " + tableName + " WHERE id = ?";
+        String sql = "DELETE FROM " + tableName + " WHERE account_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, id);
@@ -111,35 +111,86 @@ public class AccountDAO {
     }
 
     private void bindAccountParams(PreparedStatement ps, Account account) throws SQLException {
-        ps.setString(1, safeString(account.getUsername()));
-        ps.setString(2, safeString(account.getEmail()));
-        ps.setString(3, safeString(account.getPassword()));
-        ps.setString(4, safeString(account.getNote()));
-        ps.setString(5, safeString(account.getUserId()));
-        ps.setString(6, safeString(account.getUuid()));
-        ps.setString(7, safeString(account.getRegisted()));
-        ps.setString(8, safeString(account.getActivationKey()));
-        ps.setString(9, safeString(account.getAuth2()));
-        ps.setString(10, safeString(account.getVersionIos()));
+        int index = 1;
+        ps.setString(index++, safeString(account.getUsername()));
+        ps.setString(index++, safeString(account.getEmail()));
+        ps.setString(index++, safeString(account.getPassword()));
+        ps.setString(index++, safeString(account.getUuid()));
+        setTimestamp(ps, index++, account.getRegistered(), true);
+        ps.setString(index++, safeString(account.getActivationKey()));
+        ps.setString(index++, safeString(account.getAuth()));
+        ps.setString(index++, safeString(account.getVersionIos()));
+        ps.setString(index++, safeString(account.getNote()));
+        setInteger(ps, index++, account.getTotalBook(), 0);
+        setInteger(ps, index++, account.getPostedHoan(), 0);
+        ps.setString(index, safeString(defaultStatus(account.getStatus())));
     }
 
     private Account mapAccount(ResultSet rs) throws SQLException {
         Account account = new Account();
-        account.setId(rs.getLong("id"));
-        account.setUsername(rs.getString("username"));
+        account.setId(rs.getLong("account_id"));
+        account.setUsername(rs.getString("ten_tk"));
         account.setEmail(rs.getString("email"));
-        account.setPassword(rs.getString("password"));
-        account.setNote(rs.getString("note"));
-        account.setUserId(rs.getString("user_id"));
+        account.setPassword(rs.getString("mat_khau"));
         account.setUuid(rs.getString("uuid"));
-        account.setRegisted(rs.getString("registed"));
+        account.setRegistered(timestampToString(rs.getTimestamp("registered")));
         account.setActivationKey(rs.getString("activation_key"));
-        account.setAuth2(rs.getString("auth2"));
+        account.setAuth(rs.getString("auth"));
         account.setVersionIos(rs.getString("version_ios"));
+        account.setNote(rs.getString("ghi_chu"));
+        account.setTotalBook(getNullableInt(rs, "total_book"));
+        account.setPostedHoan(getNullableInt(rs, "posted_hoan"));
+        account.setCreatedAt(timestampToString(rs.getTimestamp("created_at")));
+        account.setUpdatedAt(timestampToString(rs.getTimestamp("updated_at")));
+        account.setStatus(rs.getString("status"));
         return account;
     }
 
     private String safeString(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }
+    private void setTimestamp(PreparedStatement ps, int index, String value, boolean defaultNow) throws SQLException {
+        if (value == null || value.isBlank()) {
+            if (defaultNow) {
+                ps.setTimestamp(index, Timestamp.valueOf(LocalDateTime.now()));
+            } else {
+                ps.setNull(index, Types.TIMESTAMP);
+            }
+            return;
+        }
+        try {
+            ps.setTimestamp(index, Timestamp.valueOf(value.trim()));
+        } catch (IllegalArgumentException ex) {
+            throw new SQLException("Định dạng thời gian không hợp lệ: " + value, ex);
+        }
+    }
+
+    private void setInteger(PreparedStatement ps, int index, Integer value, Integer defaultValue) throws SQLException {
+        if (value != null) {
+            ps.setInt(index, value);
+        } else if (defaultValue != null) {
+            ps.setInt(index, defaultValue);
+        } else {
+            ps.setNull(index, Types.INTEGER);
+        }
+    }
+
+    private String timestampToString(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        return timestamp.toLocalDateTime().toString();
+    }
+
+    private Integer getNullableInt(ResultSet rs, String columnLabel) throws SQLException {
+        int value = rs.getInt(columnLabel);
+        if (rs.wasNull()) {
+            return null;
+        }
+        return value;
+    }
+
+    private String defaultStatus(String status) {
+        return status == null || status.isBlank() ? "active" : status.trim();
+    }    
 }
