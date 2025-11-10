@@ -33,6 +33,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$16.class
 com\mycompany\quanlytruyen\utils\FileUtils.class
 com\mycompany\quanlytruyen\dao\ChapterDao$BetaStatistics.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1$7.class
+com\mycompany\quanlytruyen\view\chapters\QLChuong$15.class
 com\mycompany\quanlytruyen\view\books\QLSach$9.class
 com\mycompany\quanlytruyen\Main.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$9.class

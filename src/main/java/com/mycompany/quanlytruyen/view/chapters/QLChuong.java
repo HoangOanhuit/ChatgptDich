@@ -601,7 +601,7 @@ public class QLChuong extends javax.swing.JPanel {
         export.setBackground(new java.awt.Color(51, 51, 255));
         export.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         export.setForeground(new java.awt.Color(255, 255, 255));
-        export.setText("Xuất file .doc");
+        export.setText("Xuất file .docx");
         export.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exportActionPerformed(evt);
@@ -776,6 +776,21 @@ public class QLChuong extends javax.swing.JPanel {
         // TODO add your handling code here:
         Long bookId = getSelectedBookId();
         BetaStatus beta = getSelectedBetaStatus();
+
+        Integer fromChapter = parseChapterNumber(jTextField2.getText(), "từ chương");
+        if (fromChapter == null && !jTextField2.getText().trim().isEmpty()) {
+            return;
+        }
+        Integer toChapter = parseChapterNumber(jTextField1.getText(), "đến chương");
+        if (toChapter == null && !jTextField1.getText().trim().isEmpty()) {
+            return;
+        }
+
+        if (fromChapter != null && toChapter != null && fromChapter > toChapter) {
+            JOptionPane.showMessageDialog(this, "Giá trị 'từ chương' phải nhỏ hơn hoặc bằng 'đến chương'.");
+            return;
+        }
+
         try {
             List<Chapter> chapters = new ArrayList<>();
             if (bookId != null && beta != null) {
@@ -789,13 +804,30 @@ public class QLChuong extends javax.swing.JPanel {
                     bookTitleMap.put(b.getId(), b.getTitle());
                 }
             } else {
-                loadAllChapters();
-                return;
+                chapters.addAll(allChapters);
             }
-            refreshTable(chapters);
+
+            List<Chapter> filteredChapters = new ArrayList<>();
+            for (Chapter c : chapters) {
+                Integer chapterNumber = c.getChapterNumber();
+                if (chapterNumber == null) {
+                    if (fromChapter == null && toChapter == null) {
+                        filteredChapters.add(c);
+                    }
+                    continue;
+                }
+                if (fromChapter != null && chapterNumber < fromChapter) {
+                    continue;
+                }
+                if (toChapter != null && chapterNumber > toChapter) {
+                    continue;
+                }
+                filteredChapters.add(c);
+            }
+            refreshTable(filteredChapters);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Lỗi khi lọc: " + e.getMessage());
-        }       
+        }        
 
     }//GEN-LAST:event_btnFilter2ActionPerformed
 
@@ -828,7 +860,7 @@ public class QLChuong extends javax.swing.JPanel {
                     String number = numObj != null ? numObj.toString() : String.valueOf(i + 1);
                     Object contentObj = tableModel.getValueAt(i, 5);
                     String content = contentObj != null ? contentObj.toString() : "";
-                    File f = new File(dir, "C" + number + ".doc");
+                    File f = new File(dir, "C" + number + ".docx");
                     try (FileWriter fw = new FileWriter(f)) {
                         fw.write(content);
                     } catch (IOException ex) {
@@ -937,6 +969,18 @@ public class QLChuong extends javax.swing.JPanel {
     public void reloadChapters() {
         loadAllChapters();
     }
+    private Integer parseChapterNumber(String value, String fieldLabel) {
+        String trimmed = value != null ? value.trim() : "";
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(trimmed);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Giá trị " + fieldLabel + " phải là số.");
+            return null;
+        }
+    }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel FilterPanel1;
