@@ -1,14 +1,188 @@
 package com.mycompany.quanlytruyen.view.accounts;
 
+import com.mycompany.quanlytruyen.config.AppConfig;
+import com.mycompany.quanlytruyen.dao.AccountDAO;
+import com.mycompany.quanlytruyen.dao.DataSourceFactory;
+import com.mycompany.quanlytruyen.model.Account;
+
+import javax.sql.DataSource;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.Frame;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class QLTK extends javax.swing.JPanel {
 
+    private AccountDAO accountDao;
+    private DefaultTableModel tableModel;
+    private final List<Account> accounts = new ArrayList<>();
+    private Account selectedAccount;
 
     /**
      * Creates new form QLSach
      */
     public QLTK() {
         initComponents();
+        initialize();
+    }
 
+    private void initialize() {
+        setupTable();
+        initDao();
+        loadAccounts();
+        attachListeners();
+    }
+
+    private void setupTable() {
+        tableModel = new DefaultTableModel(new Object[]{
+            "ID", "Tên TK", "Email", "Mật khẩu", "Ghi chú"
+        }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        Tbooks.setModel(tableModel);
+        Tbooks.setAutoCreateRowSorter(true);
+        Tbooks.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    private void initDao() {
+        try {
+            AppConfig config = AppConfig.getInstance();
+            DataSource ds = DataSourceFactory.create(
+                config.getDatabaseUrl(),
+                config.getDatabaseUser(),
+                config.getDatabasePassword()
+            );
+            accountDao = new AccountDAO(ds);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu: " + e.getMessage());
+        }
+    }
+
+    private void attachListeners() {
+        Tbooks.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    updateSelectedAccount();
+                }
+            }
+        });
+        Tbooks.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    openEditDialog();
+                }
+            }
+        });
+    }
+
+    private void loadAccounts() {
+        accounts.clear();
+        if (accountDao == null) {
+            return;
+        }
+        try {
+            accounts.addAll(accountDao.getAllAccounts());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải tài khoản: " + e.getMessage());
+        }
+        refreshTable(accounts);
+        selectedAccount = null;
+    }
+
+    private void refreshTable(List<Account> data) {
+        tableModel.setRowCount(0);
+        if (data == null) {
+            return;
+        }
+        for (Account account : data) {
+            tableModel.addRow(new Object[]{
+                account.getId(),
+                account.getUsername(),
+                account.getEmail(),
+                account.getPassword(),
+                account.getNote() != null ? account.getNote() : account.getUserId()
+            });
+        }
+    }
+
+    private void updateSelectedAccount() {
+        int viewRow = Tbooks.getSelectedRow();
+        if (viewRow < 0) {
+            selectedAccount = null;
+            return;
+        }
+        int modelRow = Tbooks.convertRowIndexToModel(viewRow);
+        if (modelRow >= 0 && modelRow < accounts.size()) {
+            selectedAccount = accounts.get(modelRow);
+        } else {
+            selectedAccount = null;
+        }
+    }
+
+    private void openAddDialog() {
+        if (accountDao == null) {
+            JOptionPane.showMessageDialog(this, "Chưa kết nối được tới cơ sở dữ liệu");
+            return;
+        }
+        Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+        ThemTK dialog = new ThemTK(frame, true, this);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setVisible(true);
+    }
+
+    private void openEditDialog() {
+        if (selectedAccount == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn tài khoản cần sửa");
+            return;
+        }
+        Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+        SuaTK dialog = new SuaTK(frame, true, this, selectedAccount);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setVisible(true);
+    }
+
+    private void performSearch() {
+        String keyword = txtSearch.getText().trim();
+        if (keyword.isEmpty()) {
+            refreshTable(accounts);
+            return;
+        }
+        List<Account> filtered = new ArrayList<>();
+        for (Account account : accounts) {
+            if (containsIgnoreCase(account.getUsername(), keyword)
+                || containsIgnoreCase(account.getEmail(), keyword)
+                || containsIgnoreCase(account.getUserId(), keyword)) {
+                filtered.add(account);
+            }
+        }
+        refreshTable(filtered);
+    }
+
+    private boolean containsIgnoreCase(String source, String keyword) {
+        if (source == null) {
+            return false;
+        }
+        return source.toLowerCase().contains(keyword.toLowerCase());
+    }
+
+    public void refreshAccounts() {
+        loadAccounts();
+    }
+
+    public AccountDAO getAccountDao() {
+        return accountDao;
     }
 
 
@@ -180,27 +354,28 @@ public class QLTK extends javax.swing.JPanel {
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
-     
+          openAddDialog();
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
         // TODO add your handling code here:
-       
+            openEditDialog();
     }//GEN-LAST:event_btnEditActionPerformed
 
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
         // TODO add your handling code here:
-  
+        txtSearch.setText("");
+        loadAccounts();
     }//GEN-LAST:event_btnResetActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         // TODO add your handling code here:
-
+        performSearch();
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
-
+        performSearch();
     }//GEN-LAST:event_btnSearchActionPerformed
 
 

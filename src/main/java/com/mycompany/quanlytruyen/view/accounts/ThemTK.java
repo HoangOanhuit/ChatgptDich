@@ -1,14 +1,24 @@
 package com.mycompany.quanlytruyen.view.accounts;
 
+import com.mycompany.quanlytruyen.dao.AccountDAO;
+import com.mycompany.quanlytruyen.model.Account;
+
+import javax.swing.JOptionPane;
+import java.sql.SQLException;
 
 public class ThemTK extends javax.swing.JDialog {
 
+    private final QLTK parentPanel;
+    private final AccountDAO accountDao;
 
     public ThemTK(java.awt.Frame parent, boolean modal, QLTK parentPanel) {
+        super(parent, modal);
+        this.parentPanel = parentPanel;
+        this.accountDao = parentPanel != null ? parentPanel.getAccountDao() : null;
         initComponents();
+        setLocationRelativeTo(parent);
 
     }
-
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -167,7 +177,7 @@ public class ThemTK extends javax.swing.JDialog {
 
         jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel29.setForeground(new java.awt.Color(153, 153, 153));
-        jLabel29.setText("auth2:");
+        jLabel29.setText("auth:");
 
         txtAuthor7.setForeground(new java.awt.Color(102, 102, 102));
         txtAuthor7.setText("1");
@@ -310,7 +320,7 @@ public class ThemTK extends javax.swing.JDialog {
      * Closes the dialog
      */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-
+        dispose();
     }//GEN-LAST:event_closeDialog
 
     private void txtAuthorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAuthorActionPerformed
@@ -322,21 +332,54 @@ public class ThemTK extends javax.swing.JDialog {
     }//GEN-LAST:event_txtNameActionPerformed
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
- 
+        if (accountDao == null) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu");
+            return;
+        }
+
+        String username = textOf(txtName);
+        if (username.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên tài khoản");
+            txtName.requestFocus();
+            return;
+        }
+
+        Account account = new Account();
+        account.setUsername(username);
+        account.setUserId(emptyToNull(textOf(txtAuthor2)));
+        account.setEmail(emptyToNull(textOf(txtAuthor)));
+        account.setPassword(emptyToNull(textOf(txtAuthor1)));
+        account.setUuid(emptyToNull(textOf(txtAuthor3)));
+        account.setRegisted(emptyToNull(textOf(txtAuthor4)));
+        account.setActivationKey(emptyToNull(textOf(txtAuthor5)));
+        account.setAuth2(emptyToNull(textOf(txtAuthor6)));
+        account.setVersionIos(emptyToNull(textOf(txtAuthor7)));
+        account.setNote(account.getRegisted());
+
+        try {
+            accountDao.insertAccount(account);
+            JOptionPane.showMessageDialog(this, "Thêm tài khoản thành công");
+            if (parentPanel != null) {
+                parentPanel.refreshAccounts();
+            }
+            dispose();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Không thể thêm tài khoản: " + e.getMessage());
+        }        
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
         // TODO add your handling code here:
-
+        btnCreateActionPerformed(null);
     }//GEN-LAST:event_btnCreateMouseClicked
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-
+        dispose();
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
         // TODO add your handling code here:
-
+        dispose();
     }//GEN-LAST:event_btnCancelMouseClicked
 
     private void txtAuthor1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAuthor1ActionPerformed
@@ -399,4 +442,11 @@ public class ThemTK extends javax.swing.JDialog {
     private javax.swing.JTextField txtName;
     // End of variables declaration//GEN-END:variables
 
+    private String textOf(javax.swing.JTextField field) {
+        return field.getText() == null ? "" : field.getText().trim();
+    }
+
+    private String emptyToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
+    }
 }

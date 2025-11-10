@@ -6,6 +6,7 @@ import com.mycompany.quanlytruyen.view.chapters.ChiaChuong;
 import com.mycompany.quanlytruyen.view.chapters.QLChuong;
 import com.mycompany.quanlytruyen.view.chiachuong.ChiaChuong1;
 import com.mycompany.quanlytruyen.view.translate.QLDich;
+import com.mycompany.quanlytruyen.view.accounts.QLTK;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,6 +34,7 @@ public class HomeFrame extends javax.swing.JFrame {
             btnBooks1.addActionListener(e -> showPanel(new QLSach()));
             btnchapters2.addActionListener(e -> showPanel(new QLChuong()));
             btnTranslate.addActionListener(e -> showPanel(new QLDich()));
+            btnAccounts.addActionListener(e -> showPanel(new QLTK()));
             
             btnChiaChuong.addActionListener(e -> showPanel(new ChiaChuong1()));
 
