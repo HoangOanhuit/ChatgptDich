@@ -243,6 +243,8 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
         stPost = new javax.swing.JComboBox<>();
         jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        txtName1 = new javax.swing.JTextField();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -435,6 +437,16 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel5.setForeground(new java.awt.Color(51, 51, 51));
         jLabel5.setText("Tình trạng Đăng");
 
+        jLabel6.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel6.setText("Giá mỗi chương");
+
+        txtName1.setToolTipText("");
+        txtName1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtName1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnProfile1Layout = new javax.swing.GroupLayout(pnProfile1);
         pnProfile1.setLayout(pnProfile1Layout);
         pnProfile1Layout.setHorizontalGroup(
@@ -462,24 +474,25 @@ public class SuaSach extends javax.swing.JDialog {
                             .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnProfile1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(263, 263, 263)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(stPost, 0, 173, Short.MAX_VALUE)
+                        .addComponent(stTranslate, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(stRaw, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(txtName1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnProfile1Layout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(jLabel5)
+                        .addGap(81, 81, 81))
                     .addGroup(pnProfile1Layout.createSequentialGroup()
-                        .addGap(2, 2, 2)
-                        .addComponent(stRaw, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 4, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(pnProfile1Layout.createSequentialGroup()
-                            .addComponent(stPost, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jLabel5))
-                        .addGroup(pnProfile1Layout.createSequentialGroup()
-                            .addComponent(stTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jLabel4))))
-                .addGap(81, 81, 81))
+                        .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel6))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         pnProfile1Layout.setVerticalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -496,15 +509,19 @@ public class SuaSach extends javax.swing.JDialog {
                 .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(bangTenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel6)
+                    .addComponent(txtName1, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(8, 8, 8)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stRaw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addGap(27, 27, 27)
+                .addGap(12, 12, 12)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
-                .addGap(27, 27, 27)
+                .addGap(12, 12, 12)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stPost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
@@ -636,6 +653,10 @@ public class SuaSach extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_stPostActionPerformed
 
+    private void txtName1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtName1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtName1ActionPerformed
+
     /**
      * @param args the command line arguments
      */   
@@ -675,6 +696,7 @@ public class SuaSach extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel pnProfile;
     private javax.swing.JPanel pnProfile1;
     private javax.swing.JComboBox<String> stPost;
@@ -683,6 +705,7 @@ public class SuaSach extends javax.swing.JDialog {
     private javax.swing.JTextField txtAuthor;
     private javax.swing.JTextField txtBangTen;
     private javax.swing.JTextField txtName;
+    private javax.swing.JTextField txtName1;
     private javax.swing.JTextField txtYeuCau1;
     private javax.swing.JPanel yeuCauPanel1;
     // End of variables declaration//GEN-END:variables

@@ -239,15 +239,17 @@ public class QLSach extends javax.swing.JPanel {
         stRaw2 = new javax.swing.JComboBox<>();
         btnFilter = new javax.swing.JButton();
         btnFilter1 = new javax.swing.JButton();
+        stRaw3 = new javax.swing.JComboBox<>();
+        jLabel6 = new javax.swing.JLabel();
 
-        jPanel2.setBackground(new java.awt.Color(232, 223, 202));
+        jPanel2.setBackground(new java.awt.Color(0, 40, 85));
         jPanel2.setForeground(new java.awt.Color(255, 255, 255));
 
-        jLabel1.setFont(new java.awt.Font("Lava Devanagari", 1, 24)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(0, 0, 255));
+        jLabel1.setFont(new java.awt.Font("UVN Chim Bien", 1, 24)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Quản Lý Truyện");
 
-        btnDelete.setBackground(new java.awt.Color(232, 223, 202));
+        btnDelete.setBackground(new java.awt.Color(0, 40, 85));
         btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/delete.png"))); // NOI18N
         btnDelete.setBorder(null);
         btnDelete.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -257,7 +259,7 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
 
-        btnAdd.setBackground(new java.awt.Color(232, 223, 202));
+        btnAdd.setBackground(new java.awt.Color(0, 40, 85));
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/add.png"))); // NOI18N
         btnAdd.setBorder(null);
         btnAdd.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -267,7 +269,7 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
 
-        btnEdit.setBackground(new java.awt.Color(232, 223, 202));
+        btnEdit.setBackground(new java.awt.Color(0, 40, 85));
         btnEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/edit.png"))); // NOI18N
         btnEdit.setBorder(null);
         btnEdit.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -277,7 +279,7 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
 
-        btnReset.setBackground(new java.awt.Color(232, 223, 202));
+        btnReset.setBackground(new java.awt.Color(0, 40, 85));
         btnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/refresh.png"))); // NOI18N
         btnReset.setBorder(null);
         btnReset.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -295,7 +297,7 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
 
-        btnSearch.setBackground(new java.awt.Color(232, 223, 202));
+        btnSearch.setBackground(new java.awt.Color(0, 40, 85));
         btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/search.png"))); // NOI18N
         btnSearch.setBorder(null);
         btnSearch.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -364,8 +366,8 @@ public class QLSach extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(3, 3, 3)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 745, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 706, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(45, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -408,7 +410,7 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
 
-        btnFilter.setBackground(new java.awt.Color(0, 102, 102));
+        btnFilter.setBackground(new java.awt.Color(255, 130, 0));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnFilter.setForeground(new java.awt.Color(255, 255, 255));
         btnFilter.setText("Lọc");
@@ -428,6 +430,16 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
 
+        stRaw3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        stRaw3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stRaw3ActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel6.setText("Tài khoản");
+
         javax.swing.GroupLayout FilterPanelLayout = new javax.swing.GroupLayout(FilterPanel);
         FilterPanel.setLayout(FilterPanelLayout);
         FilterPanelLayout.setHorizontalGroup(
@@ -440,39 +452,46 @@ public class QLSach extends javax.swing.JPanel {
                         .addGap(18, 18, 18)
                         .addComponent(btnFilter1)
                         .addGap(0, 69, Short.MAX_VALUE))
-                    .addGroup(FilterPanelLayout.createSequentialGroup()
-                        .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(stRaw, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(stRaw1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(stRaw2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FilterPanelLayout.createSequentialGroup()
+                        .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(stRaw3, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(stRaw, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(stRaw1, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(stRaw2, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
                         .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(FilterPanelLayout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FilterPanelLayout.createSequentialGroup()
-                                .addGap(1, 1, 1)
-                                .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel4))))
+                            .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(FilterPanelLayout.createSequentialGroup()
+                                    .addComponent(jLabel3)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FilterPanelLayout.createSequentialGroup()
+                                    .addGap(1, 1, 1)
+                                    .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel5)
+                                        .addComponent(jLabel4))))
+                            .addComponent(jLabel6))
                         .addGap(23, 23, 23))))
         );
         FilterPanelLayout.setVerticalGroup(
             FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(FilterPanelLayout.createSequentialGroup()
-                .addGap(31, 31, 31)
+                .addGap(25, 25, 25)
+                .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(stRaw3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addGap(18, 18, 18)
                 .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stRaw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addGap(27, 27, 27)
+                .addGap(14, 14, 14)
                 .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stRaw1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
-                .addGap(27, 27, 27)
+                .addGap(14, 14, 14)
                 .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(stRaw2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
-                .addGap(55, 55, 55)
+                .addGap(18, 18, 18)
                 .addGroup(FilterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnFilter)
                     .addComponent(btnFilter1))
@@ -500,7 +519,7 @@ public class QLSach extends javax.swing.JPanel {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(FilterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 340, Short.MAX_VALUE))
+                .addGap(0, 369, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                     .addContainerGap(95, Short.MAX_VALUE)
@@ -623,6 +642,10 @@ public class QLSach extends javax.swing.JPanel {
         }        
     }//GEN-LAST:event_btnSearchActionPerformed
 
+    private void stRaw3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stRaw3ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_stRaw3ActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel FilterPanel;
@@ -638,12 +661,14 @@ public class QLSach extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JComboBox<String> stRaw;
     private javax.swing.JComboBox<String> stRaw1;
     private javax.swing.JComboBox<String> stRaw2;
+    private javax.swing.JComboBox<String> stRaw3;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }

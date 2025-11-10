@@ -32,7 +32,7 @@ public class HomeFrame extends javax.swing.JFrame {
             // Set up button actions
             btnBooks1.addActionListener(e -> showPanel(new QLSach()));
             btnchapters2.addActionListener(e -> showPanel(new QLChuong()));
-            btnchapters3.addActionListener(e -> showPanel(new QLDich()));
+            btnTranslate.addActionListener(e -> showPanel(new QLDich()));
             
             btnChiaChuong.addActionListener(e -> showPanel(new ChiaChuong1()));
 
@@ -62,9 +62,10 @@ public class HomeFrame extends javax.swing.JFrame {
         jPanel9 = new javax.swing.JPanel();
         btnchapters2 = new javax.swing.JButton();
         btnBooks1 = new javax.swing.JButton();
-        btnchapters3 = new javax.swing.JButton();
-        btnchapters4 = new javax.swing.JButton();
+        btnTranslate = new javax.swing.JButton();
+        btnPost = new javax.swing.JButton();
         btnChiaChuong = new javax.swing.JButton();
+        btnAccounts = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -82,10 +83,10 @@ public class HomeFrame extends javax.swing.JFrame {
             .addGap(0, 733, Short.MAX_VALUE)
         );
 
-        jPanel9.setBackground(new java.awt.Color(173, 107, 214));
+        jPanel9.setBackground(new java.awt.Color(0, 40, 85));
         jPanel9.setForeground(new java.awt.Color(214, 177, 240));
 
-        btnchapters2.setBackground(new java.awt.Color(51, 0, 51));
+        btnchapters2.setBackground(new java.awt.Color(255, 130, 0));
         btnchapters2.setFont(new java.awt.Font("Yuanti SC", 1, 18)); // NOI18N
         btnchapters2.setForeground(new java.awt.Color(255, 255, 255));
         btnchapters2.setText("Quản Lý Từng Chương");
@@ -95,7 +96,7 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
-        btnBooks1.setBackground(new java.awt.Color(102, 0, 102));
+        btnBooks1.setBackground(new java.awt.Color(255, 130, 0));
         btnBooks1.setFont(new java.awt.Font("Yuanti SC", 1, 18)); // NOI18N
         btnBooks1.setForeground(new java.awt.Color(255, 255, 255));
         btnBooks1.setText("Quản Lý Truyện");
@@ -105,27 +106,28 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
-        btnchapters3.setBackground(new java.awt.Color(0, 153, 51));
-        btnchapters3.setFont(new java.awt.Font("Yuanti SC", 1, 18)); // NOI18N
-        btnchapters3.setForeground(new java.awt.Color(255, 255, 255));
-        btnchapters3.setText("DỊCH API");
-        btnchapters3.addActionListener(new java.awt.event.ActionListener() {
+        btnTranslate.setBackground(new java.awt.Color(0, 153, 51));
+        btnTranslate.setFont(new java.awt.Font("Yuanti SC", 1, 16)); // NOI18N
+        btnTranslate.setForeground(new java.awt.Color(255, 255, 255));
+        btnTranslate.setText("DỊCH API");
+        btnTranslate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnchapters3ActionPerformed(evt);
+                btnTranslateActionPerformed(evt);
             }
         });
 
-        btnchapters4.setBackground(new java.awt.Color(102, 102, 102));
-        btnchapters4.setFont(new java.awt.Font("Yuanti SC", 1, 18)); // NOI18N
-        btnchapters4.setForeground(new java.awt.Color(255, 255, 255));
-        btnchapters4.addActionListener(new java.awt.event.ActionListener() {
+        btnPost.setBackground(new java.awt.Color(102, 102, 102));
+        btnPost.setFont(new java.awt.Font("Yuanti SC", 1, 14)); // NOI18N
+        btnPost.setForeground(new java.awt.Color(255, 255, 255));
+        btnPost.setText("Đăng Truyện Hàng Ngày");
+        btnPost.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnchapters4ActionPerformed(evt);
+                btnPostActionPerformed(evt);
             }
         });
 
-        btnChiaChuong.setBackground(new java.awt.Color(255, 153, 51));
-        btnChiaChuong.setFont(new java.awt.Font("Yuanti SC", 1, 18)); // NOI18N
+        btnChiaChuong.setBackground(new java.awt.Color(255, 102, 51));
+        btnChiaChuong.setFont(new java.awt.Font("Yuanti SC", 1, 14)); // NOI18N
         btnChiaChuong.setForeground(new java.awt.Color(255, 255, 255));
         btnChiaChuong.setText("Chia Chương");
         btnChiaChuong.addActionListener(new java.awt.event.ActionListener() {
@@ -134,33 +136,53 @@ public class HomeFrame extends javax.swing.JFrame {
             }
         });
 
+        btnAccounts.setBackground(new java.awt.Color(255, 130, 0));
+        btnAccounts.setFont(new java.awt.Font("Yuanti SC", 1, 18)); // NOI18N
+        btnAccounts.setForeground(new java.awt.Color(255, 255, 255));
+        btnAccounts.setText("Quản Lý Tài Khoản");
+        btnAccounts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAccountsActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
         jPanel9.setLayout(jPanel9Layout);
         jPanel9Layout.setHorizontalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel9Layout.createSequentialGroup()
+            .addComponent(btnchapters2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(btnBooks1, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+            .addComponent(btnAccounts, javax.swing.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnchapters2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnBooks1, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                    .addComponent(btnchapters3, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                    .addComponent(btnchapters4, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                    .addComponent(btnChiaChuong, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
+                        .addComponent(btnTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(74, 74, 74))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel9Layout.createSequentialGroup()
+                        .addComponent(btnPost)
+                        .addGap(42, 42, 42))))
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGap(72, 72, 72)
+                .addComponent(btnChiaChuong)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel9Layout.setVerticalGroup(
             jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel9Layout.createSequentialGroup()
-                .addGap(202, 202, 202)
+                .addGap(144, 144, 144)
+                .addComponent(btnAccounts, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnBooks1, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnchapters2, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(64, 64, 64)
-                .addComponent(btnchapters3, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(btnChiaChuong, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
-                .addComponent(btnchapters4, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(113, 113, 113)
+                .addComponent(btnTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnPost, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnChiaChuong)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -185,9 +207,9 @@ public class HomeFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnchapters4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnchapters4ActionPerformed
+    private void btnPostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPostActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnchapters4ActionPerformed
+    }//GEN-LAST:event_btnPostActionPerformed
 
     private void btnchapters2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnchapters2ActionPerformed
         // TODO add your handling code here:
@@ -203,9 +225,13 @@ public class HomeFrame extends javax.swing.JFrame {
             //String content = (String) tableModel.getValueAt(row, 5);
     }//GEN-LAST:event_btnChiaChuongActionPerformed
 
-    private void btnchapters3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnchapters3ActionPerformed
+    private void btnTranslateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTranslateActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnchapters3ActionPerformed
+    }//GEN-LAST:event_btnTranslateActionPerformed
+
+    private void btnAccountsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAccountsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnAccountsActionPerformed
 
     /**
      * @param args the command line arguments
@@ -258,11 +284,12 @@ public class HomeFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAccounts;
     private javax.swing.JButton btnBooks1;
     private javax.swing.JButton btnChiaChuong;
+    private javax.swing.JButton btnPost;
+    private javax.swing.JButton btnTranslate;
     private javax.swing.JButton btnchapters2;
-    private javax.swing.JButton btnchapters3;
-    private javax.swing.JButton btnchapters4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel9;
     // End of variables declaration//GEN-END:variables

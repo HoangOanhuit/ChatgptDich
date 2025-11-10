@@ -4,6 +4,7 @@ C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\j
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\service\SeleniumChatGPTService.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\HomeFrame.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\service\DeepSeekClient.java
+C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\accounts\ThemTK.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\service\ValidationService.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\translate\QLDich.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\service\OpenAIClient.java
@@ -13,6 +14,7 @@ C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\j
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\dao\BookDao.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\utils\FileUtils.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\books\ThemSach.java
+C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\accounts\SuaTK.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\config\AppConfig.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\books\SuaSach.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\SeleniumMainFrame.java
@@ -22,6 +24,7 @@ C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\j
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\config\Config.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\ResumeDialog.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\utils\PromptBuilder.java
+C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\accounts\QLTK.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\chapters\QLChuong.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1.java
 C:\Users\Administrator\Documents\OANH\appDichTruyen\ChatgptDich-oanh5\src\main\java\com\mycompany\quanlytruyen\model\Book.java
