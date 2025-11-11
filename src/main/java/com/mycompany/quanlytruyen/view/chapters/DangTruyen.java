@@ -46,6 +46,7 @@ public class DangTruyen extends javax.swing.JPanel {
         num_chapter7 = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
+        smartHour = new javax.swing.JCheckBox();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tbooks = new javax.swing.JTable();
@@ -301,14 +302,17 @@ public class DangTruyen extends javax.swing.JPanel {
         jLabel12.setForeground(new java.awt.Color(102, 102, 102));
         jLabel12.setText("giờ    :   phút");
 
+        smartHour.setText("GIỜ đăng thông minh");
+        smartHour.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                smartHourActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout FilterPanel1Layout = new javax.swing.GroupLayout(FilterPanel1);
         FilterPanel1.setLayout(FilterPanel1Layout);
         FilterPanel1Layout.setHorizontalGroup(
             FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(FilterPanel1Layout.createSequentialGroup()
-                .addGap(76, 76, 76)
-                .addComponent(btnFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FilterPanel1Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -317,6 +321,7 @@ public class DangTruyen extends javax.swing.JPanel {
                     .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addGap(18, 18, 18)
                 .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(smartHour)
                     .addGroup(FilterPanel1Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(jLabel12))
@@ -341,6 +346,10 @@ public class DangTruyen extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(num_chapter7, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(60, 60, 60))
+            .addGroup(FilterPanel1Layout.createSequentialGroup()
+                .addGap(110, 110, 110)
+                .addComponent(btnFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(155, Short.MAX_VALUE))
         );
         FilterPanel1Layout.setVerticalGroup(
             FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -360,7 +369,7 @@ public class DangTruyen extends javax.swing.JPanel {
                     .addComponent(num_chapter4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(num_chapter5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 28, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                 .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(num_chapter6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -368,9 +377,11 @@ public class DangTruyen extends javax.swing.JPanel {
                     .addComponent(jLabel11))
                 .addGap(1, 1, 1)
                 .addComponent(jLabel12)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(smartHour)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnFilter2)
-                .addContainerGap())
+                .addGap(14, 14, 14))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -385,19 +396,19 @@ public class DangTruyen extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(FilterPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 318, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(28, Short.MAX_VALUE)))
+                    .addContainerGap(47, Short.MAX_VALUE)))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addComponent(FilterPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(474, Short.MAX_VALUE))
+                .addContainerGap(518, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                     .addGap(216, 216, 216)
                     .addComponent(FilterPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(161, Short.MAX_VALUE)))
+                    .addContainerGap(111, Short.MAX_VALUE)))
         );
 
         Tbooks.setModel(new javax.swing.table.DefaultTableModel(
@@ -471,7 +482,7 @@ public class DangTruyen extends javax.swing.JPanel {
                 .addContainerGap())
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(97, Short.MAX_VALUE)
+                    .addContainerGap(83, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addContainerGap()))
         );
@@ -556,6 +567,10 @@ public class DangTruyen extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_num_chapter7ActionPerformed
 
+    private void smartHourActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_smartHourActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_smartHourActionPerformed
+
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -590,6 +605,7 @@ public class DangTruyen extends javax.swing.JPanel {
     private javax.swing.JTextField num_chapter5;
     private javax.swing.JTextField num_chapter6;
     private javax.swing.JTextField num_chapter7;
+    private javax.swing.JCheckBox smartHour;
     private javax.swing.JComboBox<String> tenTruyen1;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
