@@ -1,211 +1,11 @@
 package com.mycompany.quanlytruyen.view.books;
 
- 
-import com.mycompany.quanlytruyen.config.AppConfig;
-import com.mycompany.quanlytruyen.dao.AccountDAO;
-import com.mycompany.quanlytruyen.dao.BookDao;
-import com.mycompany.quanlytruyen.dao.ChapterDao;
-import com.mycompany.quanlytruyen.dao.DataSourceFactory;
-
-import com.mycompany.quanlytruyen.model.Account;
-import com.mycompany.quanlytruyen.model.Book;
-import com.mycompany.quanlytruyen.service.FileService;
-import com.mycompany.quanlytruyen.utils.TextFieldKeyboardUtils;
-import com.mycompany.quanlytruyen.utils.UIUtils;
-
-import javax.sql.DataSource;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.TransferHandler;
-import java.awt.datatransfer.DataFlavor;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.logging.Logger;
-import static org.apache.commons.compress.harmony.pack200.PackingUtils.config;
-
 public class SuaSach extends javax.swing.JDialog {
 
-    private final QLSach parentPanel;
-    private Book editingBook;
-    private FileService fileService;
-    private String guidelinesContent;
-    private String nameTableContent;
-    private final DataSource dataSource;
-    private final BookDao bookDao;
-    private final AccountDAO accountDao;
-    private final ChapterDao chapterDao;
-    private static final Logger logger = Logger.getLogger(SuaSach.class.getName());
-
-    private DefaultComboBoxModel<AccountItem> accountModel;
-    
     public SuaSach(java.awt.Frame parent, boolean modal, QLSach parentPanel) {
         initComponents();
-        this.parentPanel = parentPanel;
-        btnCreate.setText("Sửa");
-        jLabel18.setText("Giá mỗi chương:");
-        jLabel6.setText("Tên ngắn:");
-        this.fileService = new FileService();
-
-        DataSource tmpDataSource = null;
-        BookDao tmpBookDao = null;
-        AccountDAO tmpAccountDao = null;
-        ChapterDao tmpChapterDao = null;
-        try {
-            tmpDataSource = createDataSource();
-            tmpBookDao = new BookDao(tmpDataSource);
-            tmpAccountDao = new AccountDAO(tmpDataSource);
-            tmpChapterDao = new ChapterDao(tmpDataSource);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Không thể khởi tạo kết nối: " + ex.getMessage());
-        }
-        this.dataSource = tmpDataSource;
-        this.bookDao = tmpBookDao;
-        this.accountDao = tmpAccountDao;
-        this.chapterDao = tmpChapterDao;
-
-        setupStatusCombos();
-        loadAccounts();
-        setupDragAndDrop();
-        setupKeyboardShortcuts();
-        UIUtils.enableTextComponentShortcuts(this);
-
-        if (parentPanel != null && parentPanel.getSelectedBook() != null) {
-            try {
-                Book book = bookDao != null ? bookDao.getBookById(parentPanel.getSelectedBook().getId()) : null;
-                setBook(book != null ? book : parentPanel.getSelectedBook());
-            } catch (Exception ex) {
-                setBook(parentPanel.getSelectedBook());
-            }
-       
-        }
+      
     }
- 
- 
-    public SuaSach(java.awt.Frame parent, boolean modal, QLSach parentPanel, Book book) {
-        this(parent, modal, parentPanel);
-        setBook(book);
-    }
-    
-    private void setupKeyboardShortcuts() {
-        // Setup keyboard shortcuts cho tất cả text fields trong form
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtName);
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtAuthor);
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtYeuCau1);
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtBangTen);
-    }
-    private void setBook(Book book) {
-        this.editingBook = book;
-        if (book != null) {
-            txtName.setText(book.getTitle());
-            txtAuthor.setText(book.getAuthor());
-            txtName1.setText(book.getShortTitle() != null ? book.getShortTitle() : "");
-            if (book.getPrice() != null) {
-                txtName2.setText(book.getPrice().stripTrailingZeros().toPlainString());
-            } else {
-                txtName2.setText("");
-            }
-            if (book.getPosted() != null) {
-                txtName3.setText(String.valueOf(book.getPosted()));
-            } else {
-                txtName3.setText("0");
-            }
-            if (book.getGuidelines() != null && !book.getGuidelines().isEmpty()) {
-                guidelinesContent = book.getGuidelines();
-                txtYeuCau1.setText("✓");
-            }
-            if (book.getNameTable() != null && !book.getNameTable().isEmpty()) {
-                nameTableContent = book.getNameTable();
-                txtBangTen.setText("✓");
-            }
-            stRaw.setSelectedItem(book.getRawStatus());
-            stTranslate.setSelectedItem(book.getTranslateStatus());
-            stPost.setSelectedItem(book.getPostStatus());
-            selectAccount(book.getAccountId());
-        }
-    }
- 
-
-    private void setupStatusCombos() {
-        configureStatusCombo(stRaw, Book.RawStatus.values(), Book.RawStatus::getDisplayName);
-        configureStatusCombo(stTranslate, Book.TranslateStatus.values(), Book.TranslateStatus::getDisplayName);
-        configureStatusCombo(stPost, Book.PostStatus.values(), Book.PostStatus::getDisplayName);
-    }
-    private <T> void configureStatusCombo(JComboBox<T> comboBox, T[] values, Function<T, String> displayFn) {
-        DefaultComboBoxModel<T> model = new DefaultComboBoxModel<>(values);
-        comboBox.setModel(model);
-        comboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                // Value đã là String nên không cần cast
-                if (value != null) {
-                    @SuppressWarnings("unchecked")
-                    T typedValue = (T) value;
-                    setText(displayFn.apply(typedValue));
-                } else {
-                    setText("");
-                }
-                return this;
-            }
-        });
-    }
- 
-    private void loadAccounts() {
-        accountModel = new DefaultComboBoxModel<>();
-        accountModel.addElement(AccountItem.empty());
-        accounts.setModel(accountModel);
-        accounts.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof AccountItem item) {
-                    setText(item.getDisplayName());
-                }
-                return this;
-            }
-        });
-        if (accountDao == null) {
-            return;
-        }        
-        try {
-            List<Account> accountsData = accountDao.getAllAccounts();
-            for (Account account : accountsData) {
-                accountModel.addElement(AccountItem.of(account));
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Không thể tải tài khoản: " + e.getMessage());
-        }
-    }
-    
-    private void selectAccount(Long accountId) {
-        if (accountModel == null || accountId == null) {
-            accounts.setSelectedIndex(0);
-            return;
-        }
-
-        for (int i = 0; i < accountModel.getSize(); i++) {
-            AccountItem item = accountModel.getElementAt(i);
-            if (item != null && accountId.equals(item.id())) {
-                accounts.setSelectedIndex(i);
-                return;
-            }
-        }
-        accounts.setSelectedIndex(0);
-    }        
-    private void setupDragAndDrop() {
-         enableFileDrop(txtYeuCau1, this::handleGuidelinesFile);
-         enableFileDrop(txtBangTen, this::handleNameTableFile);
-    }
- 
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -600,7 +400,7 @@ public class SuaSach extends javax.swing.JDialog {
      * Closes the dialog
      */
     private void closeDialog(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_closeDialog
-        dispose();
+
     }//GEN-LAST:event_closeDialog
 
     private void txtAuthorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAuthorActionPerformed
@@ -612,46 +412,7 @@ public class SuaSach extends javax.swing.JDialog {
     }//GEN-LAST:event_txtNameActionPerformed
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
-        if (editingBook == null) {
-            dispose();
-            return;
-        }
-        try {
-            editingBook.setTitle(txtName.getText().trim());
-            editingBook.setAuthor(txtAuthor.getText().trim());
-            editingBook.setGuidelines(guidelinesContent);
-            editingBook.setNameTable(nameTableContent);
-            editingBook.setRawStatus((Book.RawStatus) stRaw.getSelectedItem());
-            editingBook.setTranslateStatus((Book.TranslateStatus) stTranslate.getSelectedItem());
-            editingBook.setPostStatus((Book.PostStatus) stPost.getSelectedItem());
-            editingBook.setShortTitle(txtName1.getText().trim());
-
-            AccountItem selectedAccount = (AccountItem) accounts.getSelectedItem();
-            editingBook.setAccountId(selectedAccount != null ? selectedAccount.id() : null);
-
-            BigDecimal price = parsePrice();
-            if (price == null) {
-                return;
-            }
-            editingBook.setPrice(price);
-
-            Integer postedChapters = parsePostedChapters();
-            if (postedChapters == null) {
-                return;
-            }
-            editingBook.setPosted(postedChapters);
-
-            if (bookDao != null) {
-                bookDao.updateBook(editingBook);
-            }
-
-            if (chapterDao != null && postedChapters > 0) {
-                chapterDao.markChaptersAsPostedFrom(editingBook.getId(), postedChapters);
-            }
-            dispose();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi cập nhật sách: " + e.getMessage());
-        }     
+ 
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
@@ -664,14 +425,11 @@ public class SuaSach extends javax.swing.JDialog {
 
     private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
         // TODO add your handling code here:
-        dispose();
+
     }//GEN-LAST:event_btnCancelMouseClicked
 
     private void btnYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnYeuCau1ActionPerformed
-        File file = fileService.selectTextFile(this, "Chọn file yêu cầu");
-        if (file != null) {
-            handleGuidelinesFile(file);
-        }       
+   
     }//GEN-LAST:event_btnYeuCau1ActionPerformed
 
     private void txtYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau1ActionPerformed
@@ -679,10 +437,7 @@ public class SuaSach extends javax.swing.JDialog {
     }//GEN-LAST:event_txtYeuCau1ActionPerformed
 
     private void btnBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBangTenActionPerformed
-        File file = fileService.selectTextFile(this, "Chọn file bảng tên");
-        if (file != null) {
-            handleNameTableFile(file);
-        }       
+      
     }//GEN-LAST:event_btnBangTenActionPerformed
 
     private void txtBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBangTenActionPerformed
@@ -690,8 +445,7 @@ public class SuaSach extends javax.swing.JDialog {
     }//GEN-LAST:event_txtBangTenActionPerformed
 
     private void btnRefresh1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefresh1ActionPerformed
-        guidelinesContent = null;
-        txtYeuCau1.setText("(File Yêu Cầu)");
+
     }//GEN-LAST:event_btnRefresh1ActionPerformed
 
     private void stRawActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stRawActionPerformed
@@ -718,36 +472,6 @@ public class SuaSach extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtName3ActionPerformed
 
-    private BigDecimal parsePrice() {
-        String text = txtName2.getText().trim();
-        if (text.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        try {
-            return new BigDecimal(text);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Giá chương không hợp lệ");
-            return null;
-        }
-    }
-
-    private Integer parsePostedChapters() {
-        String text = txtName3.getText().trim();
-        if (text.isEmpty()) {
-            return 0;
-        }
-        try {
-            int value = Integer.parseInt(text);
-            if (value < 0) {
-                JOptionPane.showMessageDialog(this, "Số chương đã đăng phải lớn hơn hoặc bằng 0");
-                return null;
-            }
-            return value;
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Số chương đã đăng không hợp lệ");
-            return null;
-        }
-    }    
     /**
      * @param args the command line arguments
      */   
@@ -772,12 +496,7 @@ public class SuaSach extends javax.swing.JDialog {
 
 
     }
-    private DataSource createDataSource() {
-        return DataSourceFactory.create(
-                config.getDatabaseUrl(),
-                config.getDatabaseUser(),
-                config.getDatabasePassword());
-    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> accounts;
     private javax.swing.JPanel bangTenPanel;
@@ -809,18 +528,5 @@ public class SuaSach extends javax.swing.JDialog {
     private javax.swing.JTextField txtYeuCau1;
     private javax.swing.JPanel yeuCauPanel1;
     // End of variables declaration//GEN-END:variables
-    
-    private record AccountItem(Long id, String name) {
-        static AccountItem empty() {
-            return new AccountItem(null, "-- Chưa chọn --");
-        }
 
-        static AccountItem of(Account account) {
-            return new AccountItem(account.getId(), account.getUsername());
-        }
-
-        String getDisplayName() {
-            return name;
-        }
-    }
 }

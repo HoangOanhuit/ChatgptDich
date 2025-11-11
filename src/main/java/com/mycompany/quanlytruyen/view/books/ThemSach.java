@@ -1,101 +1,12 @@
 package com.mycompany.quanlytruyen.view.books;
 
-import com.mycompany.quanlytruyen.config.AppConfig;
-import com.mycompany.quanlytruyen.dao.AccountDAO;
-import com.mycompany.quanlytruyen.dao.BookDao;
-import com.mycompany.quanlytruyen.dao.ChapterDao;
-import com.mycompany.quanlytruyen.dao.DataSourceFactory;
-import com.mycompany.quanlytruyen.model.Account;
-import com.mycompany.quanlytruyen.model.Book;
-import com.mycompany.quanlytruyen.service.FileService;
-import com.mycompany.quanlytruyen.utils.UIUtils;
-import com.mycompany.quanlytruyen.utils.TextFieldKeyboardUtils;
-
-import javax.sql.DataSource;
-import javax.swing.*;
-import java.awt.Color;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetAdapter;
-import java.awt.dnd.DropTargetDropEvent;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-
 public class ThemSach extends javax.swing.JDialog {
 
-    private final QLSach parentPanel;
-    private final FileService fileService = new FileService();
-    private final AppConfig config = AppConfig.getInstance();
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ThemSach.class.getName());
-
-    private String guidelines;
-    private String nameTable;
-
-    private final Book.RawStatus[] rawStatuses = Book.RawStatus.values();
-    private final Book.TranslateStatus[] translateStatuses = Book.TranslateStatus.values();
-    private final Book.PostStatus[] postStatuses = Book.PostStatus.values();
-    private final DataSource dataSource;
-    private final BookDao bookDao;
-    private final AccountDAO accountDao;
-    private final ChapterDao chapterDao;
-
-    private DefaultComboBoxModel<AccountItem> accountModel;
-
+ 
     public ThemSach(java.awt.Frame parent, boolean modal, QLSach parentPanel) {
-        super(parent, modal);
-        this.parentPanel = parentPanel;
         initComponents();
-        jLabel18.setText("Giá mỗi chương:");
-        jLabel6.setText("Tên ngắn:");
-        setupKeyboardShortcuts();
-        UIUtils.enableTextComponentShortcuts(this);
 
-        DataSource tmpDataSource = null;
-        BookDao tmpBookDao = null;
-        AccountDAO tmpAccountDao = null;
-        ChapterDao tmpChapterDao = null;
-        try {
-            tmpDataSource = createDataSource();
-            tmpBookDao = new BookDao(tmpDataSource);
-            tmpAccountDao = new AccountDAO(tmpDataSource);
-            tmpChapterDao = new ChapterDao(tmpDataSource);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Không thể khởi tạo kết nối: " + ex.getMessage());
-        }
-        this.dataSource = tmpDataSource;
-        this.bookDao = tmpBookDao;
-        this.accountDao = tmpAccountDao;
-        this.chapterDao = tmpChapterDao;
-
-        populateStatusCombos();
-        loadAccounts();
-        setupDragAndDrop();
-       // setHandler();
     }
-    private void setupKeyboardShortcuts() {
-        // Setup keyboard shortcuts cho tất cả text fields trong form
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtName);
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtAuthor);
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtYeuCau1);
-        TextFieldKeyboardUtils.setupEnhancedTextComponent(txtBangTen);
-    } 
-    /*
-    private void  setHandler(){
-        btnRefresh1.addActionListener(new java.awt.event.ActionListener() {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            btnRefresh1ActionPerformed(evt);
-        }
-        });
-    }
-*/
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -504,73 +415,26 @@ public class ThemSach extends javax.swing.JDialog {
     }//GEN-LAST:event_txtNameActionPerformed
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
-        String title = txtName.getText().trim();
-        if (title.isEmpty()) {
-            showWarning("Vui lòng nhập Tên Truyện");
-            return;
-        }
 
-        Book book = new Book();
-        book.setTitle(title);
-        book.setAuthor(txtAuthor.getText().trim());
-        book.setGuidelines(guidelines);
-        book.setNameTable(nameTable);
-        book.setRawStatus((Book.RawStatus) stRaw.getSelectedItem());
-        book.setTranslateStatus((Book.TranslateStatus) stTranslate.getSelectedItem());
-        book.setPostStatus((Book.PostStatus) stPost.getSelectedItem());
-        book.setShortTitle(txtName1.getText().trim());
-
-        AccountItem selectedAccount = (AccountItem) accounts.getSelectedItem();
-        book.setAccountId(selectedAccount != null ? selectedAccount.id() : null);
-
-        BigDecimal price = parsePrice();
-        if (price == null) {
-            return;
-        }
-        book.setPrice(price);
-
-        Integer postedChapters = parsePostedChapters();
-        if (postedChapters == null) {
-            return;
-        }
-        book.setPosted(postedChapters);
-
-        try {
-            if (bookDao == null) {
-                showError("Không thể kết nối cơ sở dữ liệu");
-                return;
-            }
-            bookDao.createBook(book);
-            if (chapterDao != null && postedChapters > 0) {
-                chapterDao.markChaptersAsPostedFrom(book.getId(), postedChapters);
-            }
-            showInfo("Thêm truyện thành công");
-            dispose();
-        } catch (Exception e) {
-            showError("Không thể thêm truyện: " + e.getMessage());
-        }        
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
         // TODO add your handling code here:
-        btnCreateActionPerformed(null);
+
     }//GEN-LAST:event_btnCreateMouseClicked
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-        dispose();
+
     }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
         // TODO add your handling code here:
-        this.dispose();
+
     }//GEN-LAST:event_btnCancelMouseClicked
 
     private void btnYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnYeuCau1ActionPerformed
         // TODO add your handling code here:
-        File file = fileService.selectTextFile(this, "Chọn file yêu cầu");
-        if (file != null) {
-            handleGuidelinesFile(file);
-        }
+
     }//GEN-LAST:event_btnYeuCau1ActionPerformed
 
     private void txtYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau1ActionPerformed
@@ -579,21 +443,14 @@ public class ThemSach extends javax.swing.JDialog {
 
     private void btnBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBangTenActionPerformed
         // TODO add your handling code here:
-        File file = fileService.selectTextFile(this, "Chọn file bảng tên");
-        if (file != null) {
-            handleNameTableFile(file);
-        }
+
     }//GEN-LAST:event_btnBangTenActionPerformed
 
     private void txtBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBangTenActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtBangTenActionPerformed
  
-    private void btnRefresh1ActionPerformed(java.awt.event.ActionEvent evt) {                                            
-        guidelines = null;
-        txtYeuCau1.setText("(File Yêu Cầu)");
-        txtYeuCau1.setForeground(new java.awt.Color(153,153,153));
-    }//
+
     
     private void stRawActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stRawActionPerformed
         // TODO add your handling code here:
@@ -622,154 +479,7 @@ public class ThemSach extends javax.swing.JDialog {
     /**
      * @param args the command line arguments
      */
-    private void populateStatusCombos() {
-        configureStatusCombo(stRaw, rawStatuses, Book.RawStatus::getDisplayName);
-        configureStatusCombo(stTranslate, translateStatuses, Book.TranslateStatus::getDisplayName);
-        configureStatusCombo(stPost, postStatuses, Book.PostStatus::getDisplayName);
-    }
 
-    private <T> void configureStatusCombo(JComboBox<T> comboBox, T[] values, Function<T, String> displayFn) {
-        DefaultComboBoxModel<T> model = new DefaultComboBoxModel<>(values);
-        comboBox.setModel(model);
-        comboBox.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value != null) {
-                    @SuppressWarnings("unchecked")
-                    T typedValue = (T) value;
-                    setText(displayFn.apply(typedValue));
-                } else {
-                    setText("");
-                }
-                return this;
-            }
-        });
-    }
-    private void loadAccounts() {
-        accountModel = new DefaultComboBoxModel<>();
-        accountModel.addElement(AccountItem.empty());
-        accounts.setModel(accountModel);
-        accounts.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof AccountItem item) {
-                    setText(item.getDisplayName());
-                }
-                return this;
-            }
-        });
-
-        if (accountDao == null) {
-            return;
-        }
-        try {
-            List<Account> accountsData = accountDao.getAllAccounts();
-            for (Account account : accountsData) {
-                accountModel.addElement(AccountItem.of(account));
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Không thể tải tài khoản: " + e.getMessage());
-        }
-    }    
-
-    private void setupDragAndDrop() {
-        setupFileDropTarget(txtYeuCau1, this::handleGuidelinesFile);
-        setupFileDropTarget(txtBangTen, this::handleNameTableFile);
-    }
-
-    private void setupFileDropTarget(JTextField textField, Consumer<File> handler) {
-        new DropTarget(textField, new DropTargetAdapter() {
-            @Override
-            public void drop(DropTargetDropEvent dtde) {
-                try {
-                    dtde.acceptDrop(DnDConstants.ACTION_COPY);
-                    Transferable t = dtde.getTransferable();
-                    if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                        @SuppressWarnings("unchecked")
-                        List<File> files = (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
-                        if (!files.isEmpty()) {
-                            handler.accept(files.get(0));
-                        }
-                    }
-                    dtde.dropComplete(true);
-                } catch (Exception ex) {
-                    showError("Không thể xử lý file: " + ex.getMessage());
-                    dtde.dropComplete(false);
-                }
-            }
-        });
-    }
-
-    private void handleGuidelinesFile(File file) {
-        try {
-            guidelines = fileService.readTextFile(file);
-            txtYeuCau1.setText(file.getName());
-            txtYeuCau1.setForeground(Color.BLACK);
-        } catch (IOException e) {
-            showError("Không thể đọc file yêu cầu: " + e.getMessage());
-        }
-    }
-
-    private void handleNameTableFile(File file) {
-        try {
-            nameTable = fileService.readTextFile(file);
-            txtBangTen.setText(file.getName());
-            txtBangTen.setForeground(Color.BLACK);
-        } catch (IOException e) {
-            showError("Không thể đọc file bảng tên: " + e.getMessage());
-        }
-    }
-    private BigDecimal parsePrice() {
-        String text = txtName2.getText().trim();
-        if (text.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        try {
-            return new BigDecimal(text);
-        } catch (NumberFormatException ex) {
-            showError("Giá chương không hợp lệ");
-            return null;
-        }
-    }
-
-    private Integer parsePostedChapters() {
-        String text = txtName3.getText().trim();
-        if (text.isEmpty()) {
-            return 0;
-        }
-        try {
-            int value = Integer.parseInt(text);
-            if (value < 0) {
-                showError("Số chương đã đăng phải lớn hơn hoặc bằng 0");
-                return null;
-            }
-            return value;
-        } catch (NumberFormatException ex) {
-            showError("Số chương đã đăng không hợp lệ");
-            return null;
-        }
-    }    
-
-    private DataSource createDataSource() {
-        return DataSourceFactory.create(
-                config.getDatabaseUrl(),
-                config.getDatabaseUser(),
-                config.getDatabasePassword());
-    }
-
-    private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
-    }
-
-    private void showWarning(String message) {
-        JOptionPane.showMessageDialog(this, message, "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-    }
-
-    private void showInfo(String message) {
-        JOptionPane.showMessageDialog(this, message, "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-    }
     
 
     public static void main(String args[]) {
@@ -825,17 +535,4 @@ public class ThemSach extends javax.swing.JDialog {
     private javax.swing.JPanel yeuCauPanel1;
     // End of variables declaration//GEN-END:variables
 
-    private record AccountItem(Long id, String name) {
-        static AccountItem empty() {
-            return new AccountItem(null, "-- Chưa chọn --");
-        }
-
-        static AccountItem of(Account account) {
-            return new AccountItem(account.getId(), account.getUsername());
-        }
-
-        String getDisplayName() {
-            return name;
-        }
-    }    
 }
