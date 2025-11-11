@@ -106,6 +106,8 @@ public class AccountDAO {
             throw new SQLException("Thiếu account_id gốc để cập nhật");
         }
         String sql = "UPDATE " + tableName +
+            " SET account_id = ?, ten_tk = ?, email = ?, mat_khau = ?, uuid = ?, registered = ?, activation_key = ?, auth = ?, " +
+            "version_ios = ?, ghi_chu = ?, total_book = ?, posted_hoan = ?, status = ?" +                
             " WHERE account_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

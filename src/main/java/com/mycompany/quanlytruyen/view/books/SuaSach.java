@@ -35,7 +35,7 @@ public class SuaSach extends javax.swing.JDialog {
         initComponents();
         this.parentPanel = parentPanel;
         btnCreate.setText("Sửa");
-        btnRefresh1.addActionListener(evt -> btnRefresh1ActionPerformed(evt));
+        //btnRefresh1.addActionListener(evt -> btnRefresh1ActionPerformed(evt));
         this.fileService = new FileService();
         setupComboBoxes();
         setupDragAndDrop();
@@ -232,11 +232,9 @@ public class SuaSach extends javax.swing.JDialog {
         yeuCauPanel1 = new javax.swing.JPanel();
         btnYeuCau1 = new javax.swing.JButton();
         txtYeuCau1 = new javax.swing.JTextField();
-        btnRefresh1 = new javax.swing.JButton();
         bangTenPanel = new javax.swing.JPanel();
         btnBangTen = new javax.swing.JButton();
         txtBangTen = new javax.swing.JTextField();
-        btnRefresh2 = new javax.swing.JButton();
         stRaw = new javax.swing.JComboBox<>();
         jLabel3 = new javax.swing.JLabel();
         stTranslate = new javax.swing.JComboBox<>();
@@ -249,6 +247,8 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel18 = new javax.swing.JLabel();
         txtName3 = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
+        accounts = new javax.swing.JComboBox<>();
+        jLabel19 = new javax.swing.JLabel();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -333,20 +333,15 @@ public class SuaSach extends javax.swing.JDialog {
             }
         });
 
-        btnRefresh1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/refresh.png"))); // NOI18N
-        btnRefresh1.setText("jButton1");
-
         javax.swing.GroupLayout yeuCauPanel1Layout = new javax.swing.GroupLayout(yeuCauPanel1);
         yeuCauPanel1.setLayout(yeuCauPanel1Layout);
         yeuCauPanel1Layout.setHorizontalGroup(
             yeuCauPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(yeuCauPanel1Layout.createSequentialGroup()
                 .addComponent(txtYeuCau1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                .addGap(24, 24, 24)
-                .addComponent(btnYeuCau1, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnRefresh1, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addGap(10, 10, 10)
+                .addComponent(btnYeuCau1)
+                .addGap(77, 77, 77))
         );
         yeuCauPanel1Layout.setVerticalGroup(
             yeuCauPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -354,8 +349,7 @@ public class SuaSach extends javax.swing.JDialog {
                 .addGap(5, 5, 5)
                 .addGroup(yeuCauPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnYeuCau1)
-                    .addComponent(txtYeuCau1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnRefresh1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtYeuCau1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -379,35 +373,23 @@ public class SuaSach extends javax.swing.JDialog {
             }
         });
 
-        btnRefresh2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/refresh.png"))); // NOI18N
-        btnRefresh2.setText("jButton1");
-        btnRefresh2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRefresh2ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout bangTenPanelLayout = new javax.swing.GroupLayout(bangTenPanel);
         bangTenPanel.setLayout(bangTenPanelLayout);
         bangTenPanelLayout.setHorizontalGroup(
             bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(bangTenPanelLayout.createSequentialGroup()
-                .addComponent(txtBangTen)
-                .addGap(24, 24, 24)
-                .addComponent(btnBangTen, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnRefresh2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(txtBangTen, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnBangTen)
+                .addGap(64, 64, 64))
         );
         bangTenPanelLayout.setVerticalGroup(
             bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(bangTenPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtBangTen, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnBangTen)
-                        .addComponent(btnRefresh2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btnBangTen))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -473,6 +455,12 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel7.setForeground(new java.awt.Color(51, 51, 51));
         jLabel7.setText("Số chương đã đăng");
 
+        accounts.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel19.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel19.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel19.setText("Tài khoản:");
+
         javax.swing.GroupLayout pnProfile1Layout = new javax.swing.GroupLayout(pnProfile1);
         pnProfile1.setLayout(pnProfile1Layout);
         pnProfile1Layout.setHorizontalGroup(
@@ -528,10 +516,20 @@ public class SuaSach extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel7)
                         .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(pnProfile1Layout.createSequentialGroup()
+                .addGap(32, 32, 32)
+                .addComponent(jLabel19)
+                .addGap(18, 18, 18)
+                .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnProfile1Layout.setVerticalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfile1Layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel19))
                 .addGap(25, 25, 25)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
@@ -544,9 +542,9 @@ public class SuaSach extends javax.swing.JDialog {
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel23)
                     .addComponent(txtAuthor, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(2, 2, 2)
                 .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
+                .addGap(2, 2, 2)
                 .addComponent(bangTenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -679,11 +677,6 @@ public class SuaSach extends javax.swing.JDialog {
         txtYeuCau1.setText("(File Yêu Cầu)");
     }//GEN-LAST:event_btnRefresh1ActionPerformed
 
-    private void btnRefresh2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefresh2ActionPerformed
-        nameTableContent = null;
-        txtBangTen.setText("(File Bảng Tên)");
-    }//GEN-LAST:event_btnRefresh2ActionPerformed
-
     private void stRawActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stRawActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_stRawActionPerformed
@@ -734,16 +727,16 @@ public class SuaSach extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> accounts;
     private javax.swing.JPanel bangTenPanel;
     private javax.swing.JButton btnBangTen;
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnCreate;
-    private javax.swing.JButton btnRefresh1;
-    private javax.swing.JButton btnRefresh2;
     private javax.swing.JButton btnYeuCau1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

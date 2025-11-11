@@ -30,7 +30,6 @@ com\mycompany\quanlytruyen\view\books\QLSach$13.class
 com\mycompany\quanlytruyen\view\books\SuaSach$1.class
 com\mycompany\quanlytruyen\view\books\SuaSach$14.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$5.class
-com\mycompany\quanlytruyen\view\books\SuaSach$22.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$3.class
 com\mycompany\quanlytruyen\model\Account.class
 com\mycompany\quanlytruyen\view\chapters\DangTruyen$18.class
@@ -136,7 +135,6 @@ com\mycompany\quanlytruyen\view\chapters\ChiaChuong$7.class
 com\mycompany\quanlytruyen\view\books\SuaSach$2.class
 com\mycompany\quanlytruyen\view\translate\QLDich$15.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$4.class
-com\mycompany\quanlytruyen\view\books\ThemSach$19.class
 com\mycompany\quanlytruyen\service\TranslationRunner$ProgressListener.class
 com\mycompany\quanlytruyen\view\books\QLSach.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK.class
@@ -185,7 +183,6 @@ com\mycompany\quanlytruyen\view\chapters\SuaChuong$5.class
 com\mycompany\quanlytruyen\view\translate\QLDich$12.class
 com\mycompany\quanlytruyen\view\HomeFrame$2.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1.class
-com\mycompany\quanlytruyen\view\books\ThemSach$20.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$1.class
 com\mycompany\quanlytruyen\view\chapters\DangTruyen$17.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$2.class
