@@ -11,7 +11,8 @@ public class SuaTK extends javax.swing.JDialog {
 
     private final QLTK parentPanel;
     private final AccountDAO accountDao;
-    private final Account account;    
+    private final Account account;
+    private final Long originalAccountId;    
     
     public SuaTK(java.awt.Frame parent, boolean modal, QLTK parentPanel) {
         this(parent, modal, parentPanel, null);
@@ -23,6 +24,7 @@ public class SuaTK extends javax.swing.JDialog {
         this.parentPanel = parentPanel;
         this.accountDao = parentPanel != null ? parentPanel.getAccountDao() : null;
         this.account = account;
+        this.originalAccountId = account != null ? account.getId() : null;
         initComponents();
         btnCreate.setText("Lưu");
         setLocationRelativeTo(parent);
@@ -34,7 +36,7 @@ public class SuaTK extends javax.swing.JDialog {
             return;
         }
         txtName.setText(nullToEmpty(account.getUsername()));
-       // txtAuthor2.setText(nullToEmpty(account.getId()));
+        txtAuthor2.setText(account.getId() == null ? "" : String.valueOf(account.getId()));
         txtAuthor.setText(nullToEmpty(account.getEmail()));
         txtAuthor1.setText(nullToEmpty(account.getPassword()));
         txtAuthor3.setText(nullToEmpty(account.getUuid()));
@@ -368,8 +370,29 @@ public class SuaTK extends javax.swing.JDialog {
             return;
         }
 
+        String userIdText = textOf(txtAuthor2);
+        if (userIdText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập User ID");
+            txtAuthor2.requestFocus();
+            return;
+        }
+
+        Long newUserId;
+        try {
+            newUserId = Long.valueOf(userIdText);
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "User ID phải là số hợp lệ");
+            txtAuthor2.requestFocus();
+            return;
+        }
+
+        if (originalAccountId == null) {
+            JOptionPane.showMessageDialog(this, "Không xác định được tài khoản cần cập nhật");
+            return;
+        }
+
         account.setUsername(username);
-     //   account.setId(emptyToNull(textOf(txtAuthor2)));
+        account.setId(newUserId);
         account.setEmail(emptyToNull(textOf(txtAuthor)));
         account.setPassword(emptyToNull(textOf(txtAuthor1)));
         account.setUuid(emptyToNull(textOf(txtAuthor3)));
@@ -379,7 +402,7 @@ public class SuaTK extends javax.swing.JDialog {
         account.setVersionIos(emptyToNull(textOf(txtAuthor7)));
 
         try {
-            accountDao.updateAccount(account);
+            accountDao.updateAccount(account, originalAccountId);
             JOptionPane.showMessageDialog(this, "Cập nhật tài khoản thành công");
             if (parentPanel != null) {
                 parentPanel.refreshAccounts();

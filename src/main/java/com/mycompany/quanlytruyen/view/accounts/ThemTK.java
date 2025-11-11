@@ -332,7 +332,7 @@ public class ThemTK extends javax.swing.JDialog {
     }//GEN-LAST:event_txtNameActionPerformed
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
-        if (accountDao == null) {
+         if (accountDao == null) {
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu");
             return;
         }
@@ -344,9 +344,23 @@ public class ThemTK extends javax.swing.JDialog {
             return;
         }
 
+        String userIdText = textOf(txtAuthor2);
+        Long userId = null;
+        if (!userIdText.isEmpty()) {
+            try {
+                userId = Long.valueOf(userIdText);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "User ID phải là số hợp lệ");
+                txtAuthor2.requestFocus();
+                return;
+            }
+        }
+
         Account account = new Account();
         account.setUsername(username);
-      //  account.setId(emptyToNull(textOf(txtAuthor2)));
+        if (userId != null) {
+            account.setId(userId);
+        }
         account.setEmail(emptyToNull(textOf(txtAuthor)));
         account.setPassword(emptyToNull(textOf(txtAuthor1)));
         account.setUuid(emptyToNull(textOf(txtAuthor3)));
@@ -367,7 +381,7 @@ public class ThemTK extends javax.swing.JDialog {
             dispose();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Không thể thêm tài khoản: " + e.getMessage());
-        }        
+        }     
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked

@@ -71,13 +71,25 @@ public class AccountDAO {
     }
 
     public long insertAccount(Account account) throws SQLException {
+        boolean hasCustomId = account.getId() != null;
+        String columns = "ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, status";
+        String placeholders = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?";
         String sql = "INSERT INTO " + tableName +
-            " (ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, status) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            (hasCustomId
+                ? " (account_id, " + columns + ") VALUES (?, " + placeholders + ")"
+                : " (" + columns + ") VALUES (" + placeholders + ")");
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             bindAccountParams(ps, account);
+            int index = 1;
+            if (hasCustomId) {
+                ps.setLong(index++, account.getId());
+            }
+            bindAccountParams(ps, account, index);
             ps.executeUpdate();
+            if (hasCustomId) {
+                return account.getId();
+            }
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     long id = rs.getLong(1);
@@ -89,29 +101,31 @@ public class AccountDAO {
         throw new SQLException("Không thể lấy ID của tài khoản vừa thêm");
     }
 
-    public void updateAccount(Account account) throws SQLException {
+    public void updateAccount(Account account, Long originalId) throws SQLException {
+        if (originalId == null) {
+            throw new SQLException("Thiếu account_id gốc để cập nhật");
+        }
         String sql = "UPDATE " + tableName +
-            " SET ten_tk = ?, email = ?, mat_khau = ?, uuid = ?, registered = ?, activation_key = ?, auth = ?, version_ios = ?, ghi_chu = ?, total_book = ?, posted_hoan = ?, status = ?" +
             " WHERE account_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            bindAccountParams(ps, account);
-            ps.setLong(13, account.getId());
+            int index = 1;
+            if (account.getId() == null) {
+                throw new SQLException("Thiếu account_id mới để cập nhật");
+            }
+            ps.setLong(index++, account.getId());
+            index = bindAccountParams(ps, account, index);
+            ps.setLong(index, originalId);
             ps.executeUpdate();
         }
     }
 
-    public void deleteAccount(long id) throws SQLException {
-        String sql = "DELETE FROM " + tableName + " WHERE account_id = ?";
-        try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, id);
-            ps.executeUpdate();
-        }
+
+    private int bindAccountParams(PreparedStatement ps, Account account) throws SQLException {
+        return bindAccountParams(ps, account, 1);
     }
 
-    private void bindAccountParams(PreparedStatement ps, Account account) throws SQLException {
-        int index = 1;
+    private int bindAccountParams(PreparedStatement ps, Account account, int index) throws SQLException {
         ps.setString(index++, safeString(account.getUsername()));
         ps.setString(index++, safeString(account.getEmail()));
         ps.setString(index++, safeString(account.getPassword()));
@@ -123,7 +137,8 @@ public class AccountDAO {
         ps.setString(index++, safeString(account.getNote()));
         setInteger(ps, index++, account.getTotalBook(), 0);
         setInteger(ps, index++, account.getPostedHoan(), 0);
-        ps.setString(index, safeString(defaultStatus(account.getStatus())));
+        ps.setString(index++, safeString(defaultStatus(account.getStatus())));
+        return index;
     }
 
     private Account mapAccount(ResultSet rs) throws SQLException {
@@ -193,4 +208,8 @@ public class AccountDAO {
     private String defaultStatus(String status) {
         return status == null || status.isBlank() ? "active" : status.trim();
     }    
+
+    public void deleteAccount(Long id) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
 }

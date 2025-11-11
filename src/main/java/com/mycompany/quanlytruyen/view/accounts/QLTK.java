@@ -174,13 +174,9 @@ public class QLTK extends javax.swing.JPanel {
             return;
         }
 
-        try {
-            accountDao.deleteAccount(selectedAccount.getId());
-            JOptionPane.showMessageDialog(this, "Xóa tài khoản thành công");
-            loadAccounts();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Không thể xóa tài khoản: " + e.getMessage());
-        }
+        accountDao.deleteAccount(selectedAccount.getId());
+        JOptionPane.showMessageDialog(this, "Xóa tài khoản thành công");
+        loadAccounts();
     }
     private void performSearch() {
         String keyword = txtSearch.getText().trim();
