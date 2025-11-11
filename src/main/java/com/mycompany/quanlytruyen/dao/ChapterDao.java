@@ -182,6 +182,27 @@ public class ChapterDao {
         }
     }
     /**
+     * Đánh dấu các chương kể từ một số thứ tự nhất định là đã đăng
+     */
+    public void markChaptersAsPostedFrom(long bookId, int fromChapterNumber) throws SQLException {
+        if (fromChapterNumber <= 0) {
+            return;
+        }
+
+        try (Connection c = ds.getConnection();
+             PreparedStatement ps = c.prepareStatement("""
+                 UPDATE chapters
+                 SET beta_status = ?, updated_at = NOW()
+                 WHERE book_id = ? AND chapter_number >= ?
+             """)) {
+            ps.setString(1, BetaStatus.DONE_POST.getDbValue());
+            ps.setLong(2, bookId);
+            ps.setInt(3, fromChapterNumber);
+            ps.executeUpdate();
+        }
+    }
+    
+    /**
      * Cập nhật toàn bộ thông tin của một chương
      */
     public void updateChapter(Chapter chapter) throws SQLException {

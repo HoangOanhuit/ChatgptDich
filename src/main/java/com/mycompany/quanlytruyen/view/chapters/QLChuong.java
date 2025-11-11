@@ -11,6 +11,7 @@ import com.mycompany.quanlytruyen.model.Chapter;
 
 import javax.sql.DataSource;
 import javax.swing.*;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -19,9 +20,12 @@ import javax.swing.AbstractCellEditor;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +34,9 @@ import java.util.Map;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import com.mycompany.quanlytruyen.view.books.SuaSach;
+
 
 public class QLChuong extends javax.swing.JPanel {
 
@@ -92,6 +99,23 @@ public class QLChuong extends javax.swing.JPanel {
         Tbooks.getColumnModel().getColumn(6).setCellEditor(new BetaStatusEditor());
         Tbooks.setAutoCreateRowSorter(true);
 
+        Tbooks.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    int viewRow = Tbooks.rowAtPoint(e.getPoint());
+                    if (viewRow < 0) {
+                        return;
+                    }
+                    int modelRow = Tbooks.convertRowIndexToModel(viewRow);
+                    Object bookIdValue = tableModel.getValueAt(modelRow, 1);
+                    if (bookIdValue instanceof Number number) {
+                        openBookEditor(number.longValue());
+                    }
+                }
+            }
+        });
+        
         initCombos();
         loadAllChapters();
 
@@ -182,7 +206,26 @@ public class QLChuong extends javax.swing.JPanel {
         part2 = part2.replaceFirst("^(\\s*\\r?\\n)+", "");
         return new String[]{part1, part2};
     }
-
+    private void openBookEditor(long bookId) {
+        if (bookDao == null) {
+            return;
+        }
+        try {
+            Book book = bookDao.getBookById(bookId);
+            if (book == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy truyện để sửa");
+                return;
+            }
+            Window window = SwingUtilities.getWindowAncestor(this);
+            java.awt.Frame frame = window instanceof java.awt.Frame ? (java.awt.Frame) window : null;
+            SuaSach dialog = new SuaSach(frame, true, null, book);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+            loadAllChapters();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Không thể mở hộp thoại sửa sách: " + ex.getMessage());
+        }
+    }
     private Long getSelectedBookId() {
         int idx = tenTruyen.getSelectedIndex();
         if (idx <= 0) return null;

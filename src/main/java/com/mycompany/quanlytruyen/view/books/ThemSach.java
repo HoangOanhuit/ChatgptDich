@@ -1,8 +1,11 @@
 package com.mycompany.quanlytruyen.view.books;
 
 import com.mycompany.quanlytruyen.config.AppConfig;
+import com.mycompany.quanlytruyen.dao.AccountDAO;
 import com.mycompany.quanlytruyen.dao.BookDao;
+import com.mycompany.quanlytruyen.dao.ChapterDao;
 import com.mycompany.quanlytruyen.dao.DataSourceFactory;
+import com.mycompany.quanlytruyen.model.Account;
 import com.mycompany.quanlytruyen.model.Book;
 import com.mycompany.quanlytruyen.service.FileService;
 import com.mycompany.quanlytruyen.utils.UIUtils;
@@ -19,8 +22,11 @@ import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 
 public class ThemSach extends javax.swing.JDialog {
@@ -36,15 +42,41 @@ public class ThemSach extends javax.swing.JDialog {
     private final Book.RawStatus[] rawStatuses = Book.RawStatus.values();
     private final Book.TranslateStatus[] translateStatuses = Book.TranslateStatus.values();
     private final Book.PostStatus[] postStatuses = Book.PostStatus.values();
+    private final DataSource dataSource;
+    private final BookDao bookDao;
+    private final AccountDAO accountDao;
+    private final ChapterDao chapterDao;
+
+    private DefaultComboBoxModel<AccountItem> accountModel;
 
     public ThemSach(java.awt.Frame parent, boolean modal, QLSach parentPanel) {
         super(parent, modal);
         this.parentPanel = parentPanel;
         initComponents();
+        jLabel18.setText("Giá mỗi chương:");
+        jLabel6.setText("Tên ngắn:");
         setupKeyboardShortcuts();
         UIUtils.enableTextComponentShortcuts(this);
 
+        DataSource tmpDataSource = null;
+        BookDao tmpBookDao = null;
+        AccountDAO tmpAccountDao = null;
+        ChapterDao tmpChapterDao = null;
+        try {
+            tmpDataSource = createDataSource();
+            tmpBookDao = new BookDao(tmpDataSource);
+            tmpAccountDao = new AccountDAO(tmpDataSource);
+            tmpChapterDao = new ChapterDao(tmpDataSource);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Không thể khởi tạo kết nối: " + ex.getMessage());
+        }
+        this.dataSource = tmpDataSource;
+        this.bookDao = tmpBookDao;
+        this.accountDao = tmpAccountDao;
+        this.chapterDao = tmpChapterDao;
+
         populateStatusCombos();
+        loadAccounts();
         setupDragAndDrop();
        // setHandler();
     }
@@ -54,7 +86,7 @@ public class ThemSach extends javax.swing.JDialog {
         TextFieldKeyboardUtils.setupEnhancedTextComponent(txtAuthor);
         TextFieldKeyboardUtils.setupEnhancedTextComponent(txtYeuCau1);
         TextFieldKeyboardUtils.setupEnhancedTextComponent(txtBangTen);
-    }    
+    } 
     /*
     private void  setHandler(){
         btnRefresh1.addActionListener(new java.awt.event.ActionListener() {
@@ -348,9 +380,10 @@ public class ThemSach extends javax.swing.JDialog {
                 .addGap(399, 399, 399)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnProfile1Layout.createSequentialGroup()
-                        .addComponent(txtName2, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtName2, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel6))
+                        .addComponent(jLabel6)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(pnProfile1Layout.createSequentialGroup()
                         .addComponent(txtName3, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -482,13 +515,35 @@ public class ThemSach extends javax.swing.JDialog {
         book.setAuthor(txtAuthor.getText().trim());
         book.setGuidelines(guidelines);
         book.setNameTable(nameTable);
-        book.setRawStatus(rawStatuses[stRaw.getSelectedIndex()]);
-        book.setTranslateStatus(translateStatuses[stTranslate.getSelectedIndex()]);
-        book.setPostStatus(postStatuses[stPost.getSelectedIndex()]);
+        book.setRawStatus((Book.RawStatus) stRaw.getSelectedItem());
+        book.setTranslateStatus((Book.TranslateStatus) stTranslate.getSelectedItem());
+        book.setPostStatus((Book.PostStatus) stPost.getSelectedItem());
+        book.setShortTitle(txtName1.getText().trim());
+
+        AccountItem selectedAccount = (AccountItem) accounts.getSelectedItem();
+        book.setAccountId(selectedAccount != null ? selectedAccount.id() : null);
+
+        BigDecimal price = parsePrice();
+        if (price == null) {
+            return;
+        }
+        book.setPrice(price);
+
+        Integer postedChapters = parsePostedChapters();
+        if (postedChapters == null) {
+            return;
+        }
+        book.setPosted(postedChapters);
 
         try {
-            BookDao dao = new BookDao(createDataSource());
-            dao.createBook(book);
+            if (bookDao == null) {
+                showError("Không thể kết nối cơ sở dữ liệu");
+                return;
+            }
+            bookDao.createBook(book);
+            if (chapterDao != null && postedChapters > 0) {
+                chapterDao.markChaptersAsPostedFrom(book.getId(), postedChapters);
+            }
             showInfo("Thêm truyện thành công");
             dispose();
         } catch (Exception e) {
@@ -568,21 +623,56 @@ public class ThemSach extends javax.swing.JDialog {
      * @param args the command line arguments
      */
     private void populateStatusCombos() {
-        stRaw.removeAllItems();
-        for (Book.RawStatus s : rawStatuses) {
-            stRaw.addItem(s.getDisplayName());
-        }
-
-        stTranslate.removeAllItems();
-        for (Book.TranslateStatus s : translateStatuses) {
-            stTranslate.addItem(s.getDisplayName());
-        }
-
-        stPost.removeAllItems();
-        for (Book.PostStatus s : postStatuses) {
-            stPost.addItem(s.getDisplayName());
-        }
+        configureStatusCombo(stRaw, rawStatuses, Book.RawStatus::getDisplayName);
+        configureStatusCombo(stTranslate, translateStatuses, Book.TranslateStatus::getDisplayName);
+        configureStatusCombo(stPost, postStatuses, Book.PostStatus::getDisplayName);
     }
+
+    private <T> void configureStatusCombo(JComboBox<T> comboBox, T[] values, Function<T, String> displayFn) {
+        DefaultComboBoxModel<T> model = new DefaultComboBoxModel<>(values);
+        comboBox.setModel(model);
+        comboBox.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value != null) {
+                    @SuppressWarnings("unchecked")
+                    T typedValue = (T) value;
+                    setText(displayFn.apply(typedValue));
+                } else {
+                    setText("");
+                }
+                return this;
+            }
+        });
+    }
+    private void loadAccounts() {
+        accountModel = new DefaultComboBoxModel<>();
+        accountModel.addElement(AccountItem.empty());
+        accounts.setModel(accountModel);
+        accounts.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof AccountItem item) {
+                    setText(item.getDisplayName());
+                }
+                return this;
+            }
+        });
+
+        if (accountDao == null) {
+            return;
+        }
+        try {
+            List<Account> accountsData = accountDao.getAllAccounts();
+            for (Account account : accountsData) {
+                accountModel.addElement(AccountItem.of(account));
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Không thể tải tài khoản: " + e.getMessage());
+        }
+    }    
 
     private void setupDragAndDrop() {
         setupFileDropTarget(txtYeuCau1, this::handleGuidelinesFile);
@@ -631,6 +721,36 @@ public class ThemSach extends javax.swing.JDialog {
             showError("Không thể đọc file bảng tên: " + e.getMessage());
         }
     }
+    private BigDecimal parsePrice() {
+        String text = txtName2.getText().trim();
+        if (text.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(text);
+        } catch (NumberFormatException ex) {
+            showError("Giá chương không hợp lệ");
+            return null;
+        }
+    }
+
+    private Integer parsePostedChapters() {
+        String text = txtName3.getText().trim();
+        if (text.isEmpty()) {
+            return 0;
+        }
+        try {
+            int value = Integer.parseInt(text);
+            if (value < 0) {
+                showError("Số chương đã đăng phải lớn hơn hoặc bằng 0");
+                return null;
+            }
+            return value;
+        } catch (NumberFormatException ex) {
+            showError("Số chương đã đăng không hợp lệ");
+            return null;
+        }
+    }    
 
     private DataSource createDataSource() {
         return DataSourceFactory.create(
@@ -705,4 +825,17 @@ public class ThemSach extends javax.swing.JDialog {
     private javax.swing.JPanel yeuCauPanel1;
     // End of variables declaration//GEN-END:variables
 
+    private record AccountItem(Long id, String name) {
+        static AccountItem empty() {
+            return new AccountItem(null, "-- Chưa chọn --");
+        }
+
+        static AccountItem of(Account account) {
+            return new AccountItem(account.getId(), account.getUsername());
+        }
+
+        String getDisplayName() {
+            return name;
+        }
+    }    
 }

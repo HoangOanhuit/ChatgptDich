@@ -28,8 +28,9 @@ public class BookDao {
         String sql = """
             SELECT id, title, author, slug, created_at,
                    raw_status, translate_status, post_status, total_revenue,
-                   guidelines, name_table, model_used, last_resumed_at
-            FROM books 
+                   guidelines, name_table, model_used, last_resumed_at,
+                                      account_id, short_title, posted, price
+                               FROM books 
             ORDER BY created_at DESC
             """;
         
@@ -51,8 +52,9 @@ public class BookDao {
         String sql = """
             SELECT id, title, author, slug, created_at,
                    raw_status, translate_status, post_status, total_revenue,
-                   guidelines, name_table, model_used, last_resumed_at
-            FROM books 
+                   guidelines, name_table, model_used, last_resumed_at,
+                                      account_id, short_title, posted, price
+                               FROM books
             WHERE id = ?
             """;
         
@@ -74,10 +76,11 @@ public class BookDao {
      */
     public long createBook(Book book) throws SQLException {
         String sql = """
-            INSERT INTO books (title, author, slug, raw_status, translate_status, 
-                             post_status, total_revenue, guidelines, name_table, 
-                             model_used, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO books (title, author, slug, raw_status, translate_status,
+                             post_status, total_revenue, guidelines, name_table,
+                             model_used, account_id, short_title, posted, price,
+                             created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             """;
         
         try (Connection conn = dataSource.getConnection();
@@ -93,6 +96,23 @@ public class BookDao {
             ps.setString(8, book.getGuidelines());
             ps.setString(9, book.getNameTable());
             ps.setString(10, book.getModelUsed());
+
+            if (book.getAccountId() != null) {
+                ps.setLong(11, book.getAccountId());
+            } else {
+                ps.setNull(11, Types.BIGINT);
+            }
+            ps.setString(12, book.getShortTitle());
+            if (book.getPosted() != null) {
+                ps.setInt(13, book.getPosted());
+            } else {
+                ps.setNull(13, Types.INTEGER);
+            }
+            if (book.getPrice() != null) {
+                ps.setBigDecimal(14, book.getPrice());
+            } else {
+                ps.setNull(14, Types.DECIMAL);
+            }
             
             ps.executeUpdate();
             
@@ -112,10 +132,12 @@ public class BookDao {
      */
     public void updateBook(Book book) throws SQLException {
         String sql = """
-            UPDATE books SET 
+            UPDATE books SET
                 title = ?, author = ?, raw_status = ?, translate_status = ?,
                 post_status = ?, total_revenue = ?, guidelines = ?, 
-                name_table = ?, model_used = ?
+                post_status = ?, total_revenue = ?, guidelines = ?,
+                name_table = ?, model_used = ?, account_id = ?,
+                short_title = ?, posted = ?, price = ?
             WHERE id = ?
             """;
         
@@ -131,7 +153,23 @@ public class BookDao {
             ps.setString(7, book.getGuidelines());
             ps.setString(8, book.getNameTable());
             ps.setString(9, book.getModelUsed());
-            ps.setLong(10, book.getId());
+            if (book.getAccountId() != null) {
+                ps.setLong(10, book.getAccountId());
+            } else {
+                ps.setNull(10, Types.BIGINT);
+            }
+            ps.setString(11, book.getShortTitle());
+            if (book.getPosted() != null) {
+                ps.setInt(12, book.getPosted());
+            } else {
+                ps.setNull(12, Types.INTEGER);
+            }
+            if (book.getPrice() != null) {
+                ps.setBigDecimal(13, book.getPrice());
+            } else {
+                ps.setNull(13, Types.DECIMAL);
+            }
+            ps.setLong(14, book.getId());
             
             int affected = ps.executeUpdate();
             if (affected == 0) {
@@ -359,14 +397,29 @@ public class BookDao {
         book.setNameTable(rs.getString("name_table"));
         book.setModelUsed(rs.getString("model_used"));
         
+
         Timestamp lastResumed = rs.getTimestamp("last_resumed_at");
         if (lastResumed != null) {
             book.setLastResumedAt(lastResumed.toLocalDateTime());
         }
         
+
+        long accountId = rs.getLong("account_id");
+        if (!rs.wasNull()) {
+            book.setAccountId(accountId);
+        }
+        book.setShortTitle(rs.getString("short_title"));
+
+        int posted = rs.getInt("posted");
+        if (rs.wasNull()) {
+            book.setPosted(null);
+        } else {
+            book.setPosted(posted);
+        }
+        book.setPrice(rs.getBigDecimal("price"));
+
         return book;
     }
-    
     /**
      * Create URL-friendly slug from title
      */
