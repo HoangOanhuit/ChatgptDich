@@ -13,6 +13,9 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 
 /**
@@ -31,10 +34,13 @@ public class AccountDAO {
     public AccountDAO(DataSource dataSource) {
         this(dataSource, DEFAULT_TABLE);
     }
+    
+    private static final Set<String> relaxedUuidConstraintTables = ConcurrentHashMap.newKeySet();    
 
     public AccountDAO(DataSource dataSource, String tableName) {
         this.dataSource = dataSource;
         this.tableName = tableName == null || tableName.isBlank() ? DEFAULT_TABLE : tableName;
+        relaxUuidConstraint();
     }
 
     public List<Account> getAllAccounts() throws SQLException {
@@ -214,4 +220,82 @@ public class AccountDAO {
     public void deleteAccount(Long id) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
+    private void relaxUuidConstraint() {
+        String normalizedTable = normalizeTableName(tableName);
+        if (normalizedTable == null) {
+            return;
+        }
+        if (relaxedUuidConstraintTables.contains(normalizedTable)) {
+            return;
+        }
+        synchronized (relaxedUuidConstraintTables) {
+            if (relaxedUuidConstraintTables.contains(normalizedTable)) {
+                return;
+            }
+            try {
+                dropUuidUniqueIndexes(normalizedTable);
+            } catch (SQLException ex) {
+                System.err.println("Không thể bỏ ràng buộc UNIQUE cho cột uuid: " + ex.getMessage());
+            }
+            relaxedUuidConstraintTables.add(normalizedTable);
+        }
+    }
+
+    private void dropUuidUniqueIndexes(String normalizedTable) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            String schema = resolveSchema(conn);
+            if (schema == null || schema.isBlank()) {
+                return;
+            }
+
+            String tableOnly = extractTableIdentifier(normalizedTable);
+            String sql = "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS " +
+                "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = 'uuid' AND NON_UNIQUE = 0";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, schema);
+                ps.setString(2, tableOnly);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String indexName = rs.getString("INDEX_NAME");
+                        if (indexName == null || indexName.isBlank()) {
+                            continue;
+                        }
+                        String dropSql = "ALTER TABLE " + normalizedTable + " DROP INDEX `" + indexName + "`";
+                        try (Statement dropStmt = conn.createStatement()) {
+                            dropStmt.execute(dropSql);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private String resolveSchema(Connection conn) throws SQLException {
+        String catalog = conn.getCatalog();
+        if (catalog != null && !catalog.isBlank()) {
+            return catalog;
+        }
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT DATABASE()")) {
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+        }
+        return null;
+    }
+
+    private String normalizeTableName(String rawTable) {
+        if (rawTable == null || rawTable.isBlank()) {
+            return null;
+        }
+        return rawTable.trim();
+    }
+
+    private String extractTableIdentifier(String tableReference) {
+        int dotIndex = tableReference.lastIndexOf('.');
+        if (dotIndex >= 0 && dotIndex < tableReference.length() - 1) {
+            return tableReference.substring(dotIndex + 1);
+        }
+        return tableReference;
+    }  
 }

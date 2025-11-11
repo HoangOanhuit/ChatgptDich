@@ -134,7 +134,6 @@ public class BookDao {
         String sql = """
             UPDATE books SET
                 title = ?, author = ?, raw_status = ?, translate_status = ?,
-                post_status = ?, total_revenue = ?, guidelines = ?, 
                 post_status = ?, total_revenue = ?, guidelines = ?,
                 name_table = ?, model_used = ?, account_id = ?,
                 short_title = ?, posted = ?, price = ?

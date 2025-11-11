@@ -115,7 +115,7 @@ public class QLSach extends javax.swing.JPanel {
         for (Book b : books) {
             tableModel.addRow(new Object[]{
                 b.getId(),
-                b.getTitle(),
+                b.getShortTitle(),
                 b.getAuthor(),
                 b.getGuidelines(),
                 b.getNameTable(),
@@ -725,7 +725,7 @@ public class QLSach extends javax.swing.JPanel {
             List<Book> all = bookDao.getAllBooks();
             List<Book> result = new ArrayList<>();
             for (Book b : all) {
-                if ((b.getTitle() != null && b.getTitle().toLowerCase().contains(keyword)) ||
+                if ((b.getTitle() != null && b.getShortTitle().toLowerCase().contains(keyword)) ||
                     (b.getAuthor() != null && b.getAuthor().toLowerCase().contains(keyword))) {
                     result.add(b);
                 }
