@@ -201,7 +201,26 @@ public class ChapterDao {
             ps.executeUpdate();
         }
     }
-    
+    /**
+     * Đánh dấu các chương có số thứ tự nhỏ hơn hoặc bằng giới hạn là đã đăng
+     */
+    public void markChaptersAsPostedUpTo(long bookId, int toChapterNumber) throws SQLException {
+        if (toChapterNumber <= 0) {
+            return;
+        }
+
+        try (Connection c = ds.getConnection();
+             PreparedStatement ps = c.prepareStatement("""
+                 UPDATE chapters
+                 SET beta_status = ?, updated_at = NOW()
+                 WHERE book_id = ? AND chapter_number <= ?
+             """)) {
+            ps.setString(1, BetaStatus.DONE_POST.getDbValue());
+            ps.setLong(2, bookId);
+            ps.setInt(3, toChapterNumber);
+            ps.executeUpdate();
+        }
+    }    
     /**
      * Cập nhật toàn bộ thông tin của một chương
      */

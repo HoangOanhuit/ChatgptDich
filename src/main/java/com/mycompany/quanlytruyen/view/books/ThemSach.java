@@ -1,11 +1,66 @@
 package com.mycompany.quanlytruyen.view.books;
 
+import com.mycompany.quanlytruyen.config.AppConfig;
+import com.mycompany.quanlytruyen.dao.AccountDAO;
+import com.mycompany.quanlytruyen.dao.BookDao;
+import com.mycompany.quanlytruyen.dao.ChapterDao;
+import com.mycompany.quanlytruyen.dao.DataSourceFactory;
+import com.mycompany.quanlytruyen.model.Account;
+import com.mycompany.quanlytruyen.model.Book;
+
+import javax.sql.DataSource;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.TransferHandler;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class ThemSach extends javax.swing.JDialog {
 
- 
-    public ThemSach(java.awt.Frame parent, boolean modal, QLSach parentPanel) {
-        initComponents();
+    private static final Logger logger = Logger.getLogger(ThemSach.class.getName());
+    private static File lastDirectory;
 
+    private final QLSach parentPanel;
+    private final BookDao bookDao;
+    private final ChapterDao chapterDao;
+    private final AccountDAO accountDao;
+    private final List<Account> accountsList = new ArrayList<>();
+    private final String guidelinePlaceholder;
+    private final String nameTablePlaceholder;
+    private File selectedGuidelineFile;
+    private File selectedNameTableFile;
+    
+    public ThemSach(java.awt.Frame parent, boolean modal, QLSach parentPanel) {
+        super(parent, modal);
+        this.parentPanel = parentPanel;
+        DataSource dataSource = createDataSource();
+        BookDao panelBookDao = parentPanel != null ? parentPanel.getBookDao() : null;
+        this.bookDao = panelBookDao != null ? panelBookDao : (dataSource != null ? new BookDao(dataSource) : null);
+        this.chapterDao = dataSource != null ? new ChapterDao(dataSource) : null;
+        this.accountDao = dataSource != null ? new AccountDAO(dataSource) : null;
+        initComponents();
+        setLocationRelativeTo(parent);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        guidelinePlaceholder = txtYeuCau1.getText();
+        nameTablePlaceholder = txtBangTen.getText();
+        initStatusCombos();
+        loadAccounts();
+        setupFileInteractions();
+        if (bookDao == null) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu quản lý truyện");
+        }
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -415,12 +470,76 @@ public class ThemSach extends javax.swing.JDialog {
     }//GEN-LAST:event_txtNameActionPerformed
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
+        if (bookDao == null) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu để thêm truyện");
+            return;
+        }
 
+        String title = textOf(txtName);
+        if (title.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên truyện");
+            txtName.requestFocus();
+            return;
+        }
+
+        String shortTitle = emptyToNull(textOf(txtName2));
+        String author = emptyToNull(textOf(txtAuthor));
+        BigDecimal price;
+        try {
+            price = parsePrice(textOf(txtName3));
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Giá mỗi chương phải là số hợp lệ");
+            txtName3.requestFocus();
+            return;
+        }
+
+        Integer postedChapters;
+        try {
+            postedChapters = parsePostedChapters(textOf(txtName1));
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Số chương đã đăng phải là số nguyên không âm");
+            txtName1.requestFocus();
+            return;
+        }
+
+        Book.RawStatus rawStatus = getSelectedRawStatus();
+        Book.TranslateStatus translateStatus = getSelectedTranslateStatus();
+        Book.PostStatus postStatus = getSelectedPostStatus();
+
+        Account selectedAccount = getSelectedAccount();
+        String guidelinesPath = resolveFilePath(txtYeuCau1.getText(), guidelinePlaceholder);
+        String nameTablePath = resolveFilePath(txtBangTen.getText(), nameTablePlaceholder);
+
+        Book book = new Book();
+        book.setTitle(title);
+        book.setShortTitle(shortTitle);
+        book.setAuthor(author);
+        book.setRawStatus(rawStatus);
+        book.setTranslateStatus(translateStatus);
+        book.setPostStatus(postStatus);
+        book.setGuidelines(guidelinesPath);
+        book.setNameTable(nameTablePath);
+        book.setPrice(price);
+        book.setPosted(postedChapters);
+        book.setAccountId(selectedAccount != null ? selectedAccount.getId() : null);
+
+        try {
+            bookDao.createBook(book);
+            updateChapterPostedStatus(book.getId(), postedChapters);
+            JOptionPane.showMessageDialog(this, "Thêm truyện thành công");
+            if (parentPanel != null) {
+                parentPanel.refreshBooks();
+            }
+            dispose();
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "Không thể thêm truyện", ex);
+            JOptionPane.showMessageDialog(this, "Không thể thêm truyện: " + ex.getMessage());
+        }
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
         // TODO add your handling code here:
-
+        btnCreateActionPerformed(null);
     }//GEN-LAST:event_btnCreateMouseClicked
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
@@ -429,12 +548,12 @@ public class ThemSach extends javax.swing.JDialog {
 
     private void btnCancelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCancelMouseClicked
         // TODO add your handling code here:
-
+        dispose();
     }//GEN-LAST:event_btnCancelMouseClicked
 
     private void btnYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnYeuCau1ActionPerformed
         // TODO add your handling code here:
-
+        chooseGuidelineFile();
     }//GEN-LAST:event_btnYeuCau1ActionPerformed
 
     private void txtYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau1ActionPerformed
@@ -443,7 +562,7 @@ public class ThemSach extends javax.swing.JDialog {
 
     private void btnBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBangTenActionPerformed
         // TODO add your handling code here:
-
+    chooseNameTableFile();
     }//GEN-LAST:event_btnBangTenActionPerformed
 
     private void txtBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBangTenActionPerformed
@@ -476,6 +595,284 @@ public class ThemSach extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtName2ActionPerformed
 
+    private DataSource createDataSource() {
+        try {
+            AppConfig config = AppConfig.getInstance();
+            return DataSourceFactory.create(
+                config.getDatabaseUrl(),
+                config.getDatabaseUser(),
+                config.getDatabasePassword()
+            );
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Không thể khởi tạo kết nối cơ sở dữ liệu", ex);
+            return null;
+        }
+    }
+
+    private void initStatusCombos() {
+        DefaultComboBoxModel<String> rawModel = new DefaultComboBoxModel<>();
+        for (Book.RawStatus status : Book.RawStatus.values()) {
+            rawModel.addElement(status.getDisplayName());
+        }
+        stRaw.setModel(rawModel);
+        if (rawModel.getSize() > 0) {
+            stRaw.setSelectedIndex(0);
+        }
+
+        DefaultComboBoxModel<String> translateModel = new DefaultComboBoxModel<>();
+        for (Book.TranslateStatus status : Book.TranslateStatus.values()) {
+            translateModel.addElement(status.getDisplayName());
+        }
+        stTranslate.setModel(translateModel);
+        if (translateModel.getSize() > 0) {
+            stTranslate.setSelectedIndex(0);
+        }
+
+        DefaultComboBoxModel<String> postModel = new DefaultComboBoxModel<>();
+        for (Book.PostStatus status : Book.PostStatus.values()) {
+            postModel.addElement(status.getDisplayName());
+        }
+        stPost.setModel(postModel);
+        if (postModel.getSize() > 0) {
+            stPost.setSelectedIndex(0);
+        }
+    }
+
+    private void loadAccounts() {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        accountsList.clear();
+        model.addElement("-- Chọn tài khoản --");
+
+        if (accountDao != null) {
+            try {
+                accountsList.addAll(accountDao.getAllAccounts());
+                for (Account account : accountsList) {
+                    model.addElement(account.getUsername());
+                }
+            } catch (SQLException ex) {
+                logger.log(Level.SEVERE, "Không thể tải danh sách tài khoản", ex);
+                JOptionPane.showMessageDialog(this, "Không thể tải danh sách tài khoản: " + ex.getMessage());
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối để tải danh sách tài khoản");
+        }
+
+        accounts.setModel(model);
+        accounts.setSelectedIndex(model.getSize() > 0 ? 0 : -1);
+    }
+
+    private Account getSelectedAccount() {
+        int index = accounts.getSelectedIndex();
+        if (index <= 0) {
+            return null;
+        }
+        int listIndex = index - 1;
+        if (listIndex >= 0 && listIndex < accountsList.size()) {
+            return accountsList.get(listIndex);
+        }
+        return null;
+    }
+
+    private void setupFileInteractions() {
+        configureFileDrop(txtYeuCau1, "file yêu cầu (.txt)", "txt");
+        configureFileDrop(txtBangTen, "file bảng tên (.csv)", "csv");
+    }
+
+    private void configureFileDrop(JTextField targetField, String description, String... extensions) {
+        targetField.setTransferHandler(new TransferHandler() {
+            @Override
+            public boolean canImport(TransferSupport support) {
+                if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                    return false;
+                }
+                support.setDropAction(TransferHandler.COPY);
+                return true;
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                if (!canImport(support)) {
+                    return false;
+                }
+                try {
+                    List<?> data = (List<?>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    if (data == null || data.isEmpty()) {
+                        return false;
+                    }
+                    Object first = data.get(0);
+                    if (!(first instanceof File)) {
+                        return false;
+                    }
+                    File file = (File) first;
+                    if (!isSupportedExtension(file, extensions)) {
+                        JOptionPane.showMessageDialog(ThemSach.this,
+                            "Định dạng không hợp lệ, " + description);
+                        return false;
+                    }
+                    applyFileSelection(targetField, file);
+                    return true;
+                } catch (UnsupportedFlavorException | IOException ex) {
+                    logger.log(Level.WARNING, "Không thể nhận file được kéo thả", ex);
+                    return false;
+                }
+            }
+        });
+    }
+
+    private void applyFileSelection(JTextField targetField, File file) {
+        if (targetField == txtYeuCau1) {
+            setGuidelineFile(file);
+        } else if (targetField == txtBangTen) {
+            setNameTableFile(file);
+        }
+    }
+
+    private void chooseGuidelineFile() {
+        chooseFile("Chọn file yêu cầu", txtYeuCau1, "txt");
+    }
+
+    private void chooseNameTableFile() {
+        chooseFile("Chọn file bảng tên", txtBangTen, "csv");
+    }
+
+    private void chooseFile(String dialogTitle, JTextField targetField, String... extensions) {
+        JFileChooser chooser = lastDirectory != null ? new JFileChooser(lastDirectory) : new JFileChooser();
+        chooser.setDialogTitle(dialogTitle);
+        chooser.setFileFilter(new FileNameExtensionFilter(dialogTitle, extensions));
+        int result = chooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            if (!isSupportedExtension(file, extensions)) {
+                JOptionPane.showMessageDialog(this, "File không đúng định dạng yêu cầu");
+                return;
+            }
+            lastDirectory = file.getParentFile();
+            applyFileSelection(targetField, file);
+        }
+    }
+
+    private boolean isSupportedExtension(File file, String... extensions) {
+        if (file == null || extensions == null) {
+            return false;
+        }
+        String name = file.getName().toLowerCase();
+        for (String extension : extensions) {
+            if (extension == null) {
+                continue;
+            }
+            String normalized = extension.toLowerCase();
+            if (!normalized.startsWith(".")) {
+                normalized = "." + normalized;
+            }
+            if (name.endsWith(normalized)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void setGuidelineFile(File file) {
+        selectedGuidelineFile = file;
+        if (file != null) {
+            txtYeuCau1.setText(file.getAbsolutePath());
+        }
+    }
+
+    private void setNameTableFile(File file) {
+        selectedNameTableFile = file;
+        if (file != null) {
+            txtBangTen.setText(file.getAbsolutePath());
+        }
+    }
+
+    private String resolveFilePath(String text, String placeholder) {
+        if (text == null) {
+            return null;
+        }
+        String trimmed = text.trim();
+        if (trimmed.isEmpty()) {
+            return null;
+        }
+        if (placeholder != null && Objects.equals(trimmed, placeholder.trim())) {
+            return null;
+        }
+        return trimmed;
+    }
+
+    private String textOf(JTextField field) {
+        return field.getText() == null ? "" : field.getText().trim();
+    }
+
+    private String emptyToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
+    }
+
+    private BigDecimal parsePrice(String text) {
+        if (text == null || text.isBlank()) {
+            return BigDecimal.ZERO;
+        }
+        String normalized = text.replaceAll("[,\\s]", "").trim();
+        if (normalized.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return new BigDecimal(normalized);
+    }
+
+    private Integer parsePostedChapters(String text) {
+        if (text == null || text.isBlank()) {
+            return 0;
+        }
+        String normalized = text.trim();
+        int value = Integer.parseInt(normalized);
+        if (value < 0) {
+            throw new NumberFormatException("negative");
+        }
+        return value;
+    }
+
+    private Book.RawStatus getSelectedRawStatus() {
+        Object selected = stRaw.getSelectedItem();
+        String display = selected != null ? selected.toString() : null;
+        for (Book.RawStatus status : Book.RawStatus.values()) {
+            if (Objects.equals(status.getDisplayName(), display)) {
+                return status;
+            }
+        }
+        return Book.RawStatus.NOT_FULL;
+    }
+
+    private Book.TranslateStatus getSelectedTranslateStatus() {
+        Object selected = stTranslate.getSelectedItem();
+        String display = selected != null ? selected.toString() : null;
+        for (Book.TranslateStatus status : Book.TranslateStatus.values()) {
+            if (Objects.equals(status.getDisplayName(), display)) {
+                return status;
+            }
+        }
+        return Book.TranslateStatus.NOT_HOAN;
+    }
+
+    private Book.PostStatus getSelectedPostStatus() {
+        Object selected = stPost.getSelectedItem();
+        String display = selected != null ? selected.toString() : null;
+        for (Book.PostStatus status : Book.PostStatus.values()) {
+            if (Objects.equals(status.getDisplayName(), display)) {
+                return status;
+            }
+        }
+        return Book.PostStatus.NOT_HOAN;
+    }
+
+    private void updateChapterPostedStatus(long bookId, Integer postedChapters) {
+        if (chapterDao == null || postedChapters == null || postedChapters <= 0) {
+            return;
+        }
+        try {
+            chapterDao.markChaptersAsPostedUpTo(bookId, postedChapters);
+        } catch (SQLException ex) {
+            logger.log(Level.WARNING, "Không thể cập nhật trạng thái đăng của các chương", ex);
+        }
+    }    
     /**
      * @param args the command line arguments
      */

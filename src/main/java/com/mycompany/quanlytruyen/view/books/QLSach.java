@@ -22,6 +22,8 @@ import java.awt.Component;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 
 public class QLSach extends javax.swing.JPanel {
@@ -29,6 +31,8 @@ public class QLSach extends javax.swing.JPanel {
     private BookDao bookDao;
     private DefaultTableModel tableModel;
     private Book selectedBook;
+    private static final long EDIT_DIALOG_COOLDOWN_MS = 400;
+    private long lastEditDialogTimestamp = 0L;    
 
     /**
      * Creates new form QLSach
@@ -70,6 +74,7 @@ public class QLSach extends javax.swing.JPanel {
 
         initStatusCombos();
         loadAllBooks();
+        initTableInteractions();        
     }
 
     private void initStatusCombos() {
@@ -166,8 +171,80 @@ public class QLSach extends javax.swing.JPanel {
     public Book getSelectedBook() {
         return selectedBook;
     }
+    public BookDao getBookDao() {
+        return bookDao;
+    }
 
-        private void setupResponsiveLayout() {
+    public void refreshBooks() {
+        loadAllBooks();
+    }
+
+    private void initTableInteractions() {
+        Tbooks.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!SwingUtilities.isLeftMouseButton(e)) {
+                    return;
+                }
+                int viewRow = Tbooks.rowAtPoint(e.getPoint());
+                if (viewRow < 0) {
+                    return;
+                }
+                long now = System.currentTimeMillis();
+                if (now - lastEditDialogTimestamp < EDIT_DIALOG_COOLDOWN_MS) {
+                    return;
+                }
+                lastEditDialogTimestamp = now;
+                Tbooks.setRowSelectionInterval(viewRow, viewRow);
+                openBookEditorFromRow(viewRow);
+            }
+        });
+    }
+
+    private void openBookEditorFromRow(int viewRow) {
+        if (bookDao == null) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu");
+            return;
+        }
+        int modelRow = Tbooks.convertRowIndexToModel(viewRow);
+        Object value = tableModel.getValueAt(modelRow, 0);
+        if (!(value instanceof Number)) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy ID truyện hợp lệ");
+            return;
+        }
+        long bookId = ((Number) value).longValue();
+        try {
+            Book book = fetchBookById(bookId);
+            if (book == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin truyện");
+                return;
+            }
+            openEditDialog(book);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải truyện: " + ex.getMessage());
+        }
+    }
+
+    private Book fetchBookById(long bookId) throws SQLException {
+        if (bookDao == null) {
+            return null;
+        }
+        return bookDao.getBookById(bookId);
+    }
+
+    private void openEditDialog(Book book) {
+        if (book == null) {
+            return;
+        }
+        selectedBook = book;
+        Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+        SuaSach dialog = new SuaSach(frame, true, this, book);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+        loadAllBooks();
+    }
+
+    private void setupResponsiveLayout() {
         removeAll();
         setLayout(new BorderLayout());
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, FilterPanel, jScrollPane1);
@@ -355,7 +432,7 @@ public class QLSach extends javax.swing.JPanel {
                 {null, null, null, null}
             },
             new String [] {
-                "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên", "Raw", "Tình trạng Dịch", "Tình trạng Đăng"
+                "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên", "Raw", "TT Dịch", "TT Đăng"
             }
         ));
         jScrollPane1.setViewportView(Tbooks);
@@ -598,12 +675,29 @@ public class QLSach extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn truyện cần sửa");
             return;
         }
+        if (bookDao != null) {
+            int modelRow = Tbooks.convertRowIndexToModel(row);
+            Object value = tableModel.getValueAt(modelRow, 0);
+            if (value instanceof Number) {
+                long bookId = ((Number) value).longValue();
+                try {
+                    Book book = fetchBookById(bookId);
+                    if (book != null) {
+                        openEditDialog(book);
+                        return;
+                    }
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(this, "Lỗi khi tải truyện: " + ex.getMessage());
+                    return;
+                }
+            }
+        }        
         selectedBook = new Book();
         selectedBook.setId(((Number) tableModel.getValueAt(row, 0)).longValue());
         selectedBook.setTitle((String) tableModel.getValueAt(row, 1));
         selectedBook.setAuthor((String) tableModel.getValueAt(row, 2));
         Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
-        SuaSach dialog = new SuaSach(frame, true, this);
+        SuaSach dialog = new SuaSach(frame, true, this, selectedBook);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
         loadAllBooks();        
