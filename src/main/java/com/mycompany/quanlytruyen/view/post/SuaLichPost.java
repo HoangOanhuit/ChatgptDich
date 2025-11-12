@@ -296,6 +296,8 @@ public class SuaLichPost extends javax.swing.JDialog {
 
         txtYeuCau3.setEditable(false);
         txtYeuCau3.setForeground(new java.awt.Color(153, 153, 153));
+        txtYeuCau3.setEnabled(false);
+        txtYeuCau3.setFocusable(false);
         txtYeuCau3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtYeuCau3ActionPerformed(evt);
@@ -304,6 +306,9 @@ public class SuaLichPost extends javax.swing.JDialog {
 
         txtYeuCau4.setEditable(false);
         txtYeuCau4.setForeground(new java.awt.Color(153, 153, 153));
+        txtYeuCau4.setEnabled(false);
+        txtYeuCau4.setFocusable(false);
+        txtYeuCau4.setRequestFocusEnabled(false);
         txtYeuCau4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtYeuCau4ActionPerformed(evt);
