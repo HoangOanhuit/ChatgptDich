@@ -1,73 +1,13 @@
-package com.mycompany.quanlytruyen.view.books;
+package com.mycompany.quanlytruyen.view.post;
 
-import com.mycompany.quanlytruyen.config.AppConfig;
-import com.mycompany.quanlytruyen.dao.AccountDAO;
-import com.mycompany.quanlytruyen.dao.BookDao;
-import com.mycompany.quanlytruyen.dao.ChapterDao;
-import com.mycompany.quanlytruyen.dao.DataSourceFactory;
-import com.mycompany.quanlytruyen.model.Account;
-import com.mycompany.quanlytruyen.model.Book;
 import java.awt.Frame;
 
-import javax.sql.DataSource;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.TransferHandler;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.File;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-public class SuaSach extends javax.swing.JDialog {
+public class SuaLichPost extends javax.swing.JDialog {
 
-    private static final Logger logger = Logger.getLogger(SuaSach.class.getName());
-    private static File lastDirectory;
-
-    private final QLSach parentPanel;
-    private final BookDao bookDao;
-    private final ChapterDao chapterDao;
-    private final AccountDAO accountDao;
-    private final List<Account> accountsList = new ArrayList<>();
-    private final String guidelinePlaceholder;
-    private final String nameTablePlaceholder;
-    private Book currentBook;
-    private File selectedGuidelineFile;
-    private File selectedNameTableFile;
     
-    public SuaSach(Frame parent, boolean modal, QLSach parentPanel, Book book) {
-        super(parent, modal);
-        this.parentPanel = parentPanel;
-        DataSource dataSource = createDataSource();
-        BookDao panelBookDao = parentPanel != null ? parentPanel.getBookDao() : null;
-        this.bookDao = panelBookDao != null ? panelBookDao : (dataSource != null ? new BookDao(dataSource) : null);
-        this.chapterDao = dataSource != null ? new ChapterDao(dataSource) : null;
-        this.accountDao = dataSource != null ? new AccountDAO(dataSource) : null;      
+    public SuaLichPost(Frame parent, boolean modal, DangTruyen parentPanel, Book book) {
         initComponents();
-      
-        setLocationRelativeTo(parent);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        guidelinePlaceholder = txtYeuCau1.getText();
-        nameTablePlaceholder = txtBangTen.getText();
-        initStatusCombos();
-        loadAccounts();
-        loadBookDetails();
-        setupFileInteractions();
-        if (bookDao == null) {
-            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu quản lý truyện");
-        }
-        if (currentBook == null) {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin truyện được chọn");
-        }         
       
     }
 
@@ -84,31 +24,17 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel11 = new javax.swing.JLabel();
         pnProfile1 = new javax.swing.JPanel();
         jLabel17 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
         btnCancel = new javax.swing.JButton();
         btnCreate = new javax.swing.JButton();
-        txtName = new javax.swing.JTextField();
-        txtAuthor = new javax.swing.JTextField();
-        yeuCauPanel1 = new javax.swing.JPanel();
-        btnYeuCau1 = new javax.swing.JButton();
-        txtYeuCau1 = new javax.swing.JTextField();
-        bangTenPanel = new javax.swing.JPanel();
-        btnBangTen = new javax.swing.JButton();
-        txtBangTen = new javax.swing.JTextField();
-        stRaw = new javax.swing.JComboBox<>();
-        jLabel3 = new javax.swing.JLabel();
-        stTranslate = new javax.swing.JComboBox<>();
-        jLabel4 = new javax.swing.JLabel();
-        stPost = new javax.swing.JComboBox<>();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        txtName1 = new javax.swing.JTextField();
-        txtName2 = new javax.swing.JTextField();
-        jLabel18 = new javax.swing.JLabel();
-        txtName3 = new javax.swing.JTextField();
+        chapterPerDay = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        accounts = new javax.swing.JComboBox<>();
         jLabel19 = new javax.swing.JLabel();
+        txtYeuCau3 = new javax.swing.JTextField();
+        txtYeuCau4 = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        Tbooks = new javax.swing.JTable();
+        jLabel8 = new javax.swing.JLabel();
+        price = new javax.swing.JTextField();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -119,16 +45,14 @@ public class SuaSach extends javax.swing.JDialog {
 
         pnProfile.setBackground(new java.awt.Color(255, 255, 255));
 
-        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel11.setText("Sửa Truyện");
+        jLabel11.setFont(new java.awt.Font("UTM Americana EB", 1, 18)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(0, 40, 85));
+        jLabel11.setText("Lịch Post của Truyện");
 
         pnProfile1.setBackground(new java.awt.Color(255, 255, 255));
 
         jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel17.setText("Tên Truyện:");
-
-        jLabel23.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel23.setText("Tác giả:");
 
         btnCancel.setBackground(new java.awt.Color(255, 51, 51));
         btnCancel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -148,7 +72,7 @@ public class SuaSach extends javax.swing.JDialog {
         btnCreate.setBackground(new java.awt.Color(0, 153, 0));
         btnCreate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnCreate.setForeground(new java.awt.Color(255, 255, 255));
-        btnCreate.setText("Sửa");
+        btnCreate.setText("Lưu");
         btnCreate.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btnCreateMouseClicked(evt);
@@ -160,277 +84,113 @@ public class SuaSach extends javax.swing.JDialog {
             }
         });
 
-        txtName.setToolTipText("");
-        txtName.addActionListener(new java.awt.event.ActionListener() {
+        chapterPerDay.setText("5");
+        chapterPerDay.setToolTipText("");
+        chapterPerDay.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtNameActionPerformed(evt);
-            }
-        });
-
-        txtAuthor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtAuthorActionPerformed(evt);
-            }
-        });
-
-        yeuCauPanel1.setBackground(new java.awt.Color(255, 255, 255));
-
-        btnYeuCau1.setBackground(new java.awt.Color(0, 153, 153));
-        btnYeuCau1.setForeground(new java.awt.Color(255, 255, 255));
-        btnYeuCau1.setText("Yêu Cầu");
-        btnYeuCau1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnYeuCau1ActionPerformed(evt);
-            }
-        });
-
-        txtYeuCau1.setEditable(false);
-        txtYeuCau1.setForeground(new java.awt.Color(153, 153, 153));
-        txtYeuCau1.setText("(File Yêu Cầu)");
-        txtYeuCau1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtYeuCau1ActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout yeuCauPanel1Layout = new javax.swing.GroupLayout(yeuCauPanel1);
-        yeuCauPanel1.setLayout(yeuCauPanel1Layout);
-        yeuCauPanel1Layout.setHorizontalGroup(
-            yeuCauPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(yeuCauPanel1Layout.createSequentialGroup()
-                .addComponent(txtYeuCau1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                .addGap(10, 10, 10)
-                .addComponent(btnYeuCau1)
-                .addGap(77, 77, 77))
-        );
-        yeuCauPanel1Layout.setVerticalGroup(
-            yeuCauPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(yeuCauPanel1Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addGroup(yeuCauPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnYeuCau1)
-                    .addComponent(txtYeuCau1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        bangTenPanel.setBackground(new java.awt.Color(255, 255, 255));
-
-        btnBangTen.setBackground(new java.awt.Color(0, 102, 102));
-        btnBangTen.setForeground(new java.awt.Color(255, 255, 255));
-        btnBangTen.setText("Bảng Tên");
-        btnBangTen.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBangTenActionPerformed(evt);
-            }
-        });
-
-        txtBangTen.setEditable(false);
-        txtBangTen.setForeground(new java.awt.Color(153, 153, 153));
-        txtBangTen.setText("(File Bảng Tên)");
-        txtBangTen.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtBangTenActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout bangTenPanelLayout = new javax.swing.GroupLayout(bangTenPanel);
-        bangTenPanel.setLayout(bangTenPanelLayout);
-        bangTenPanelLayout.setHorizontalGroup(
-            bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(bangTenPanelLayout.createSequentialGroup()
-                .addComponent(txtBangTen, javax.swing.GroupLayout.PREFERRED_SIZE, 331, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnBangTen)
-                .addContainerGap())
-        );
-        bangTenPanelLayout.setVerticalGroup(
-            bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(bangTenPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(bangTenPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtBangTen, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnBangTen))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        stRaw.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        stRaw.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stRawActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel3.setText("Tình trạng Raw");
-
-        stTranslate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        stTranslate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stTranslateActionPerformed(evt);
-            }
-        });
-
-        jLabel4.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel4.setText("Tình trạng Dịch");
-
-        stPost.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        stPost.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stPostActionPerformed(evt);
-            }
-        });
-
-        jLabel5.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel5.setText("Tình trạng Đăng");
-
-        jLabel6.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel6.setText("Giá mỗi chương");
-
-        txtName1.setText("250");
-        txtName1.setToolTipText("");
-        txtName1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtName1ActionPerformed(evt);
-            }
-        });
-
-        txtName2.setToolTipText("");
-        txtName2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtName2ActionPerformed(evt);
-            }
-        });
-
-        jLabel18.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel18.setText("Tên Ngắn:");
-
-        txtName3.setText("0");
-        txtName3.setToolTipText("");
-        txtName3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtName3ActionPerformed(evt);
+                chapterPerDayActionPerformed(evt);
             }
         });
 
         jLabel7.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel7.setText("Số chương đã đăng");
-
-        accounts.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jLabel7.setText("Số chương postmỗi ngày:");
 
         jLabel19.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel19.setForeground(new java.awt.Color(51, 51, 51));
         jLabel19.setText("Tài khoản:");
+
+        txtYeuCau3.setEditable(false);
+        txtYeuCau3.setForeground(new java.awt.Color(153, 153, 153));
+        txtYeuCau3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtYeuCau3ActionPerformed(evt);
+            }
+        });
+
+        txtYeuCau4.setEditable(false);
+        txtYeuCau4.setForeground(new java.awt.Color(153, 153, 153));
+        txtYeuCau4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtYeuCau4ActionPerformed(evt);
+            }
+        });
+
+        Tbooks.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "STT","Giờ", "Phút"
+            }
+        ));
+        jScrollPane1.setViewportView(Tbooks);
+
+        jLabel8.setForeground(new java.awt.Color(51, 51, 51));
+        jLabel8.setText("Giá mỗi chương:");
+
+        price.setText("250");
+        price.setToolTipText("");
+        price.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                priceActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnProfile1Layout = new javax.swing.GroupLayout(pnProfile1);
         pnProfile1.setLayout(pnProfile1Layout);
         pnProfile1Layout.setHorizontalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfile1Layout.createSequentialGroup()
-                .addGap(24, 24, 24)
+                .addGap(58, 58, 58)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel19)
+                    .addComponent(jLabel17)
+                    .addComponent(jLabel7)
+                    .addComponent(jLabel8))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(pnProfile1Layout.createSequentialGroup()
                             .addComponent(btnCreate, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(126, 126, 126)
+                            .addGap(144, 144, 144)
                             .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(pnProfile1Layout.createSequentialGroup()
-                            .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel17)
-                                .addComponent(jLabel23)
-                                .addComponent(jLabel18))
-                            .addGap(18, 18, 18)
-                            .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(txtAuthor, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                                .addComponent(txtName)
-                                .addComponent(txtName2, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(pnProfile1Layout.createSequentialGroup()
-                        .addGap(84, 84, 84)
                         .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bangTenPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnProfile1Layout.createSequentialGroup()
-                .addGap(263, 263, 263)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnProfile1Layout.createSequentialGroup()
-                        .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(stPost, 0, 173, Short.MAX_VALUE)
-                            .addComponent(stTranslate, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(stRaw, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(txtName1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnProfile1Layout.createSequentialGroup()
-                                .addGap(4, 4, 4)
-                                .addComponent(jLabel5)
-                                .addGap(81, 81, 81))
-                            .addGroup(pnProfile1Layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel6))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .addGroup(pnProfile1Layout.createSequentialGroup()
-                        .addGap(136, 136, 136)
-                        .addComponent(txtName3, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel7)
-                        .addGap(0, 0, Short.MAX_VALUE))))
-            .addGroup(pnProfile1Layout.createSequentialGroup()
-                .addGap(32, 32, 32)
-                .addComponent(jLabel19)
-                .addGap(18, 18, 18)
-                .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(txtYeuCau3, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtYeuCau4, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 334, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(chapterPerDay, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 65, Short.MAX_VALUE))
         );
         pnProfile1Layout.setVerticalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfile1Layout.createSequentialGroup()
-                .addGap(18, 18, 18)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel19))
-                .addGap(25, 25, 25)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel17)
-                    .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(5, 5, 5)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel18)
-                    .addComponent(txtName2, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(5, 5, 5)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel23)
-                    .addComponent(txtAuthor, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(2, 2, 2)
-                .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(2, 2, 2)
-                .addComponent(bangTenPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(30, 30, 30)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtName3, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtName1, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
                 .addGap(8, 8, 8)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(stRaw, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3))
+                    .addComponent(jLabel19)
+                    .addComponent(txtYeuCau3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(stTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addGap(12, 12, 12)
+                    .addComponent(jLabel17)
+                    .addComponent(txtYeuCau4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(stPost, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 40, Short.MAX_VALUE)
+                    .addComponent(jLabel7)
+                    .addComponent(chapterPerDay, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(10, 10, 10)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel8)
+                    .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnCreate, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(26, 26, 26))
+                .addContainerGap(95, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout pnProfileLayout = new javax.swing.GroupLayout(pnProfile);
@@ -438,20 +198,21 @@ public class SuaSach extends javax.swing.JDialog {
         pnProfileLayout.setHorizontalGroup(
             pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfileLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel11)
-                .addGap(291, 291, 291))
-            .addGroup(pnProfileLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnProfileLayout.createSequentialGroup()
+                        .addGap(209, 209, 209)
+                        .addComponent(jLabel11))
+                    .addGroup(pnProfileLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(10, Short.MAX_VALUE))
         );
         pnProfileLayout.setVerticalGroup(
             pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfileLayout.createSequentialGroup()
-                .addGap(25, 25, 25)
+                .addContainerGap(19, Short.MAX_VALUE)
                 .addComponent(jLabel11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -467,85 +228,13 @@ public class SuaSach extends javax.swing.JDialog {
          dispose();
     }//GEN-LAST:event_closeDialog
 
-    private void txtAuthorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAuthorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtAuthorActionPerformed
-
-    private void txtNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtNameActionPerformed
-
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
-        if (bookDao == null || currentBook == null) {
-            JOptionPane.showMessageDialog(this, "Không thể cập nhật thông tin truyện");
-            return;
-        }
 
-        String title = textOf(txtName);
-        if (title.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập tên truyện");
-            txtName.requestFocus();
-            return;
-        }
-
-        String shortTitle = emptyToNull(textOf(txtName2));
-        String author = emptyToNull(textOf(txtAuthor));
-
-        BigDecimal price;
-        try {
-            price = parsePrice(textOf(txtName1));
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Giá mỗi chương phải là số hợp lệ");
-            txtName1.requestFocus();
-            return;
-        }
-
-        Integer postedChapters;
-        try {
-            postedChapters = parsePostedChapters(textOf(txtName3));
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Số chương đã đăng phải là số nguyên không âm");
-            txtName3.requestFocus();
-            return;
-        }
-
-        Book.RawStatus rawStatus = getSelectedRawStatus();
-        Book.TranslateStatus translateStatus = getSelectedTranslateStatus();
-        Book.PostStatus postStatus = getSelectedPostStatus();
-
-        Account selectedAccount = getSelectedAccount();
-        String guidelinesPath = resolveFilePath(txtYeuCau1.getText(), guidelinePlaceholder);
-        String nameTablePath = resolveFilePath(txtBangTen.getText(), nameTablePlaceholder);
-
-        currentBook.setTitle(title);
-        currentBook.setShortTitle(shortTitle);
-        currentBook.setAuthor(author);
-        currentBook.setPrice(price);
-        currentBook.setPosted(postedChapters);
-        currentBook.setRawStatus(rawStatus);
-        currentBook.setTranslateStatus(translateStatus);
-        currentBook.setPostStatus(postStatus);
-        currentBook.setGuidelines(guidelinesPath);
-        currentBook.setNameTable(nameTablePath);
-        currentBook.setAccountId(selectedAccount != null ? selectedAccount.getId() : null);
-
-        try {
-            bookDao.updateBook(currentBook);
-            updateChapterPostedStatus(currentBook.getId(), postedChapters);
-            JOptionPane.showMessageDialog(this, "Cập nhật truyện thành công");
-            if (parentPanel != null) {
-                parentPanel.refreshBooks();
-            }
-            dispose();
-        } catch (SQLException ex) {
-            logger.log(Level.SEVERE, "Không thể cập nhật truyện", ex);
-            JOptionPane.showMessageDialog(this, "Không thể cập nhật truyện: " + ex.getMessage());
-        } 
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
         // TODO add your handling code here:
-        btnCreateActionPerformed(null);
+       
     }//GEN-LAST:event_btnCreateMouseClicked
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
@@ -557,407 +246,26 @@ public class SuaSach extends javax.swing.JDialog {
 
     }//GEN-LAST:event_btnCancelMouseClicked
 
-    private void btnYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnYeuCau1ActionPerformed
-        chooseGuidelineFile();
-    }//GEN-LAST:event_btnYeuCau1ActionPerformed
-
-    private void txtYeuCau1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtYeuCau1ActionPerformed
-
-    private void btnBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBangTenActionPerformed
-      chooseNameTableFile();
-    }//GEN-LAST:event_btnBangTenActionPerformed
-
-    private void txtBangTenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBangTenActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtBangTenActionPerformed
-
     private void btnRefresh1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefresh1ActionPerformed
 
     }//GEN-LAST:event_btnRefresh1ActionPerformed
 
-    private void stRawActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stRawActionPerformed
+    private void chapterPerDayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chapterPerDayActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_stRawActionPerformed
+    }//GEN-LAST:event_chapterPerDayActionPerformed
 
-    private void stTranslateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stTranslateActionPerformed
+    private void txtYeuCau3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau3ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_stTranslateActionPerformed
+    }//GEN-LAST:event_txtYeuCau3ActionPerformed
 
-    private void stPostActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stPostActionPerformed
+    private void txtYeuCau4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau4ActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_stPostActionPerformed
+    }//GEN-LAST:event_txtYeuCau4ActionPerformed
 
-    private void txtName1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtName1ActionPerformed
+    private void priceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priceActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_txtName1ActionPerformed
+    }//GEN-LAST:event_priceActionPerformed
 
-    private void txtName2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtName2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtName2ActionPerformed
-
-    private void txtName3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtName3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtName3ActionPerformed
-    private DataSource createDataSource() {
-        try {
-            AppConfig config = AppConfig.getInstance();
-            return DataSourceFactory.create(
-                config.getDatabaseUrl(),
-                config.getDatabaseUser(),
-                config.getDatabasePassword()
-            );
-        } catch (Exception ex) {
-            logger.log(Level.SEVERE, "Không thể khởi tạo kết nối cơ sở dữ liệu", ex);
-            return null;
-        }
-    }
-
-    private void initStatusCombos() {
-        DefaultComboBoxModel<String> rawModel = new DefaultComboBoxModel<>();
-        for (Book.RawStatus status : Book.RawStatus.values()) {
-            rawModel.addElement(status.getDisplayName());
-        }
-        stRaw.setModel(rawModel);
-
-        DefaultComboBoxModel<String> translateModel = new DefaultComboBoxModel<>();
-        for (Book.TranslateStatus status : Book.TranslateStatus.values()) {
-            translateModel.addElement(status.getDisplayName());
-        }
-        stTranslate.setModel(translateModel);
-
-        DefaultComboBoxModel<String> postModel = new DefaultComboBoxModel<>();
-        for (Book.PostStatus status : Book.PostStatus.values()) {
-            postModel.addElement(status.getDisplayName());
-        }
-        stPost.setModel(postModel);
-    }
-
-    private void loadAccounts() {
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        accountsList.clear();
-        model.addElement("-- Chọn tài khoản --");
-
-        if (accountDao != null) {
-            try {
-                accountsList.addAll(accountDao.getAllAccounts());
-                for (Account account : accountsList) {
-                    model.addElement(account.getUsername());
-                }
-            } catch (SQLException ex) {
-                logger.log(Level.SEVERE, "Không thể tải danh sách tài khoản", ex);
-                JOptionPane.showMessageDialog(this, "Không thể tải danh sách tài khoản: " + ex.getMessage());
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Không thể kết nối để tải danh sách tài khoản");
-        }
-
-        accounts.setModel(model);
-        accounts.setSelectedIndex(0);
-    }
-
-    private void selectAccount(Long accountId) {
-        if (accountId == null) {
-            accounts.setSelectedIndex(0);
-            return;
-        }
-        for (int i = 0; i < accountsList.size(); i++) {
-            if (Objects.equals(accountsList.get(i).getId(), accountId)) {
-                accounts.setSelectedIndex(i + 1);
-                return;
-            }
-        }
-        accounts.setSelectedIndex(0);
-    }
-
-    private Account getSelectedAccount() {
-        int index = accounts.getSelectedIndex();
-        if (index <= 0) {
-            return null;
-        }
-        int listIndex = index - 1;
-        if (listIndex >= 0 && listIndex < accountsList.size()) {
-            return accountsList.get(listIndex);
-        }
-        return null;
-    }
-
-    private void loadBookDetails() {
-        currentBook = parentPanel != null ? parentPanel.getSelectedBook() : null;
-        if (currentBook != null && currentBook.getId() != null && bookDao != null) {
-            try {
-                Book fromDb = bookDao.getBookById(currentBook.getId());
-                if (fromDb != null) {
-                    currentBook = fromDb;
-                }
-            } catch (SQLException ex) {
-                logger.log(Level.SEVERE, "Không thể tải thông tin truyện", ex);
-                JOptionPane.showMessageDialog(this, "Không thể tải thông tin truyện: " + ex.getMessage());
-            }
-        }
-        populateBookData();
-    }
-
-    private void populateBookData() {
-        if (currentBook == null) {
-            return;
-        }
-        txtName.setText(nonNull(currentBook.getTitle()));
-        txtName2.setText(nonNull(currentBook.getShortTitle()));
-        txtAuthor.setText(nonNull(currentBook.getAuthor()));
-        txtName1.setText(formatPrice(currentBook.getPrice()));
-        txtName3.setText(currentBook.getPosted() != null ? String.valueOf(currentBook.getPosted()) : "");
-
-        setFieldText(txtYeuCau1, currentBook.getGuidelines(), guidelinePlaceholder);
-        setFieldText(txtBangTen, currentBook.getNameTable(), nameTablePlaceholder);
-
-        if (currentBook.getGuidelines() != null && !currentBook.getGuidelines().isBlank()) {
-            selectedGuidelineFile = new File(currentBook.getGuidelines());
-        }
-        if (currentBook.getNameTable() != null && !currentBook.getNameTable().isBlank()) {
-            selectedNameTableFile = new File(currentBook.getNameTable());
-        }
-
-        selectAccount(currentBook.getAccountId());
-        selectCombo(stRaw, currentBook.getRawStatus() != null ? currentBook.getRawStatus().getDisplayName() : null);
-        selectCombo(stTranslate, currentBook.getTranslateStatus() != null ? currentBook.getTranslateStatus().getDisplayName() : null);
-        selectCombo(stPost, currentBook.getPostStatus() != null ? currentBook.getPostStatus().getDisplayName() : null);
-    }
-
-    private void setFieldText(JTextField field, String value, String placeholder) {
-        if (value == null || value.isBlank()) {
-            field.setText(placeholder);
-        } else {
-            field.setText(value);
-        }
-    }
-
-    private String formatPrice(BigDecimal price) {
-        if (price == null) {
-            return "";
-        }
-        return price.stripTrailingZeros().toPlainString();
-    }
-
-    private String nonNull(String value) {
-        return value == null ? "" : value;
-    }
-
-    private void setupFileInteractions() {
-        configureFileDrop(txtYeuCau1, "file yêu cầu (.txt)", "txt");
-        configureFileDrop(txtBangTen, "file bảng tên (.csv)", "csv");
-    }
-
-    private void configureFileDrop(JTextField targetField, String description, String... extensions) {
-        targetField.setTransferHandler(new TransferHandler() {
-            @Override
-            public boolean canImport(TransferSupport support) {
-                if (!support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                    return false;
-                }
-                support.setDropAction(TransferHandler.COPY);
-                return true;
-            }
-
-            @Override
-            public boolean importData(TransferSupport support) {
-                if (!canImport(support)) {
-                    return false;
-                }
-                try {
-                    List<?> data = (List<?>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-                    if (data == null || data.isEmpty()) {
-                        return false;
-                    }
-                    Object first = data.get(0);
-                    if (!(first instanceof File)) {
-                        return false;
-                    }
-                    File file = (File) first;
-                    if (!isSupportedExtension(file, extensions)) {
-                        JOptionPane.showMessageDialog(SuaSach.this,
-                            "Định dạng không hợp lệ, " + description);
-                        return false;
-                    }
-                    applyFileSelection(targetField, file);
-                    return true;
-                } catch (UnsupportedFlavorException | IOException ex) {
-                    logger.log(Level.WARNING, "Không thể nhận file được kéo thả", ex);
-                    return false;
-                }
-            }
-        });
-    }
-
-    private void applyFileSelection(JTextField targetField, File file) {
-        if (targetField == txtYeuCau1) {
-            setGuidelineFile(file);
-        } else if (targetField == txtBangTen) {
-            setNameTableFile(file);
-        }
-    }
-
-    private void chooseGuidelineFile() {
-        chooseFile("Chọn file yêu cầu", txtYeuCau1, "txt");
-    }
-
-    private void chooseNameTableFile() {
-        chooseFile("Chọn file bảng tên", txtBangTen, "csv");
-    }
-
-    private void chooseFile(String dialogTitle, JTextField targetField, String... extensions) {
-        JFileChooser chooser = lastDirectory != null ? new JFileChooser(lastDirectory) : new JFileChooser();
-        chooser.setDialogTitle(dialogTitle);
-        chooser.setFileFilter(new FileNameExtensionFilter(dialogTitle, extensions));
-        int result = chooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            if (!isSupportedExtension(file, extensions)) {
-                JOptionPane.showMessageDialog(this, "File không đúng định dạng yêu cầu");
-                return;
-            }
-            lastDirectory = file.getParentFile();
-            applyFileSelection(targetField, file);
-        }
-    }
-
-    private boolean isSupportedExtension(File file, String... extensions) {
-        if (file == null || extensions == null) {
-            return false;
-        }
-        String name = file.getName().toLowerCase();
-        for (String extension : extensions) {
-            if (extension == null) {
-                continue;
-            }
-            String normalized = extension.toLowerCase();
-            if (!normalized.startsWith(".")) {
-                normalized = "." + normalized;
-            }
-            if (name.endsWith(normalized)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void setGuidelineFile(File file) {
-        selectedGuidelineFile = file;
-        if (file != null) {
-            txtYeuCau1.setText(file.getAbsolutePath());
-        }
-    }
-
-    private void setNameTableFile(File file) {
-        selectedNameTableFile = file;
-        if (file != null) {
-            txtBangTen.setText(file.getAbsolutePath());
-        }
-    }
-
-    private String resolveFilePath(String text, String placeholder) {
-        if (text == null) {
-            return null;
-        }
-        String trimmed = text.trim();
-        if (trimmed.isEmpty()) {
-            return null;
-        }
-        if (placeholder != null && Objects.equals(trimmed, placeholder.trim())) {
-            return null;
-        }
-        return trimmed;
-    }
-
-    private String textOf(JTextField field) {
-        return field.getText() == null ? "" : field.getText().trim();
-    }
-
-    private String emptyToNull(String value) {
-        return value == null || value.isBlank() ? null : value;
-    }
-
-    private BigDecimal parsePrice(String text) {
-        if (text == null || text.isBlank()) {
-            return BigDecimal.ZERO;
-        }
-        String normalized = text.replaceAll("[,\\s]", "").trim();
-        if (normalized.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        return new BigDecimal(normalized);
-    }
-
-    private Integer parsePostedChapters(String text) {
-        if (text == null || text.isBlank()) {
-            return 0;
-        }
-        String normalized = text.trim();
-        int value = Integer.parseInt(normalized);
-        if (value < 0) {
-            throw new NumberFormatException("negative");
-        }
-        return value;
-    }
-
-    private void selectCombo(javax.swing.JComboBox<String> comboBox, String displayValue) {
-        if (displayValue == null) {
-            comboBox.setSelectedIndex(0);
-            return;
-        }
-        for (int i = 0; i < comboBox.getItemCount(); i++) {
-            if (Objects.equals(comboBox.getItemAt(i), displayValue)) {
-                comboBox.setSelectedIndex(i);
-                return;
-            }
-        }
-        comboBox.setSelectedIndex(0);
-    }
-
-    private Book.RawStatus getSelectedRawStatus() {
-        Object selected = stRaw.getSelectedItem();
-        String display = selected != null ? selected.toString() : null;
-        for (Book.RawStatus status : Book.RawStatus.values()) {
-            if (Objects.equals(status.getDisplayName(), display)) {
-                return status;
-            }
-        }
-        return Book.RawStatus.NOT_FULL;
-    }
-
-    private Book.TranslateStatus getSelectedTranslateStatus() {
-        Object selected = stTranslate.getSelectedItem();
-        String display = selected != null ? selected.toString() : null;
-        for (Book.TranslateStatus status : Book.TranslateStatus.values()) {
-            if (Objects.equals(status.getDisplayName(), display)) {
-                return status;
-            }
-        }
-        return Book.TranslateStatus.NOT_HOAN;
-    }
-
-    private Book.PostStatus getSelectedPostStatus() {
-        Object selected = stPost.getSelectedItem();
-        String display = selected != null ? selected.toString() : null;
-        for (Book.PostStatus status : Book.PostStatus.values()) {
-            if (Objects.equals(status.getDisplayName(), display)) {
-                return status;
-            }
-        }
-        return Book.PostStatus.NOT_HOAN;
-    }
-
-    private void updateChapterPostedStatus(long bookId, Integer postedChapters) {
-        if (chapterDao == null || postedChapters == null || postedChapters <= 0) {
-            return;
-        }
-        try {
-            chapterDao.markChaptersAsPostedUpTo(bookId, postedChapters);
-        } catch (SQLException ex) {
-            logger.log(Level.WARNING, "Không thể cập nhật trạng thái đăng của các chương", ex);
-        }
-    }
 
     /**
      * @param args the command line arguments
@@ -985,35 +293,21 @@ public class SuaSach extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox<String> accounts;
-    private javax.swing.JPanel bangTenPanel;
-    private javax.swing.JButton btnBangTen;
+    private javax.swing.JTable Tbooks;
     private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnCreate;
-    private javax.swing.JButton btnYeuCau1;
+    private javax.swing.JTextField chapterPerDay;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel pnProfile;
     private javax.swing.JPanel pnProfile1;
-    private javax.swing.JComboBox<String> stPost;
-    private javax.swing.JComboBox<String> stRaw;
-    private javax.swing.JComboBox<String> stTranslate;
-    private javax.swing.JTextField txtAuthor;
-    private javax.swing.JTextField txtBangTen;
-    private javax.swing.JTextField txtName;
-    private javax.swing.JTextField txtName1;
-    private javax.swing.JTextField txtName2;
-    private javax.swing.JTextField txtName3;
-    private javax.swing.JTextField txtYeuCau1;
-    private javax.swing.JPanel yeuCauPanel1;
+    private javax.swing.JTextField price;
+    private javax.swing.JTextField txtYeuCau3;
+    private javax.swing.JTextField txtYeuCau4;
     // End of variables declaration//GEN-END:variables
 
 }
