@@ -432,7 +432,7 @@ public class QLSach extends javax.swing.JPanel {
                 {null, null, null, null}
             },
             new String [] {
-                "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên", "Raw", "TT Dịch", "TT Đăng"
+                "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên", "Raw", "TT Dịch", "TT Đăng", "Lịch Đăng"
             }
         ));
         jScrollPane1.setViewportView(Tbooks);
@@ -583,6 +583,7 @@ public class QLSach extends javax.swing.JPanel {
                 .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(FilterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(762, 762, 762))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -596,7 +597,7 @@ public class QLSach extends javax.swing.JPanel {
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(FilterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 369, Short.MAX_VALUE))
+                .addContainerGap(369, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                     .addContainerGap(95, Short.MAX_VALUE)

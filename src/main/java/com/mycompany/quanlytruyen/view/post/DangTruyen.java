@@ -298,52 +298,25 @@ public class DangTruyen extends javax.swing.JPanel {
     private void initComponents() {
 
         jPanel2 = new javax.swing.JPanel();
-        btnDelete = new javax.swing.JButton();
         btnEdit = new javax.swing.JButton();
         btnReset = new javax.swing.JButton();
         txtSearch = new javax.swing.JTextField();
         btnSearch = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        Tbooks = new javax.swing.JTable();
+        jCheckBox1 = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         FilterPanel2 = new javax.swing.JPanel();
         tenTruyen1 = new javax.swing.JComboBox<>();
         jLabel10 = new javax.swing.JLabel();
         btnFilter4 = new javax.swing.JButton();
         btnFilter5 = new javax.swing.JButton();
-        FilterPanel1 = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
         btnFilter2 = new javax.swing.JButton();
-        num_chapter = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        num_chapter1 = new javax.swing.JTextField();
-        num_chapter2 = new javax.swing.JTextField();
-        num_chapter3 = new javax.swing.JTextField();
-        num_chapter4 = new javax.swing.JTextField();
-        num_chapter5 = new javax.swing.JTextField();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        num_chapter6 = new javax.swing.JTextField();
-        num_chapter7 = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        smartHour = new javax.swing.JCheckBox();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        Tbooks = new javax.swing.JTable();
-        jCheckBox1 = new javax.swing.JCheckBox();
 
         jPanel2.setBackground(new java.awt.Color(0, 40, 85));
         jPanel2.setForeground(new java.awt.Color(255, 255, 255));
-
-        btnDelete.setBackground(new java.awt.Color(0, 40, 85));
-        btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/delete.png"))); // NOI18N
-        btnDelete.setBorder(null);
-        btnDelete.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
-            }
-        });
 
         btnEdit.setBackground(new java.awt.Color(0, 40, 85));
         btnEdit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/images/icon/edit.png"))); // NOI18N
@@ -398,9 +371,7 @@ public class DangTruyen extends javax.swing.JPanel {
                 .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(40, 40, 40)
                 .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(40, 40, 40)
-                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 226, Short.MAX_VALUE)
                 .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -416,11 +387,30 @@ public class DangTruyen extends javax.swing.JPanel {
                         .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(btnReset, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(17, 17, 17))
         );
+
+        Tbooks.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Chọn","Tài khoản", "Tên Truyện", "Giá/chương", "Từ Chương", "Đến Chương"
+            }
+        ));
+        jScrollPane1.setViewportView(Tbooks);
+
+        jCheckBox1.setText("Chọn tất cả");
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
 
         FilterPanel2.setBackground(new java.awt.Color(249, 245, 245));
         FilterPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -471,7 +461,7 @@ public class DangTruyen extends javax.swing.JPanel {
                         .addComponent(btnFilter4)
                         .addGap(18, 18, 18)
                         .addComponent(btnFilter5)))
-                .addGap(0, 110, Short.MAX_VALUE))
+                .addGap(0, 85, Short.MAX_VALUE))
         );
         FilterPanel2Layout.setVerticalGroup(
             FilterPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -487,11 +477,22 @@ public class DangTruyen extends javax.swing.JPanel {
                 .addContainerGap(43, Short.MAX_VALUE))
         );
 
-        FilterPanel1.setBackground(new java.awt.Color(255, 231, 206));
-        FilterPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        jLabel6.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel6.setText("Chương/truyện:");
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(FilterPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(30, 30, 30))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(25, 25, 25)
+                .addComponent(FilterPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(454, Short.MAX_VALUE))
+        );
 
         btnFilter2.setBackground(new java.awt.Color(255, 130, 0));
         btnFilter2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -503,235 +504,36 @@ public class DangTruyen extends javax.swing.JPanel {
             }
         });
 
-        num_chapter.setText("5");
-        num_chapter.setToolTipText("");
-        num_chapter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapterActionPerformed(evt);
-            }
-        });
-
-        jLabel7.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel7.setText("Mỗi chương cách nhau:");
-
-        num_chapter1.setText("25");
-        num_chapter1.setToolTipText("");
-        num_chapter1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter1ActionPerformed(evt);
-            }
-        });
-
-        num_chapter2.setText("06");
-        num_chapter2.setToolTipText("");
-        num_chapter2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter2ActionPerformed(evt);
-            }
-        });
-
-        num_chapter3.setText("2025");
-        num_chapter3.setToolTipText("");
-        num_chapter3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter3ActionPerformed(evt);
-            }
-        });
-
-        num_chapter4.setText("14");
-        num_chapter4.setToolTipText("");
-        num_chapter4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter4ActionPerformed(evt);
-            }
-        });
-
-        num_chapter5.setText("10");
-        num_chapter5.setToolTipText("");
-        num_chapter5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter5ActionPerformed(evt);
-            }
-        });
-
-        jLabel8.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel8.setText(":");
-
-        jLabel9.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel9.setText("Lên Lịch Bắt Đầu:");
-
-        num_chapter6.setText("2");
-        num_chapter6.setToolTipText("");
-        num_chapter6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter6ActionPerformed(evt);
-            }
-        });
-
-        num_chapter7.setText("00");
-        num_chapter7.setToolTipText("");
-        num_chapter7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                num_chapter7ActionPerformed(evt);
-            }
-        });
-
-        jLabel11.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel11.setText(":");
-
-        jLabel12.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel12.setText("giờ    :   phút");
-
-        smartHour.setText("GIỜ đăng thông minh");
-        smartHour.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                smartHourActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout FilterPanel1Layout = new javax.swing.GroupLayout(FilterPanel1);
-        FilterPanel1.setLayout(FilterPanel1Layout);
-        FilterPanel1Layout.setHorizontalGroup(
-            FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, FilterPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addGap(18, 18, 18)
-                .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(smartHour)
-                    .addGroup(FilterPanel1Layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jLabel12))
-                    .addGroup(FilterPanel1Layout.createSequentialGroup()
-                        .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(num_chapter1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(num_chapter4, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(num_chapter5, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(FilterPanel1Layout.createSequentialGroup()
-                                .addComponent(num_chapter2, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(num_chapter3, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addComponent(num_chapter, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(FilterPanel1Layout.createSequentialGroup()
-                        .addComponent(num_chapter6, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 3, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(num_chapter7, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(60, 60, 60))
-            .addGroup(FilterPanel1Layout.createSequentialGroup()
-                .addGap(110, 110, 110)
-                .addComponent(btnFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(155, Short.MAX_VALUE))
-        );
-        FilterPanel1Layout.setVerticalGroup(
-            FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(FilterPanel1Layout.createSequentialGroup()
-                .addGap(27, 27, 27)
-                .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(num_chapter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(31, 31, 31)
-                .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(num_chapter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(num_chapter2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(num_chapter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel9))
-                .addGap(6, 6, 6)
-                .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(num_chapter4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(num_chapter5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
-                .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(num_chapter6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(num_chapter7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel11))
-                .addGap(1, 1, 1)
-                .addComponent(jLabel12)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(smartHour)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(14, 14, 14))
-        );
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(FilterPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(30, 30, 30))
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(FilterPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 318, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(47, Short.MAX_VALUE)))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
-                .addComponent(FilterPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(518, Short.MAX_VALUE))
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addGap(216, 216, 216)
-                    .addComponent(FilterPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(111, Short.MAX_VALUE)))
-        );
-
-        Tbooks.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Chọn","Tài khoản", "Tên Truyện", "Giá/chương", "Từ Chương", "Đến Chương"
-            }
-        ));
-        jScrollPane1.setViewportView(Tbooks);
-
-        jCheckBox1.setText("Chọn tất cả");
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 757, Short.MAX_VALUE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jCheckBox1)
-                        .addGap(0, 673, Short.MAX_VALUE)))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jCheckBox1)
+                            .addComponent(btnFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(19, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jCheckBox1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 557, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(37, 37, 37))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 557, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -741,36 +543,22 @@ public class DangTruyen extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 367, Short.MAX_VALUE)
+                        .addGap(0, 19, Short.MAX_VALUE)
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(775, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addContainerGap(83, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap()))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
- 
-    }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
         // TODO add your handling code here:
@@ -817,50 +605,6 @@ public class DangTruyen extends javax.swing.JPanel {
         // TODO add your handling code here:
         clearAccountFilter();
     }//GEN-LAST:event_btnFilter5ActionPerformed
-
-    private void num_chapterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapterActionPerformed
-        // TODO add your handling code here:
-        updateChapterRangeFromInput();
-    }//GEN-LAST:event_num_chapterActionPerformed
-
-    private void num_chapter1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_num_chapter1ActionPerformed
-
-    private void num_chapter2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_num_chapter2ActionPerformed
-
-    private void num_chapter3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter3ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_num_chapter3ActionPerformed
-
-    private void num_chapter4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter4ActionPerformed
-        // TODO add your handling code here:
-                if (!smartHour.isSelected()) {
-            cachedManualHour = padTwoDigits(num_chapter4.getText());
-        }
-    }//GEN-LAST:event_num_chapter4ActionPerformed
-
-    private void num_chapter5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter5ActionPerformed
-        // TODO add your handling code here:
-        if (!smartHour.isSelected()) {
-            cachedManualMinute = padTwoDigits(num_chapter5.getText());
-        }        
-    }//GEN-LAST:event_num_chapter5ActionPerformed
-
-    private void num_chapter6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter6ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_num_chapter6ActionPerformed
-
-    private void num_chapter7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_num_chapter7ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_num_chapter7ActionPerformed
-
-    private void smartHourActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_smartHourActionPerformed
-        // TODO add your handling code here:
-        updateSmartHourState();
-    }//GEN-LAST:event_smartHourActionPerformed
 
     private void startPostingWorkflow() {
         if (currentWorker != null && !currentWorker.isDone()) {
@@ -1603,10 +1347,8 @@ public class DangTruyen extends javax.swing.JPanel {
     private record SendResult(boolean success, String message) { }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel FilterPanel1;
     private javax.swing.JPanel FilterPanel2;
     private javax.swing.JTable Tbooks;
-    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnFilter2;
     private javax.swing.JButton btnFilter4;
@@ -1616,25 +1358,10 @@ public class DangTruyen extends javax.swing.JPanel {
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField num_chapter;
-    private javax.swing.JTextField num_chapter1;
-    private javax.swing.JTextField num_chapter2;
-    private javax.swing.JTextField num_chapter3;
-    private javax.swing.JTextField num_chapter4;
-    private javax.swing.JTextField num_chapter5;
-    private javax.swing.JTextField num_chapter6;
-    private javax.swing.JTextField num_chapter7;
-    private javax.swing.JCheckBox smartHour;
     private javax.swing.JComboBox<String> tenTruyen1;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
