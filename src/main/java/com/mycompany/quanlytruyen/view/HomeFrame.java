@@ -7,7 +7,7 @@ import com.mycompany.quanlytruyen.view.chapters.QLChuong;
 import com.mycompany.quanlytruyen.view.chiachuong.ChiaChuong1;
 import com.mycompany.quanlytruyen.view.translate.QLDich;
 import com.mycompany.quanlytruyen.view.accounts.QLTK;
-import com.mycompany.quanlytruyen.view.chapters.DangTruyen;
+import com.mycompany.quanlytruyen.view.post.DangTruyen;
 
 import javax.swing.*;
 import java.awt.*;

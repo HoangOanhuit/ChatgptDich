@@ -493,19 +493,19 @@ public class SuaSach extends javax.swing.JDialog {
 
         BigDecimal price;
         try {
-            price = parsePrice(textOf(txtName3));
+            price = parsePrice(textOf(txtName1));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Giá mỗi chương phải là số hợp lệ");
-            txtName3.requestFocus();
+            txtName1.requestFocus();
             return;
         }
 
         Integer postedChapters;
         try {
-            postedChapters = parsePostedChapters(textOf(txtName1));
+            postedChapters = parsePostedChapters(textOf(txtName3));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Số chương đã đăng phải là số nguyên không âm");
-            txtName1.requestFocus();
+            txtName3.requestFocus();
             return;
         }
 
@@ -706,8 +706,8 @@ public class SuaSach extends javax.swing.JDialog {
         txtName.setText(nonNull(currentBook.getTitle()));
         txtName2.setText(nonNull(currentBook.getShortTitle()));
         txtAuthor.setText(nonNull(currentBook.getAuthor()));
-        txtName3.setText(formatPrice(currentBook.getPrice()));
-        txtName1.setText(currentBook.getPosted() != null ? String.valueOf(currentBook.getPosted()) : "");
+        txtName1.setText(formatPrice(currentBook.getPrice()));
+        txtName3.setText(currentBook.getPosted() != null ? String.valueOf(currentBook.getPosted()) : "");
 
         setFieldText(txtYeuCau1, currentBook.getGuidelines(), guidelinePlaceholder);
         setFieldText(txtBangTen, currentBook.getNameTable(), nameTablePlaceholder);

@@ -482,14 +482,14 @@ public class ThemSach extends javax.swing.JDialog {
             return;
         }
 
-        String shortTitle = emptyToNull(textOf(txtName2));
+        String shortTitle = emptyToNull(textOf(txtName3));
         String author = emptyToNull(textOf(txtAuthor));
         BigDecimal price;
         try {
-            price = parsePrice(textOf(txtName3));
+            price = parsePrice(textOf(txtName2));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Giá mỗi chương phải là số hợp lệ");
-            txtName3.requestFocus();
+            txtName2.requestFocus();
             return;
         }
 

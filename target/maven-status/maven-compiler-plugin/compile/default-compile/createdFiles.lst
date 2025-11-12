@@ -22,6 +22,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$10.class
 com\mycompany\quanlytruyen\view\books\QLSach$8.class
 com\mycompany\quanlytruyen\view\translate\QLDich$9.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$4.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$BookPostingResult.class
 com\mycompany\quanlytruyen\utils\FileUtils$FileNameComparator.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$14.class
 com\mycompany\quanlytruyen\view\books\SuaSach$7.class
@@ -29,6 +30,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$5.class
 com\mycompany\quanlytruyen\view\books\QLSach$13.class
 com\mycompany\quanlytruyen\view\books\SuaSach$1.class
 com\mycompany\quanlytruyen\view\books\SuaSach$14.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$19.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$5.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$3.class
 com\mycompany\quanlytruyen\model\Account.class
@@ -89,6 +91,7 @@ com\mycompany\quanlytruyen\view\books\SuaSach$13.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$9.class
 com\mycompany\quanlytruyen\dao\AccountDAO.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$5.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$ScheduleParameters.class
 com\mycompany\quanlytruyen\service\SeleniumChatGPTService.class
 com\mycompany\quanlytruyen\view\books\QLSach$StatusCellRenderer.class
 com\mycompany\quanlytruyen\view\books\ThemSach$17.class
@@ -97,6 +100,7 @@ com\mycompany\quanlytruyen\service\FileService.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1$3.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$6.class
 com\mycompany\quanlytruyen\service\EnhancedOpenAIClient$ConnectionTestResult.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$BookTableModel.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$2.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$16.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong$4.class
@@ -125,6 +129,7 @@ com\mycompany\quanlytruyen\view\chapters\ChiaChuong$6.class
 com\mycompany\quanlytruyen\view\books\QLSach$6.class
 com\mycompany\quanlytruyen\service\EnhancedOpenAIClient.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$3.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$BookRow.class
 com\mycompany\quanlytruyen\view\chapters\DangTruyen$6.class
 com\mycompany\quanlytruyen\config\AppConfig$ConfigValidationResult.class
 com\mycompany\quanlytruyen\view\books\SuaSach$16.class
@@ -135,6 +140,7 @@ com\mycompany\quanlytruyen\view\translate\QLDich$15.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$4.class
 com\mycompany\quanlytruyen\service\TranslationRunner$ProgressListener.class
 com\mycompany\quanlytruyen\view\books\QLSach.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$SendResult.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$4.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$5.class
@@ -200,6 +206,7 @@ com\mycompany\quanlytruyen\utils\CsvNameTableFormatter.class
 com\mycompany\quanlytruyen\view\books\SuaSach$10.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1$9.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$SimpleDocumentListener.class
 com\mycompany\quanlytruyen\view\translate\QLDich$8.class
 com\mycompany\quanlytruyen\dao\ChapterDao.class
 com\mycompany\quanlytruyen\view\books\ThemSach$11.class
@@ -211,6 +218,7 @@ com\mycompany\quanlytruyen\view\accounts\SuaTK$8.class
 com\mycompany\quanlytruyen\service\SeleniumClaudeService$RetryableOperation.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$4.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$1.class
+com\mycompany\quanlytruyen\view\chapters\DangTruyen$PostingWorker.class
 com\mycompany\quanlytruyen\service\ValidationService.class
 com\mycompany\quanlytruyen\view\HomeFrame.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$7.class
