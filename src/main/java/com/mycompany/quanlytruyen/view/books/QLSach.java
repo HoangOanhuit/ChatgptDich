@@ -7,6 +7,7 @@ import com.mycompany.quanlytruyen.model.Book;
 import com.mycompany.quanlytruyen.view.books.SuaSach;
 import com.mycompany.quanlytruyen.view.books.ThemSach;
 import com.mycompany.quanlytruyen.utils.UIUtils;
+import com.mycompany.quanlytruyen.view.post.SuaLichPost;
 
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
@@ -19,9 +20,15 @@ import java.util.List;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JButton;
+import javax.swing.AbstractCellEditor;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -32,7 +39,9 @@ public class QLSach extends javax.swing.JPanel {
     private DefaultTableModel tableModel;
     private Book selectedBook;
     private static final long EDIT_DIALOG_COOLDOWN_MS = 400;
-    private long lastEditDialogTimestamp = 0L;    
+    private long lastEditDialogTimestamp = 0L;
+    private DataSource dataSource;
+    private static final int COLUMN_SCHEDULE = 8;
 
     /**
      * Creates new form QLSach
@@ -47,30 +56,31 @@ public class QLSach extends javax.swing.JPanel {
     private void initialize() {
         try {
             AppConfig config = AppConfig.getInstance();
-            DataSource ds = DataSourceFactory.create(
+            dataSource = DataSourceFactory.create(
                 config.getDatabaseUrl(),
                 config.getDatabaseUser(),
                 config.getDatabasePassword()
             );
-            bookDao = new BookDao(ds);
+            bookDao = new BookDao(dataSource);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu: " + e.getMessage());
         }
 
         tableModel = new DefaultTableModel(new Object[]{
             "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên",
-            "Raw", "Tình trạng Dịch", "Tình trạng Đăng"
+            "Raw", "Tình trạng Dịch", "Tình trạng Đăng", "Lịch Đăng"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return column == COLUMN_SCHEDULE;
             }
         };
         Tbooks.setModel(tableModel);
         Tbooks.getColumnModel().getColumn(5).setCellRenderer(new StatusCellRenderer());
         Tbooks.getColumnModel().getColumn(6).setCellRenderer(new StatusCellRenderer());
         Tbooks.getColumnModel().getColumn(7).setCellRenderer(new StatusCellRenderer());
-        Tbooks.setAutoCreateRowSorter(true);      
+        configureScheduleColumn();
+        Tbooks.setAutoCreateRowSorter(true);
 
         initStatusCombos();
         loadAllBooks();
@@ -121,7 +131,8 @@ public class QLSach extends javax.swing.JPanel {
                 b.getNameTable(),
                 b.getRawStatus().getDisplayName(),
                 b.getTranslateStatus().getDisplayName(),
-                b.getPostStatus().getDisplayName()
+                b.getPostStatus().getDisplayName(),
+                "Lịch"
             });
         }
     }
@@ -190,6 +201,14 @@ public class QLSach extends javax.swing.JPanel {
                 if (viewRow < 0) {
                     return;
                 }
+                int viewColumn = Tbooks.columnAtPoint(e.getPoint());
+                if (viewColumn < 0) {
+                    return;
+                }
+                int modelColumn = Tbooks.convertColumnIndexToModel(viewColumn);
+                if (modelColumn == COLUMN_SCHEDULE) {
+                    return;
+                }                
                 long now = System.currentTimeMillis();
                 if (now - lastEditDialogTimestamp < EDIT_DIALOG_COOLDOWN_MS) {
                     return;
@@ -200,7 +219,14 @@ public class QLSach extends javax.swing.JPanel {
             }
         });
     }
-
+    
+    private void configureScheduleColumn() {
+        TableCellRenderer renderer = new ScheduleButtonRenderer();
+        TableCellEditor editor = new ScheduleButtonEditor();
+        Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setCellRenderer(renderer);
+        Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setCellEditor(editor);
+        Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setPreferredWidth(100);
+    }
     private void openBookEditorFromRow(int viewRow) {
         if (bookDao == null) {
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu");
@@ -224,7 +250,36 @@ public class QLSach extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Lỗi khi tải truyện: " + ex.getMessage());
         }
     }
-
+    
+    private void openScheduleDialogFromRow(int modelRow) {
+        if (modelRow < 0) {
+            return;
+        }
+        if (dataSource == null) {
+            JOptionPane.showMessageDialog(this, "Không thể mở lịch đăng vì chưa kết nối cơ sở dữ liệu.");
+            return;
+        }
+        Object value = tableModel.getValueAt(modelRow, 0);
+        if (!(value instanceof Number)) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy ID truyện hợp lệ");
+            return;
+        }
+        long bookId = ((Number) value).longValue();
+        try {
+            Book book = fetchBookById(bookId);
+            if (book == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin truyện");
+                return;
+            }
+            Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+            SuaLichPost dialog = new SuaLichPost(frame, true, dataSource, book, null);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+            loadAllBooks();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi mở lịch đăng: " + ex.getMessage());
+        }
+    }
     private Book fetchBookById(long bookId) throws SQLException {
         if (bookDao == null) {
             return null;
@@ -741,6 +796,49 @@ public class QLSach extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_stRaw3ActionPerformed
 
+    private static class ScheduleButtonRenderer extends JButton implements TableCellRenderer {
+        private ScheduleButtonRenderer() {
+            setOpaque(true);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setText(value != null ? value.toString() : "Lịch");
+            return this;
+        }
+    }
+
+    private class ScheduleButtonEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+        private final JButton button = new JButton();
+        private int currentRow = -1;
+
+        private ScheduleButtonEditor() {
+            button.addActionListener(this);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return button.getText();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            button.setText(value != null ? value.toString() : "Lịch");
+            currentRow = row;
+            return button;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            fireEditingStopped();
+            if (currentRow < 0) {
+                return;
+            }
+            int modelRow = Tbooks.convertRowIndexToModel(currentRow);
+            openScheduleDialogFromRow(modelRow);
+        }
+    }
+    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel FilterPanel;

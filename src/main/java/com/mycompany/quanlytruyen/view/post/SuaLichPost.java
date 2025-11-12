@@ -1,16 +1,211 @@
 package com.mycompany.quanlytruyen.view.post;
 
+import com.mycompany.quanlytruyen.dao.AccountDAO;
+import com.mycompany.quanlytruyen.dao.BookDao;
+import com.mycompany.quanlytruyen.dao.PostDao;
+import com.mycompany.quanlytruyen.model.Account;
+import com.mycompany.quanlytruyen.model.Book;
+import com.mycompany.quanlytruyen.model.Post;
+
+import javax.sql.DataSource;
+import javax.swing.JOptionPane;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.Frame;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class SuaLichPost extends javax.swing.JDialog {
 
-    
-    public SuaLichPost(Frame parent, boolean modal, DangTruyen parentPanel, Book book) {
+    private static final Logger LOGGER = Logger.getLogger(SuaLichPost.class.getName());
+
+    private final DataSource dataSource;
+    private final BookDao bookDao;
+    private final PostDao postDao;
+    private final AccountDAO accountDao;
+    private final Book book;
+    private Account account;
+    private final ScheduleTableModel scheduleTableModel = new ScheduleTableModel();
+    private boolean updatingChapterField;
+
+    public SuaLichPost(Frame parent, boolean modal, DataSource dataSource, Book book, Account account) {
+        super(parent, modal);
+        this.dataSource = dataSource;
+        this.book = book;
+        this.account = account;
+        this.postDao = dataSource != null ? new PostDao(dataSource) : null;
+        this.bookDao = dataSource != null ? new BookDao(dataSource) : null;
+        this.accountDao = dataSource != null ? new AccountDAO(dataSource) : null;
         initComponents();
       
+        initializeForm();
     }
 
+   private void initializeForm() {
+        setTitle("Lịch Post của Truyện");
+        Tbooks.setModel(scheduleTableModel);
+        Tbooks.setRowHeight(28);
+        Tbooks.setFillsViewportHeight(true);
+        Tbooks.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
+        loadAccountInfo();
+        txtYeuCau4.setText(resolveBookTitle());
+        updatePriceField();
+
+        chapterPerDay.getDocument().addDocumentListener(new SimpleDocumentListener(this::handleChapterPerDayChanged));
+
+        loadExistingSchedule();
+    }
+
+    private void loadAccountInfo() {
+        if (account != null && account.getUsername() != null) {
+            txtYeuCau3.setText(account.getUsername());
+            return;
+        }
+        if (book == null || book.getAccountId() == null || accountDao == null) {
+            txtYeuCau3.setText("(Chưa gán)");
+            return;
+        }
+        try {
+            account = accountDao.getAccountById(book.getAccountId());
+            txtYeuCau3.setText(account != null && account.getUsername() != null
+                ? account.getUsername()
+                : "(Chưa gán)");
+        } catch (SQLException ex) {
+            LOGGER.log(Level.WARNING, "Không thể tải thông tin tài khoản", ex);
+            txtYeuCau3.setText("(Không tải được)");
+            JOptionPane.showMessageDialog(this, "Không thể tải thông tin tài khoản: " + ex.getMessage());
+        }
+    }
+
+    private void updatePriceField() {
+        if (book != null && book.getPrice() != null) {
+            price.setText(book.getPrice().stripTrailingZeros().toPlainString());
+        } else {
+            price.setText("");
+        }
+    }
+
+    private String resolveBookTitle() {
+        if (book == null) {
+            return "";
+        }
+        if (book.getShortTitle() != null && !book.getShortTitle().isBlank()) {
+            return book.getShortTitle();
+        }
+        return book.getTitle() != null ? book.getTitle() : "";
+    }
+
+    private void loadExistingSchedule() {
+        int defaultCount = Math.max(1, parseChapterPerDay());
+        if (book == null || book.getId() == null || postDao == null) {
+            scheduleTableModel.setRowCount(defaultCount);
+            setChapterPerDayField(scheduleTableModel.getRowCount());
+            return;
+        }
+        try {
+            List<Post> posts = postDao.findByBookId(book.getId());
+            if (!posts.isEmpty()) {
+                scheduleTableModel.setPosts(posts);
+                setChapterPerDayField(posts.size());
+            } else {
+                scheduleTableModel.setRowCount(defaultCount);
+                setChapterPerDayField(scheduleTableModel.getRowCount());
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.WARNING, "Không thể tải lịch post", ex);
+            JOptionPane.showMessageDialog(this, "Không thể tải lịch post: " + ex.getMessage());
+            scheduleTableModel.setRowCount(defaultCount);
+            setChapterPerDayField(scheduleTableModel.getRowCount());
+        }
+    }
+
+    private int parseChapterPerDay() {
+        String text = chapterPerDay.getText();
+        if (text == null || text.isBlank()) {
+            return 1;
+        }
+        try {
+            int value = Integer.parseInt(text.trim());
+            return value > 0 ? value : 1;
+        } catch (NumberFormatException ex) {
+            return 1;
+        }
+    }
+
+    private void setChapterPerDayField(int count) {
+        updatingChapterField = true;
+        chapterPerDay.setText(String.valueOf(Math.max(count, 1)));
+        updatingChapterField = false;
+    }
+
+    private void handleChapterPerDayChanged() {
+        if (updatingChapterField) {
+            return;
+        }
+        int count = parseChapterPerDay();
+        scheduleTableModel.setRowCount(count);
+    }
+
+    private void onSave() {
+        if (book == null || book.getId() == null) {
+            JOptionPane.showMessageDialog(this, "Thiếu thông tin truyện để lưu lịch post.");
+            return;
+        }
+        if (Tbooks.isEditing()) {
+            Tbooks.getCellEditor().stopCellEditing();
+        }
+        List<Post> posts;
+        try {
+            posts = scheduleTableModel.buildPosts(book.getId());
+            BigDecimal newPrice = parsePriceFromField();
+            if (bookDao != null && !Objects.equals(book.getPrice(), newPrice)) {
+                book.setPrice(newPrice);
+                bookDao.updateBook(book);
+            }
+        } catch (IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+            return;
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Không thể cập nhật giá truyện", ex);
+            JOptionPane.showMessageDialog(this, "Không thể cập nhật giá truyện: " + ex.getMessage());
+            return;
+        }
+
+        try {
+            if (postDao != null) {
+                postDao.replaceBookPosts(book.getId(), posts);
+            }
+            JOptionPane.showMessageDialog(this, "Đã lưu lịch post thành công.");
+            dispose();
+        } catch (SQLException ex) {
+            LOGGER.log(Level.SEVERE, "Không thể lưu lịch post", ex);
+            JOptionPane.showMessageDialog(this, "Không thể lưu lịch post: " + ex.getMessage());
+        }
+    }
+
+    private BigDecimal parsePriceFromField() {
+        String text = price.getText();
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        try {
+            BigDecimal value = new BigDecimal(text.trim());
+            if (value.signum() < 0) {
+                throw new IllegalArgumentException("Giá mỗi chương phải lớn hơn hoặc bằng 0.");
+            }
+            return value;
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("Giá mỗi chương không hợp lệ.");
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -205,12 +400,12 @@ public class SuaLichPost extends javax.swing.JDialog {
                     .addGroup(pnProfileLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnProfileLayout.setVerticalGroup(
             pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfileLayout.createSequentialGroup()
-                .addContainerGap(19, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel11)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -229,12 +424,12 @@ public class SuaLichPost extends javax.swing.JDialog {
     }//GEN-LAST:event_closeDialog
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
-
+        onSave();
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
         // TODO add your handling code here:
-       
+        onSave();
     }//GEN-LAST:event_btnCreateMouseClicked
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
@@ -252,6 +447,7 @@ public class SuaLichPost extends javax.swing.JDialog {
 
     private void chapterPerDayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chapterPerDayActionPerformed
         // TODO add your handling code here:
+         handleChapterPerDayChanged();
     }//GEN-LAST:event_chapterPerDayActionPerformed
 
     private void txtYeuCau3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau3ActionPerformed
@@ -265,7 +461,199 @@ public class SuaLichPost extends javax.swing.JDialog {
     private void priceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priceActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_priceActionPerformed
+ private static class ScheduleRow {
+        private int order;
+        private Integer hour;
+        private Integer minute;
 
+        private ScheduleRow(int order) {
+            this.order = order;
+        }
+
+        private int getOrder() {
+            return order;
+        }
+
+        private void setOrder(int order) {
+            this.order = order;
+        }
+
+        private Integer getHour() {
+            return hour;
+        }
+
+        private void setHour(Integer hour) {
+            this.hour = hour;
+        }
+
+        private Integer getMinute() {
+            return minute;
+        }
+
+        private void setMinute(Integer minute) {
+            this.minute = minute;
+        }
+    }
+
+    private class ScheduleTableModel extends AbstractTableModel {
+        private final String[] columns = {"STT", "Giờ", "Phút"};
+        private final List<ScheduleRow> rows = new ArrayList<>();
+
+        @Override
+        public int getRowCount() {
+            return rows.size();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columns.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columns[column];
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return Integer.class;
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex > 0;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            ScheduleRow row = rows.get(rowIndex);
+            return switch (columnIndex) {
+                case 0 -> row.getOrder();
+                case 1 -> row.getHour();
+                case 2 -> row.getMinute();
+                default -> null;
+            };
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            if (columnIndex == 0 || rowIndex < 0 || rowIndex >= rows.size()) {
+                return;
+            }
+            ScheduleRow row = rows.get(rowIndex);
+            Integer parsed = parseInteger(aValue);
+            if (columnIndex == 1) {
+                row.setHour(parsed);
+            } else if (columnIndex == 2) {
+                row.setMinute(parsed);
+            }
+            fireTableCellUpdated(rowIndex, columnIndex);
+        }
+
+        private Integer parseInteger(Object value) {
+            if (value == null) {
+                return null;
+            }
+            if (value instanceof Number) {
+                return ((Number) value).intValue();
+            }
+            String text = value.toString().trim();
+            if (text.isEmpty()) {
+                return null;
+            }
+            try {
+                return Integer.parseInt(text);
+            } catch (NumberFormatException ex) {
+                return null;
+            }
+        }
+
+        void setRowCount(int count) {
+            int sanitized = Math.max(1, count);
+            if (rows.size() > sanitized) {
+                rows.subList(sanitized, rows.size()).clear();
+            } else {
+                for (int i = rows.size(); i < sanitized; i++) {
+                    rows.add(new ScheduleRow(i + 1));
+                }
+            }
+            for (int i = 0; i < rows.size(); i++) {
+                rows.get(i).setOrder(i + 1);
+            }
+            fireTableDataChanged();
+        }
+
+        void setPosts(List<Post> posts) {
+            rows.clear();
+            if (posts != null) {
+                int index = 1;
+                for (Post post : posts) {
+                    ScheduleRow row = new ScheduleRow(index++);
+                    row.setHour(post.getHour());
+                    row.setMinute(post.getMinute());
+                    rows.add(row);
+                }
+            }
+            fireTableDataChanged();
+        }
+
+        List<Post> buildPosts(long bookId) {
+            List<Post> posts = new ArrayList<>();
+            int previousHour = -1;
+            int previousMinute = -1;
+            for (ScheduleRow row : rows) {
+                Integer hour = row.getHour();
+                Integer minute = row.getMinute();
+                if (hour == null || minute == null) {
+                    throw new IllegalArgumentException("Vui lòng nhập đủ giờ/phút cho chương thứ " + row.getOrder() + ".");
+                }
+                if (hour < 0 || hour > 24) {
+                    throw new IllegalArgumentException("Giờ của chương thứ " + row.getOrder() + " phải nằm trong khoảng 0-24.");
+                }
+                if (minute < 0 || minute > 59) {
+                    throw new IllegalArgumentException("Phút của chương thứ " + row.getOrder() + " phải nằm trong khoảng 0-59.");
+                }
+                if (hour == 24 && minute != 0) {
+                    throw new IllegalArgumentException("Nếu giờ = 24 thì phút phải bằng 0 (chương thứ " + row.getOrder() + ").");
+                }
+                if (previousHour > hour || (previousHour == hour && previousMinute >= minute)) {
+                    throw new IllegalArgumentException("Giờ/phút của chương thứ " + row.getOrder() + " phải lớn hơn chương trước đó.");
+                }
+                Post post = new Post();
+                post.setBookId(bookId);
+                post.setChapterOrder(row.getOrder());
+                post.setHour(hour);
+                post.setMinute(minute);
+                posts.add(post);
+                previousHour = hour;
+                previousMinute = minute;
+            }
+            return posts;
+        }
+    }
+
+    private static class SimpleDocumentListener implements DocumentListener {
+        private final Runnable callback;
+
+        private SimpleDocumentListener(Runnable callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            callback.run();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            callback.run();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            callback.run();
+        }
+    }
 
     /**
      * @param args the command line arguments
@@ -285,7 +673,7 @@ public class SuaLichPost extends javax.swing.JDialog {
                 }
             }
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
         }
         //</editor-fold>
 

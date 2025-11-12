@@ -56,6 +56,21 @@ public class AccountDAO {
             return accounts;
         }
     }
+    
+    public Account getAccountById(long accountId) throws SQLException {
+        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
+            "FROM " + tableName + " WHERE account_id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, accountId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapAccount(rs);
+                }
+            }
+        }
+        return null;
+    }    
 
     public List<Account> searchAccounts(String keyword) throws SQLException {
         String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
