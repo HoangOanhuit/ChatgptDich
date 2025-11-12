@@ -29,6 +29,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$5.class
 com\mycompany\quanlytruyen\view\books\QLSach$13.class
 com\mycompany\quanlytruyen\view\books\SuaSach$1.class
 com\mycompany\quanlytruyen\view\books\SuaSach$14.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$13.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$5.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$1.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$3.class
@@ -74,11 +75,13 @@ com\mycompany\quanlytruyen\view\chapters\QLChuong$3.class
 com\mycompany\quanlytruyen\utils\FileUtils$FileSizeComparator.class
 com\mycompany\quanlytruyen\view\books\QLSach$7.class
 com\mycompany\quanlytruyen\view\books\ThemSach$9.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$11.class
 com\mycompany\quanlytruyen\utils\FileUtils$FileFilter.class
 com\mycompany\quanlytruyen\view\books\SuaSach$3.class
 com\mycompany\quanlytruyen\service\OpenAIClient.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$1.class
 com\mycompany\quanlytruyen\service\SeleniumClaudeService.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$14.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$6.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$1.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong.class
@@ -126,12 +129,14 @@ com\mycompany\quanlytruyen\view\post\DangTruyen$2.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$3.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$6.class
 com\mycompany\quanlytruyen\view\books\QLSach$6.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$12.class
 com\mycompany\quanlytruyen\service\EnhancedOpenAIClient.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$3.class
 com\mycompany\quanlytruyen\config\AppConfig$ConfigValidationResult.class
 com\mycompany\quanlytruyen\view\books\SuaSach$16.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong$2.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$7.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$BookTableModel.class
 com\mycompany\quanlytruyen\view\books\SuaSach$2.class
 com\mycompany\quanlytruyen\view\translate\QLDich$15.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$4.class
@@ -159,11 +164,13 @@ com\mycompany\quanlytruyen\dao\BookDao.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$8.class
 com\mycompany\quanlytruyen\view\books\ThemSach$18.class
 com\mycompany\quanlytruyen\view\books\ThemSach$8.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$10.class
 com\mycompany\quanlytruyen\view\books\SuaSach$11.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$2.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$4.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$7.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$8.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$BookEntry.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$11.class
 com\mycompany\quanlytruyen\view\books\QLSach$5.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$SplitButtonEditor.class
@@ -188,6 +195,7 @@ com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$1.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$2.class
 com\mycompany\quanlytruyen\view\HomeFrame$7.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$15.class
 com\mycompany\quanlytruyen\view\post\DangTruyen.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$3.class
 com\mycompany\quanlytruyen\service\src.class
@@ -199,6 +207,7 @@ com\mycompany\quanlytruyen\view\translate\QLDich$11.class
 com\mycompany\quanlytruyen\service\FileService$FileValidationResult.class
 com\mycompany\quanlytruyen\view\books\SuaSach$12.class
 com\mycompany\quanlytruyen\view\HomeFrame$1.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$PostingSummary.class
 com\mycompany\quanlytruyen\utils\TextFieldKeyboardUtils.class
 com\mycompany\quanlytruyen\utils\CsvNameTableFormatter.class
 com\mycompany\quanlytruyen\view\books\SuaSach$10.class
