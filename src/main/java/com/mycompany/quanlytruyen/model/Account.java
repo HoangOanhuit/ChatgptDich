@@ -28,7 +28,7 @@ public class Account {
     }
 
     public Account(Long id, String username, String email, String password) {
-        this.account_id = account_id;
+        this.account_id = id;
         this.username = username;
         this.email = email;
         this.password = password;
@@ -39,7 +39,7 @@ public class Account {
     }
 
     public void setId(Long id) {
-        this.account_id = account_id;
+        this.account_id = id;
     }
 
     public String getUsername() {
