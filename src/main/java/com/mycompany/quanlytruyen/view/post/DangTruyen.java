@@ -6,93 +6,82 @@ import com.mycompany.quanlytruyen.dao.AccountDAO;
 import com.mycompany.quanlytruyen.dao.BookDao;
 import com.mycompany.quanlytruyen.dao.ChapterDao;
 import com.mycompany.quanlytruyen.dao.DataSourceFactory;
-import com.mycompany.quanlytruyen.model.Account;
-import com.mycompany.quanlytruyen.model.Book;
-import com.mycompany.quanlytruyen.model.Chapter;
-import com.mycompany.quanlytruyen.model.BetaStatus;
-import com.mycompany.quanlytruyen.model.Post;
 import com.mycompany.quanlytruyen.dao.PostDao;
+import com.mycompany.quanlytruyen.model.Account;
+import com.mycompany.quanlytruyen.model.BetaStatus;
+import com.mycompany.quanlytruyen.model.Book;
+import com.mycompany.quanlytruyen.model.Book.PostStatus;
+import com.mycompany.quanlytruyen.model.Chapter;
+import com.mycompany.quanlytruyen.model.Post;
+import com.mycompany.quanlytruyen.database.DatabaseManager;
 
-import javax.sql.DataSource;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.awt.Frame;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.time.DateTimeException;
-import java.time.DayOfWeek;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
+import javax.sql.DataSource;
 
 
 public class DangTruyen extends javax.swing.JPanel {
 
-
-    private static final MediaType JSON_MEDIA_TYPE = MediaType.parse("application/json; charset=utf-8");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final String POST_URL = "https://s1apihd.com/wp-json/v1/app/user/themchuong";
     private static final int DEFAULT_NUM_CHAPTER = 5;
-
-    private DataSource dataSource;
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final String API_ENDPOINT = "https://s1apihd.com/wp-json/v1/app/user/themchuong";
+    
+    // DAOs
     private BookDao bookDao;
     private AccountDAO accountDao;
     private ChapterDao chapterDao;
     private PostDao postDao;
-
-    private final OkHttpClient httpClient = new OkHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final BookTableModel bookTableModel = new BookTableModel();
-    private final Map<Long, Account> accountCache = new HashMap<>();
-    private final List<Account> accountList = new ArrayList<>();
-
-    private boolean suppressAccountComboEvents;
-    private boolean suppressSelectAllEvents;
-    private Long currentAccountFilter;
-    private boolean postingInProgress;
+    private DataSource dataSource;
+    
+    // UI Components
+    private JTable tBooks;
+    private JTextField txtNumChapter; // Số chương mỗi lần đăng
+    private JTextField txtDay; // Ngày đăng
+    private JTextField txtMonth; // Tháng đăng
+    private JTextField txtYear; // Năm đăng
+    private JButton btnRefresh; // Nút "Làm mới"
+    
+    // Data
+    private BookTableModel tableModel;
+    private List<BookEntry> bookEntries;
+    private List<Account> allAccounts;
 
 
     public DangTruyen() {
+        this.bookEntries = new ArrayList<>();
+        this.allAccounts = new ArrayList<>();
+        
+        // Khởi tạo DataSource và DAOs
+        try {
+            AppConfig config = AppConfig.getInstance();
+            this.dataSource = DataSourceFactory.create(
+                config.getDatabaseUrl(),
+                config.getDatabaseUser(),
+                config.getDatabasePassword()
+            );
+            this.bookDao = new BookDao(dataSource);
+            this.accountDao = new AccountDAO(dataSource);
+            this.chapterDao = new ChapterDao(dataSource);
+            this.postDao = new PostDao(dataSource);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Không thể khởi tạo kết nối CSDL: " + ex.getMessage());
+        }
+        
         initComponents();
-
-        configureTable();
-        initializeDateFields();
-        initializeDataAccess();
-        loadAccountsAsync();
-        loadBooksAsync(null);
+        initData();
 
     }
 
@@ -443,8 +432,8 @@ public class DangTruyen extends javax.swing.JPanel {
     }//GEN-LAST:event_btnEditActionPerformed
 
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
-        // TODO add your handling code here:
-
+            // TODO add your handling code here:
+            refreshData();
     }//GEN-LAST:event_btnResetActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
@@ -458,97 +447,27 @@ public class DangTruyen extends javax.swing.JPanel {
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void btnFilter2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilter2ActionPerformed
-        // TODO add your handling code here:
-        if (postingInProgress) {
-            JOptionPane.showMessageDialog(this, "Đang xử lý yêu cầu trước, vui lòng đợi.");
-            return;
-        }
-
-        if (Tbooks.isEditing()) {
-            Tbooks.getCellEditor().stopCellEditing();
-        }
-
-        LocalDate scheduleDate = parseSelectedDate();
-        if (scheduleDate == null) {
-            return;
-        }
-
-        List<BookEntry> selectedEntries = bookTableModel.getSelectedEntries();
-        if (selectedEntries.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất một truyện để đăng.");
-            return;
-        }
-
-        if (!ensureDataAccessReady()) {
-            return;
-        }
-
-        postingInProgress = true;
-        btnFilter2.setEnabled(false);
-
-        SwingWorker<PostingSummary, Void> worker = new SwingWorker<>() {
-            @Override
-            protected PostingSummary doInBackground() {
-                return postSelectedBooks(selectedEntries, scheduleDate);
-            }
-
-            @Override
-            protected void done() {
-                postingInProgress = false;
-                btnFilter2.setEnabled(true);
-                try {
-                    PostingSummary summary = get();
-                    displayPostingSummary(summary);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    JOptionPane.showMessageDialog(DangTruyen.this, "Tác vụ đăng đã bị gián đoạn.");
-                } catch (ExecutionException ex) {
-                    String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-                    JOptionPane.showMessageDialog(DangTruyen.this, "Lỗi khi đăng truyện: " + message);
-                }
-                loadBooksAsync(currentAccountFilter);
-            }
-        };
-        worker.execute();
-
-
+        postSelectedBooks();
     }//GEN-LAST:event_btnFilter2ActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         // TODO add your handling code here:
-                if (suppressSelectAllEvents) {
-            return;
-        }
-        boolean select = jCheckBox1.isSelected();
-        bookTableModel.setAllSelected(select);
+        toggleSelectAll();
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void tenTruyen1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tenTruyen1ActionPerformed
-        // TODO add your handling code here:
-        if (suppressAccountComboEvents) {
-            return;
-        }
-        applyAccountFilter();
+        filterBooksByAccount();
   
     }//GEN-LAST:event_tenTruyen1ActionPerformed
 
     private void btnFilter4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilter4ActionPerformed
         // TODO add your handling code here:
-        applyAccountFilter();
+
     }//GEN-LAST:event_btnFilter4ActionPerformed
 
     private void btnFilter5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilter5ActionPerformed
         // TODO add your handling code here:
-        suppressAccountComboEvents = true;
-        try {
-            if (tenTruyen1.getItemCount() > 0) {
-                tenTruyen1.setSelectedIndex(0);
-            }
-        } finally {
-            suppressAccountComboEvents = false;
-        }
-        currentAccountFilter = null;
-        loadBooksAsync(null);
+
     }//GEN-LAST:event_btnFilter5ActionPerformed
 
     private void dayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dayActionPerformed
@@ -563,322 +482,321 @@ public class DangTruyen extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_yearActionPerformed
 
-
-    private void configureTable() {
-        Tbooks.setModel(bookTableModel);
-        Tbooks.setRowHeight(28);
-        Tbooks.setAutoCreateRowSorter(true);
-        Tbooks.setFillsViewportHeight(true);
-        Tbooks.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        TableColumnModel columnModel = Tbooks.getColumnModel();
-        if (columnModel != null && columnModel.getColumnCount() >= 6) {
-            int[] preferred = {70, 140, 240, 90, 90, 90};
-            for (int i = 0; i < preferred.length && i < columnModel.getColumnCount(); i++) {
-                TableColumn column = columnModel.getColumn(i);
-                column.setPreferredWidth(preferred[i]);
-            }
-        }
-    }
-
-    private void initializeDateFields() {
-        LocalDate defaultDate = LocalDate.now().plusDays(1);
-        updateDateFields(defaultDate);
-    }
-
-    private void updateDateFields(LocalDate date) {
-        if (date == null) {
-            return;
-        }
-        day.setText(String.format(Locale.getDefault(), "%02d", date.getDayOfMonth()));
-        month.setText(String.format(Locale.getDefault(), "%02d", date.getMonthValue()));
-        year.setText(String.valueOf(date.getYear()));
-    }
-
-    private void initializeDataAccess() {
+    /**
+     * Khởi tạo dữ liệu ban đầu
+     */
+    private void initData() {
         try {
-            AppConfig config = AppConfig.getInstance();
-            dataSource = DataSourceFactory.create(
-                config.getDatabaseUrl(),
-                config.getDatabaseUser(),
-                config.getDatabasePassword()
-            );
-            bookDao = new BookDao(dataSource);
-            accountDao = new AccountDAO(dataSource);
-            chapterDao = new ChapterDao(dataSource);
-            postDao = new PostDao(dataSource);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Không thể khởi tạo kết nối CSDL: " + ex.getMessage());
+            // Load tất cả accounts
+            allAccounts = accountDao.getAllAccounts();
+            tenTruyen1.removeAllItems();
+            tenTruyen1.addItem("-- Tất cả --");
+            for (Account account : allAccounts) {
+                tenTruyen1.addItem(account.getUsername());
+            }
+            
+            // Load books
+            loadBooks(null);
+            
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, 
+                "Lỗi khi tải dữ liệu: " + ex.getMessage(),
+                "Lỗi", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
     }
-
-    private void loadAccountsAsync() {
-        if (accountDao == null) {
-            tenTruyen1.setModel(new DefaultComboBoxModel<>(new String[]{"Tất cả tài khoản"}));
-            return;
-        }
-
-        new SwingWorker<List<Account>, Void>() {
-            private Exception loadException;
-
-            @Override
-            protected List<Account> doInBackground() {
-                try {
-                    return accountDao.getAllAccounts();
-                } catch (SQLException ex) {
-                    loadException = ex;
-                    return Collections.emptyList();
-                }
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    List<Account> accounts = get();
-                    updateAccountCombo(accounts);
-                    if (loadException != null) {
-                        JOptionPane.showMessageDialog(DangTruyen.this, "Không thể tải danh sách tài khoản: " + loadException.getMessage());
-                    }
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException ex) {
-                    String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-                    JOptionPane.showMessageDialog(DangTruyen.this, "Không thể tải danh sách tài khoản: " + message);
-                }
-            }
-        }.execute();
+    
+    /**
+     * Làm mới dữ liệu
+     */
+    private void refreshData() {
+        initData();
     }
-
-    private void updateAccountCombo(List<Account> accounts) {
-        accountList.clear();
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        model.addElement("Tất cả tài khoản");
-        if (accounts != null) {
-            for (Account account : accounts) {
-                accountList.add(account);
-                if (account != null && account.getId() != null) {
-                    accountCache.put(account.getId(), account);
+    
+    /**
+     * Load books theo account được chọn
+     */
+    private void filterBooksByAccount() {
+        String selectedAccount = (String) tenTruyen1.getSelectedItem();
+        Long accountId = null;
+        
+        if (selectedAccount != null && !selectedAccount.equals("-- Tất cả --")) {
+            for (Account account : allAccounts) {
+                if (account.getUsername().equals(selectedAccount)) {
+                    accountId = account.getId();
+                    break;
                 }
-                String display = account != null && account.getUsername() != null
-                    ? account.getUsername()
-                    : "(Không tên)";
-                model.addElement(display);
             }
         }
-        suppressAccountComboEvents = true;
+        
+        loadBooks(accountId);
+    }
+    
+    /**
+     * Load danh sách books có post_status = not_hoan
+     */
+    private void loadBooks(Long accountId) {
         try {
-            tenTruyen1.setModel(model);
-            tenTruyen1.setSelectedIndex(0);
-        } finally {
-            suppressAccountComboEvents = false;
-        }
-        bookTableModel.fireTableDataChanged();
-    }
-
-    private void loadBooksAsync(Long accountFilter) {
-        if (bookDao == null) {
-            bookTableModel.setEntries(Collections.emptyList());
-            return;
-        }
-
-        new SwingWorker<List<BookEntry>, Void>() {
-            private Exception loadException;
-
-            @Override
-            protected List<BookEntry> doInBackground() {
-                try {
-                    List<Book> books = bookDao.getAllBooks();
-                    List<BookEntry> result = new ArrayList<>();
-                    for (Book book : books) {
-                        if (book.getPostStatus() != Book.PostStatus.NOT_HOAN) {
-                            continue;
-                        }
-                        if (accountFilter != null) {
-                            Long bookAccountId = book.getAccountId();
-                            if (bookAccountId == null || !accountFilter.equals(bookAccountId)) {
-                                continue;
-                            }
-                        }
-                        Account account = getAccountSafely(book.getAccountId());
-                        result.add(new BookEntry(book, account));
-                    }
-                    return result;
-                } catch (SQLException ex) {
-                    loadException = ex;
-                    return Collections.emptyList();
-                }
+            bookEntries.clear();
+            
+            List<Book> books;
+            if (accountId == null) {
+                // Lấy tất cả books có post_status = not_hoan
+                books = bookDao.getBooksByStatus(null, null, PostStatus.NOT_HOAN);
+            } else {
+                // Lấy books theo account và post_status
+                books = filterBooksByAccountId(accountId, PostStatus.NOT_HOAN);
             }
-
-            @Override
-            protected void done() {
-                try {
-                    List<BookEntry> entries = get();
-                    bookTableModel.setEntries(entries);
-                    if (loadException != null) {
-                        JOptionPane.showMessageDialog(DangTruyen.this, "Không thể tải danh sách truyện: " + loadException.getMessage());
-                    }
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (ExecutionException ex) {
-                    String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
-                    JOptionPane.showMessageDialog(DangTruyen.this, "Không thể tải danh sách truyện: " + message);
+            
+            for (Book book : books) {
+                Account account = null;
+                if (book.getAccountId() != null) {
+                    account = accountDao.getAccountById(book.getAccountId());
                 }
+                bookEntries.add(new BookEntry(book, account));
             }
-        }.execute();
+            
+            tableModel.fireTableDataChanged();
+            
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, 
+                "Lỗi khi tải danh sách truyện: " + ex.getMessage(),
+                "Lỗi", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
+        }
     }
-
-    private Account getAccountSafely(Long accountId) throws SQLException {
-        if (accountId == null) {
-            return null;
+    
+    /**
+     * Lọc books theo accountId và postStatus
+     */
+    private List<Book> filterBooksByAccountId(Long accountId, PostStatus postStatus) throws SQLException {
+        List<Book> allBooks = bookDao.getBooksByStatus(null, null, postStatus);
+        List<Book> filtered = new ArrayList<>();
+        
+        for (Book book : allBooks) {
+            if (book.getAccountId() != null && book.getAccountId().equals(accountId)) {
+                filtered.add(book);
+            }
         }
-        Account cached = accountCache.get(accountId);
-        if (cached != null) {
-            return cached;
-        }
-        if (accountDao == null) {
-            return null;
-        }
-        Account account = accountDao.getAccountById(accountId);
-        if (account != null) {
-            accountCache.put(accountId, account);
-        }
-        return account;
+        
+        return filtered;
     }
-
-    private void applyAccountFilter() {
-        Long accountId = resolveSelectedAccountId();
-        currentAccountFilter = accountId;
-        loadBooksAsync(accountId);
-    }
-
-    private Long resolveSelectedAccountId() {
-        int index = tenTruyen1.getSelectedIndex();
-        if (index <= 0) {
-            return null;
-        }
-        int accountIndex = index - 1;
-        if (accountIndex >= 0 && accountIndex < accountList.size()) {
-            Account account = accountList.get(accountIndex);
-            return account != null ? account.getId() : null;
-        }
-        return null;
-    }
-
-    private LocalDate parseSelectedDate() {
-        String dayText = day.getText() != null ? day.getText().trim() : "";
-        String monthText = month.getText() != null ? month.getText().trim() : "";
-        String yearText = year.getText() != null ? year.getText().trim() : "";
-        if (dayText.isEmpty() || monthText.isEmpty() || yearText.isEmpty()) {
-            LocalDate fallback = LocalDate.now().plusDays(1);
-            updateDateFields(fallback);
-            return fallback;
-        }
+    
+    /**
+     * Cập nhật "Đến chương" khi thay đổi số chương
+     */
+    private void updateToChapters() {
         try {
-            int dayValue = Integer.parseInt(dayText);
-            int monthValue = Integer.parseInt(monthText);
-            int yearValue = Integer.parseInt(yearText);
-            return LocalDate.of(yearValue, monthValue, dayValue);
+            int numChapter = Integer.parseInt(txtNumChapter.getText().trim());
+            if (numChapter <= 0) {
+                JOptionPane.showMessageDialog(this, "Số chương phải lớn hơn 0");
+                txtNumChapter.setText(String.valueOf(DEFAULT_NUM_CHAPTER));
+                return;
+            }
+            
+            for (BookEntry entry : bookEntries) {
+                entry.setToChapter(entry.getFromChapter() + numChapter);
+            }
+            
+            tableModel.fireTableDataChanged();
+            
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ngày đăng phải là số hợp lệ.");
-        } catch (DateTimeException ex) {
-            JOptionPane.showMessageDialog(this, "Ngày đăng không hợp lệ: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Số chương không hợp lệ");
+            txtNumChapter.setText(String.valueOf(DEFAULT_NUM_CHAPTER));
         }
-        return null;
     }
-
-    private boolean ensureDataAccessReady() {
-        if (bookDao == null || accountDao == null || chapterDao == null || postDao == null) {
-            JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra cấu hình.");
-            return false;
+    
+    /**
+     * Toggle chọn tất cả / bỏ chọn tất cả
+     */
+    private void toggleSelectAll() {
+        boolean selected = jCheckBox1.isSelected();
+        for (BookEntry entry : bookEntries) {
+            entry.setSelected(selected);
         }
-        return true;
+        tableModel.fireTableDataChanged();
     }
-
-    private PostingSummary postSelectedBooks(List<BookEntry> entries, LocalDate scheduleDate) {
-        PostingSummary summary = new PostingSummary();
-        if (entries == null || scheduleDate == null) {
-            return summary;
-        }
-        for (BookEntry entry : entries) {
-            try {
-                postBook(entry, scheduleDate, summary);
-            } catch (Exception ex) {
-                String title = entry != null && entry.getBook() != null && entry.getBook().getTitle() != null
-                    ? entry.getBook().getTitle()
-                    : "(Không rõ tên truyện)";
-                summary.addError(title + ": " + ex.getMessage());
+    
+    /**
+     * Đăng các truyện đã chọn
+     */
+    private void postSelectedBooks() {
+        List<BookEntry> selectedBooks = new ArrayList<>();
+        for (BookEntry entry : bookEntries) {
+            if (entry.isSelected()) {
+                selectedBooks.add(entry);
             }
         }
-        return summary;
-    }
-
-    private void postBook(BookEntry entry, LocalDate scheduleDate, PostingSummary summary) throws Exception {
-        if (entry == null) {
+        
+        if (selectedBooks.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất một truyện để đăng");
             return;
         }
+        
+        // Validate ngày đăng
+        LocalDate scheduleDate;
+        try {
+            int day = Integer.parseInt(txtDay.getText().trim());
+            int month = Integer.parseInt(txtMonth.getText().trim());
+            int year = Integer.parseInt(txtYear.getText().trim());
+            scheduleDate = LocalDate.of(year, month, day);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Ngày đăng không hợp lệ: " + ex.getMessage());
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this,
+            String.format("Bạn có chắc chắn muốn đăng %d truyện?\nNgày đăng: %s",
+                selectedBooks.size(), scheduleDate),
+            "Xác nhận", JOptionPane.YES_NO_OPTION);
+        
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+        
+        // Hiển thị progress dialog
+        JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Đang đăng...", true);
+        JProgressBar progressBar = new JProgressBar(0, 100);
+        progressBar.setStringPainted(true);
+        progressDialog.add(progressBar);
+        progressDialog.setSize(400, 100);
+        progressDialog.setLocationRelativeTo(this);
+        
+        // Thực hiện đăng trong background thread
+        SwingWorker<PostingSummary, Integer> worker = new SwingWorker<PostingSummary, Integer>() {
+            @Override
+            protected PostingSummary doInBackground() throws Exception {
+                PostingSummary summary = new PostingSummary();
+                int totalBooks = selectedBooks.size();
+                
+                for (int i = 0; i < totalBooks; i++) {
+                    BookEntry entry = selectedBooks.get(i);
+                    try {
+                        postBook(entry, scheduleDate, summary);
+                        publish((i + 1) * 100 / totalBooks);
+                    } catch (Exception ex) {
+                        summary.addError(String.format("Truyện '%s': %s",
+                            entry.getBookTitle(), ex.getMessage()));
+                        ex.printStackTrace();
+                    }
+                }
+                
+                return summary;
+            }
+            
+            @Override
+            protected void process(List<Integer> chunks) {
+                if (!chunks.isEmpty()) {
+                    progressBar.setValue(chunks.get(chunks.size() - 1));
+                }
+            }
+            
+            @Override
+            protected void done() {
+                progressDialog.dispose();
+                try {
+                    PostingSummary summary = get();
+                    showPostingSummary(summary);
+                    refreshData(); // Làm mới danh sách
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(DangTruyen.this,
+                        "Lỗi không mong muốn: " + ex.getMessage(),
+                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                    ex.printStackTrace();
+                }
+            }
+        };
+        
+        worker.execute();
+        progressDialog.setVisible(true);
+    }
+    
+    /**
+     * Đăng một truyện
+     */
+    private void postBook(BookEntry entry, LocalDate scheduleDate, PostingSummary summary) throws Exception {
         Book book = entry.getBook();
-        if (book == null || book.getId() == null) {
-            throw new IllegalStateException("Thiếu thông tin truyện để đăng.");
-        }
         Account account = entry.getAccount();
+        
         if (account == null) {
-            account = getAccountSafely(book.getAccountId());
-            entry.setAccount(account);
+            throw new IllegalStateException("Truyện chưa được gán tài khoản");
         }
-        if (account == null) {
-            throw new IllegalStateException("Không tìm thấy tài khoản gắn với truyện.");
-        }
-
+        
+        // Load chapters của book
+        Map<Integer, Chapter> chaptersMap = loadChaptersForBook(book.getId());
+        
+        // Load lịch đăng
         List<Post> schedule = postDao.findByBookId(book.getId());
         if (schedule.isEmpty()) {
-            throw new IllegalStateException("Chưa có lịch đăng cho truyện này.");
+            throw new IllegalStateException("Chưa có lịch đăng cho truyện này");
         }
-
+        
         int fromChapter = entry.getFromChapter();
         int toChapter = entry.getToChapter();
-        if (toChapter < fromChapter) {
-            throw new IllegalStateException("'Đến chương' phải lớn hơn hoặc bằng 'Từ chương'.");
-        }
-        int totalChapters = toChapter - fromChapter + 1;
-        if (totalChapters <= 0) {
-            throw new IllegalStateException("Số lượng chương cần đăng phải lớn hơn 0.");
-        }
-        if (schedule.size() < totalChapters) {
-            throw new IllegalStateException("Lịch đăng hiện có " + schedule.size() + " khung giờ, không đủ cho " + totalChapters + " chương.");
-        }
-
-        Map<Integer, Chapter> chapters = loadChaptersForBook(book.getId());
-        for (int i = 0; i < totalChapters; i++) {
-            int chapterNumber = fromChapter + i;
-            Chapter chapter = chapters.get(chapterNumber);
+        int chaptersPosted = 0;
+        
+        for (int chapterNumber = fromChapter; chapterNumber <= toChapter; chapterNumber++) {
+            Chapter chapter = chaptersMap.get(chapterNumber);
+            
             if (chapter == null) {
-                throw new IllegalStateException("Không tìm thấy chương " + chapterNumber + ".");
+                throw new IllegalStateException("Không tìm thấy chương " + chapterNumber);
             }
+            
             if (chapter.getChapterNumber() == null) {
-                throw new IllegalStateException("Chương " + chapterNumber + " chưa có số thứ tự hợp lệ.");
+                throw new IllegalStateException("Chương " + chapterNumber + " chưa có số thứ tự hợp lệ");
             }
-            if (chapter.getBetaStatus() != BetaStatus.DONE_BETA && chapter.getBetaStatus() != BetaStatus.DONE_POST) {
-                throw new IllegalStateException("Chương " + chapterNumber + " chưa beta xong.");
+            
+            if (chapter.getBetaStatus() != BetaStatus.DONE_BETA && 
+                chapter.getBetaStatus() != BetaStatus.DONE_POST) {
+                throw new IllegalStateException("Chương " + chapterNumber + " chưa beta xong");
             }
+            
             if (chapter.getContent() == null || chapter.getContent().isBlank()) {
-                throw new IllegalStateException("Chương " + chapterNumber + " chưa có nội dung.");
+                throw new IllegalStateException("Chương " + chapterNumber + " chưa có nội dung");
             }
-
-            Post slot = schedule.get(i);
+            
+            // Lấy lịch đăng tương ứng
+            int scheduleIndex = (chapterNumber - fromChapter);
+            if (scheduleIndex >= schedule.size()) {
+                throw new IllegalStateException("Không đủ lịch đăng cho chương " + chapterNumber);
+            }
+            
+            Post slot = schedule.get(scheduleIndex);
             LocalDateTime scheduleDateTime = buildScheduleDateTime(scheduleDate, slot);
+            
+            // Chia chapter thành 2 phần
             List<String> parts = splitChapterContent(chapter.getContent());
+            
             for (int partIndex = 0; partIndex < parts.size(); partIndex++) {
                 String content = parts.get(partIndex);
                 if (content == null) {
                     content = "";
                 }
+                
                 String title = buildChapterTitle(chapter, partIndex);
                 String auth2 = buildAuth2(book.getId(), chapter.getChapterNumber(), partIndex);
                 String requestBody = buildRequestBody(entry, account, title, auth2, scheduleDateTime, content);
+                
                 executePostRequest(book, chapter.getChapterNumber(), partIndex, requestBody, summary);
             }
+            
+            chaptersPosted++;
+        }
+        
+        // Cập nhật posted trong database
+        if (chaptersPosted > 0) {
+            int newPosted = (book.getPosted() != null ? book.getPosted() : 0) + chaptersPosted;
+            book.setPosted(newPosted);
+            bookDao.updateBook(book);
+            
+            summary.addSuccess(String.format("Truyện '%s': Đăng thành công %d chương (posted: %d)",
+                book.getTitle(), chaptersPosted, newPosted));
         }
     }
-
+    
+    /**
+     * Load chapters của một book
+     */
     private Map<Integer, Chapter> loadChaptersForBook(long bookId) throws SQLException {
         Map<Integer, Chapter> result = new HashMap<>();
         List<Chapter> chapters = chapterDao.findByBookId(bookId);
@@ -889,7 +807,10 @@ public class DangTruyen extends javax.swing.JPanel {
         }
         return result;
     }
-
+    
+    /**
+     * Tạo LocalDateTime từ ngày và lịch đăng
+     */
     private LocalDateTime buildScheduleDateTime(LocalDate baseDate, Post slot) {
         if (baseDate == null) {
             baseDate = LocalDate.now().plusDays(1);
@@ -897,213 +818,267 @@ public class DangTruyen extends javax.swing.JPanel {
         if (slot == null) {
             return LocalDateTime.of(baseDate, LocalTime.of(0, 0));
         }
+        
         int hour = slot.getHour();
         int minute = slot.getMinute();
+        
         try {
             if (hour == 24 && minute == 0) {
                 return LocalDateTime.of(baseDate.plusDays(1), LocalTime.MIDNIGHT);
             }
             return LocalDateTime.of(baseDate, LocalTime.of(hour, minute));
-        } catch (DateTimeException ex) {
-            throw new IllegalStateException("Khung giờ không hợp lệ: " + ex.getMessage());
+        } catch (Exception e) {
+            return LocalDateTime.of(baseDate, LocalTime.of(0, 0));
         }
     }
-
+    
+    /**
+     * Chia content của chapter thành 2 phần
+     */
     private List<String> splitChapterContent(String content) {
-        String normalized = normalizeChapterContent(content);
-        String[] parts = splitContent(normalized, 2);
-        List<String> result = new ArrayList<>();
-        if (parts != null) {
-            result.addAll(Arrays.asList(parts));
-        }
-        while (result.size() < 2) {
-            result.add("");
-        }
-        return result;
-    }
-
-    private String normalizeChapterContent(String content) {
         if (content == null || content.isEmpty()) {
-            return "";
+            return Arrays.asList("", "");
         }
-        String normalized = content.replace("\r\n", "\n").replace("\r", "\n");
-        normalized = normalized.replaceAll("\\n\\s+\\n", "\n\n");
-        normalized = normalized.replaceAll("(?<=\\S)\\n(?=\\s*\\S)", "\n\n");
-        normalized = normalized.replaceAll("\\n{3,}", "\n\n");
-
-        String[] paragraphs = normalized.split("\\n{2}");
-        StringBuilder processed = new StringBuilder();
-        for (String paragraph : paragraphs) {
-            String cleanedParagraph = removeLeadingSpaces(paragraph);
-            if (cleanedParagraph.isEmpty()) {
-                continue;
-            }
-            String capitalized = capitalizeFirstLetter(cleanedParagraph);
-            if (processed.length() > 0) {
-                processed.append("\n\n");
-            }
-            processed.append(capitalized);
-        }
-        return processed.toString();
-    }
-
-    private String removeLeadingSpaces(String paragraph) {
-        int index = 0;
-        while (index < paragraph.length() && paragraph.charAt(index) == ' ') {
-            index++;
-        }
-        return paragraph.substring(index);
-    }
-
-    private String capitalizeFirstLetter(String paragraph) {
-        for (int i = 0; i < paragraph.length(); i++) {
-            char current = paragraph.charAt(i);
-            if (Character.isLetter(current)) {
-                if (!Character.isUpperCase(current)) {
-                    return paragraph.substring(0, i) + Character.toUpperCase(current) + paragraph.substring(i + 1);
+        
+        // Tìm điểm chia giữa content (split by paragraphs)
+        String[] paragraphs = content.split("\n");
+        int midPoint = paragraphs.length / 2;
+        
+        StringBuilder part1 = new StringBuilder();
+        StringBuilder part2 = new StringBuilder();
+        
+        for (int i = 0; i < paragraphs.length; i++) {
+            if (i < midPoint) {
+                if (part1.length() > 0) {
+                    part1.append("\n");
                 }
-                break;
-            }
-        }
-        return paragraph;
-    }
-
-    private String[] splitContent(String content, int n) {
-        if (n <= 0) {
-            return new String[]{content};
-        }
-        String[] result = new String[n];
-        int len = content.length();
-        int start = 0;
-        for (int i = 0; i < n; i++) {
-            if (i == n - 1) {
-                result[i] = content.substring(start);
+                part1.append(paragraphs[i]);
             } else {
-                int approxEnd = start + (len - start) / (n - i);
-                int idx = content.lastIndexOf('\n', approxEnd);
-                if (idx < start) {
-                    idx = approxEnd;
+                if (part2.length() > 0) {
+                    part2.append("\n");
                 }
-                int end = idx;
-                if (idx < len && idx >= 0 && content.charAt(idx) == '\n') {
-                    end = idx + 1;
-                }
-                result[i] = content.substring(start, Math.min(end, len));
-                start = Math.min(end, len);
-                while (start < len && (content.charAt(start) == '\n' || content.charAt(start) == '\r')) {
-                    start++;
-                }
+                part2.append(paragraphs[i]);
             }
         }
-        return result;
+        
+        return Arrays.asList(part1.toString(), part2.toString());
     }
-
+    
+    /**
+     * Tạo title cho chapter
+     */
     private String buildChapterTitle(Chapter chapter, int partIndex) {
         int chapterNumber = chapter.getChapterNumber() != null ? chapter.getChapterNumber() : 0;
         String suffix = partIndex == 0 ? ".1" : ".2";
         String baseTitle = chapter.getChapterTitle() != null ? chapter.getChapterTitle() : "";
         return "Chương " + chapterNumber + suffix + ":" + baseTitle;
     }
-
+    
+    /**
+     * Tạo auth2 cho request
+     */
     private String buildAuth2(long bookId, int chapterNumber, int partIndex) {
         int order = partIndex == 0 ? chapterNumber * 2 - 1 : chapterNumber * 2;
         return "TruyenHD" + bookId + order + "themchuong";
     }
-
+    
+    /**
+     * Tạo request body cho cURL
+     */
     private String buildRequestBody(BookEntry entry, Account account, String title, String auth2,
                                     LocalDateTime scheduleDateTime, String content) throws IOException {
         Map<String, Object> payload = new LinkedHashMap<>();
+        
         payload.put("price", entry.getPriceString());
-        payload.put("registered", defaultString(account.getRegistered(), DATE_TIME_FORMATTER.format(LocalDateTime.now())));
+        payload.put("registered", defaultString(account.getRegistered(), 
+            DATE_TIME_FORMATTER.format(LocalDateTime.now())));
         payload.put("title", title);
         payload.put("auth2", auth2);
-        payload.put("user_id", account.getId() != null ? account.getId().toString() : "");
+        payload.put("user_id", account.getId() != null ? String.valueOf(account.getId()) : "");
         payload.put("activation_key", defaultString(account.getActivationKey(), ""));
-        payload.put("versionIOS", defaultString(account.getVersionIos(), "1"));
+        payload.put("versionIOS", "1");
         payload.put("auth", defaultString(account.getAuth(), ""));
         payload.put("date_schedule", DATE_TIME_FORMATTER.format(scheduleDateTime));
         payload.put("suggest_password", "");
-        payload.put("id", entry.getBook().getId().toString());
+        payload.put("id", String.valueOf(entry.getBook().getId()));
         payload.put("content", content);
         payload.put("email", defaultString(account.getEmail(), ""));
         payload.put("value_password", "");
         payload.put("uuid", defaultString(account.getUuid(), ""));
         payload.put("status", "future");
-        return objectMapper.writeValueAsString(payload);
+        
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(payload);
     }
-
-    private void executePostRequest(Book book, int chapterNumber, int partIndex, String requestBody,
-                                    PostingSummary summary) throws IOException {
-        RequestBody body = RequestBody.create(requestBody, JSON_MEDIA_TYPE);
-        Request request = new Request.Builder()
-            .url(POST_URL)
-            .post(body)
-            .header("Host", "s1apihd.com")
-            .header("accept", "*/*")
-            .header("content-type", "application/json")
-            .header("user-agent", "TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0")
-            .header("accept-language", "vi-VN;q=1.0, en-VN;q=0.9")
-            .build();
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                String responseBody = response.body() != null ? response.body().string() : "";
-                throw new IOException("HTTP " + response.code() + " - " + responseBody);
+    
+    /**
+     * Thực thi POST request
+     */
+    private void executePostRequest(Book book, int chapterNumber, int partIndex, 
+                                   String requestBody, PostingSummary summary) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                "curl",
+                "-H", "Host: s1apihd.com",
+                "-H", "accept: */*",
+                "-H", "content-type: application/json",
+                "-H", "user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0",
+                "-H", "accept-language: vi-VN;q=1.0, en-VN;q=0.9",
+                "--data-binary", requestBody,
+                "--compressed",
+                API_ENDPOINT
+            );
+            
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+            
+            if (exitCode == 0) {
+                String partName = partIndex == 0 ? "phần 1" : "phần 2";
+                summary.addSuccess(String.format("  - Chương %d %s: OK", chapterNumber, partName));
+            } else {
+                throw new RuntimeException("cURL exit code: " + exitCode);
             }
+            
+        } catch (Exception ex) {
+            String partName = partIndex == 0 ? "phần 1" : "phần 2";
+            summary.addError(String.format("Truyện '%s' chương %d %s: %s",
+                book.getTitle(), chapterNumber, partName, ex.getMessage()));
         }
-        String partSuffix = partIndex == 0 ? ".1" : ".2";
-        summary.addSuccess(book.getTitle() + " chương " + chapterNumber + partSuffix);
     }
-
-    private String defaultString(String value, String fallback) {
-        return value != null && !value.isBlank() ? value : fallback;
-    }
-
-    private void displayPostingSummary(PostingSummary summary) {
-        if (summary == null) {
-            JOptionPane.showMessageDialog(this, "Không có kết quả để hiển thị.");
-            return;
-        }
+    
+    /**
+     * Hiển thị kết quả đăng
+     */
+    private void showPostingSummary(PostingSummary summary) {
         StringBuilder message = new StringBuilder();
-        if (summary.getSuccessCount() > 0) {
-            message.append("Thành công: ").append(summary.getSuccessCount()).append(" yêu cầu.\n");
-        }
+        message.append("Hoàn thành đăng truyện!\n\n");
+        message.append(String.format("Thành công: %d yêu cầu\n", summary.getSuccessCount()));
+        
         if (summary.hasErrors()) {
-            message.append("Lỗi:\n");
+            message.append(String.format("\nLỗi: %d yêu cầu\n", summary.getErrorMessages().size()));
+            message.append("\nChi tiết lỗi:\n");
             for (String error : summary.getErrorMessages()) {
-                message.append("- ").append(error).append('\n');
+                message.append("- ").append(error).append("\n");
             }
-            JOptionPane.showMessageDialog(this, message.toString(), "Kết quả đăng", JOptionPane.WARNING_MESSAGE);
-        } else {
-            String content = message.length() > 0 ? message.toString() : "Không có yêu cầu nào được gửi.";
-            JOptionPane.showMessageDialog(this, content, "Kết quả đăng", JOptionPane.INFORMATION_MESSAGE);
+        }
+        
+        int messageType = summary.hasErrors() ? JOptionPane.WARNING_MESSAGE : JOptionPane.INFORMATION_MESSAGE;
+        String content = message.length() > 0 ? message.toString() : "Không có yêu cầu nào được gửi.";
+        
+        JOptionPane.showMessageDialog(this, content, "Kết quả đăng", messageType);
+    }
+    
+    /**
+     * Utility method: trả về giá trị mặc định nếu chuỗi rỗng
+     */
+    private String defaultString(String value, String defaultValue) {
+        return (value != null && !value.isEmpty()) ? value : defaultValue;
+    }
+    
+    // ========== Inner Classes ==========
+    
+    /**
+     * Table model cho bảng books
+     */
+    private class BookTableModel extends AbstractTableModel {
+        private final String[] columnNames = {
+            "Chọn", "Truyện", "Tài khoản", "Giá/chương", 
+            "Từ chương", "Đến chương"
+        };
+        
+        @Override
+        public int getRowCount() {
+            return bookEntries.size();
+        }
+        
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+        
+        @Override
+        public String getColumnName(int column) {
+            return columnNames[column];
+        }
+        
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == 0) {
+                return Boolean.class;
+            }
+            return String.class;
+        }
+        
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            // Cột "Chọn" và "Đến chương" có thể edit
+            return column == 0 || column == 5;
+        }
+        
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            BookEntry entry = bookEntries.get(rowIndex);
+            
+            switch (columnIndex) {
+                case 0: return entry.isSelected();
+                case 1: return entry.getBookTitle();
+                case 2: return entry.getAccountName();
+                case 3: return entry.getPriceDisplay();
+                case 4: return entry.getFromChapter();
+                case 5: return entry.getToChapter();
+                default: return "";
+            }
+        }
+        
+        @Override
+        public void setValueAt(Object value, int rowIndex, int columnIndex) {
+            BookEntry entry = bookEntries.get(rowIndex);
+            
+            if (columnIndex == 0) {
+                entry.setSelected((Boolean) value);
+            } else if (columnIndex == 5) {
+                try {
+                    int toChapter = Integer.parseInt(value.toString());
+                    entry.setToChapter(toChapter);
+                } catch (NumberFormatException | IllegalArgumentException ex) {
+                    JOptionPane.showMessageDialog(DangTruyen.this, ex.getMessage());
+                }
+            }
+            
+            fireTableCellUpdated(rowIndex, columnIndex);
         }
     }
-
-    private static class PostingSummary {
-        private final List<String> successMessages = new ArrayList<>();
-        private final List<String> errorMessages = new ArrayList<>();
-
-        void addSuccess(String message) {
-            successMessages.add(message);
+    
+    /**
+     * Renderer cho checkbox
+     */
+    private class CheckBoxRenderer extends JCheckBox implements javax.swing.table.TableCellRenderer {
+        public CheckBoxRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER);
         }
-
-        void addError(String message) {
-            errorMessages.add(message);
-        }
-
-        int getSuccessCount() {
-            return successMessages.size();
-        }
-
-        List<String> getErrorMessages() {
-            return errorMessages;
-        }
-
-        boolean hasErrors() {
-            return !errorMessages.isEmpty();
+        
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            setSelected(value != null && (Boolean) value);
+            return this;
         }
     }
-
+    
+    /**
+     * Editor cho checkbox
+     */
+    private class CheckBoxEditor extends DefaultCellEditor {
+        public CheckBoxEditor() {
+            super(new JCheckBox());
+            JCheckBox checkBox = (JCheckBox) getComponent();
+            checkBox.setHorizontalAlignment(SwingConstants.CENTER);
+        }
+    }
+    
+    /**
+     * Class lưu thông tin một book entry
+     */
     private class BookEntry {
         private final Book book;
         private Account account;
@@ -1111,181 +1086,101 @@ public class DangTruyen extends javax.swing.JPanel {
         private boolean selected;
         private final int fromChapter;
         private int chapterOffset;
-
+        
         BookEntry(Book book, Account account) {
             this.book = book;
             this.account = account;
             this.price = book.getPrice() != null ? book.getPrice() : BigDecimal.ZERO;
+            
             int posted = book.getPosted() != null ? book.getPosted() : 0;
             this.fromChapter = posted + 1;
-            this.chapterOffset = DEFAULT_NUM_CHAPTER;
+            
+            try {
+                int numChapter = Integer.parseInt(txtNumChapter.getText().trim());
+                this.chapterOffset = numChapter;
+            } catch (NumberFormatException ex) {
+                this.chapterOffset = DEFAULT_NUM_CHAPTER;
+            }
         }
-
+        
         Book getBook() {
             return book;
         }
-
+        
         Account getAccount() {
             return account;
         }
-
+        
         void setAccount(Account account) {
             this.account = account;
         }
-
+        
         boolean isSelected() {
             return selected;
         }
-
+        
         void setSelected(boolean selected) {
             this.selected = selected;
         }
-
+        
         int getFromChapter() {
             return fromChapter;
         }
-
+        
         int getToChapter() {
             return fromChapter + chapterOffset;
         }
-
+        
         void setToChapter(int toChapter) {
             if (toChapter < fromChapter) {
                 throw new IllegalArgumentException("'Đến chương' phải lớn hơn hoặc bằng 'Từ chương'.");
             }
             this.chapterOffset = toChapter - fromChapter;
         }
-
+        
         String getAccountName() {
-            return account != null && account.getUsername() != null ? account.getUsername() : "(Chưa gán)";
+            return account != null && account.getUsername() != null ? 
+                account.getUsername() : "(Chưa gán)";
         }
-
+        
         String getBookTitle() {
             return book.getTitle() != null ? book.getTitle() : "";
         }
-
+        
         String getPriceDisplay() {
-            return price != null ? price.stripTrailingZeros().toPlainString() : "0";
+            return price != null ? price.toString() : "0";
         }
-
+        
         String getPriceString() {
-            return getPriceDisplay();
+            return price != null ? price.toString() : "0";
         }
     }
-
-    private class BookTableModel extends AbstractTableModel {
-        private final String[] columns = {"Chọn", "Tài khoản", "Tên Truyện", "Giá/chương", "Từ Chương", "Đến Chương"};
-        private final List<BookEntry> entries = new ArrayList<>();
-
-        @Override
-        public int getRowCount() {
-            return entries.size();
+    
+    /**
+     * Class tổng hợp kết quả đăng
+     */
+    private static class PostingSummary {
+        private final List<String> successMessages = new ArrayList<>();
+        private final List<String> errorMessages = new ArrayList<>();
+        
+        void addSuccess(String message) {
+            successMessages.add(message);
         }
-
-        @Override
-        public int getColumnCount() {
-            return columns.length;
+        
+        void addError(String message) {
+            errorMessages.add(message);
         }
-
-        @Override
-        public String getColumnName(int column) {
-            return columns[column];
+        
+        int getSuccessCount() {
+            return successMessages.size();
         }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return switch (columnIndex) {
-                case 0 -> Boolean.class;
-                case 4, 5 -> Integer.class;
-                default -> String.class;
-            };
+        
+        List<String> getErrorMessages() {
+            return errorMessages;
         }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex == 0 || columnIndex == 5;
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            BookEntry entry = entries.get(rowIndex);
-            return switch (columnIndex) {
-                case 0 -> entry.isSelected();
-                case 1 -> entry.getAccountName();
-                case 2 -> entry.getBookTitle();
-                case 3 -> entry.getPriceDisplay();
-                case 4 -> entry.getFromChapter();
-                case 5 -> entry.getToChapter();
-                default -> null;
-            };
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            BookEntry entry = entries.get(rowIndex);
-            if (columnIndex == 0) {
-                entry.setSelected(Boolean.TRUE.equals(aValue));
-                fireTableRowsUpdated(rowIndex, rowIndex);
-            } else if (columnIndex == 5) {
-                Integer parsed = parseInteger(aValue);
-                if (parsed == null) {
-                    JOptionPane.showMessageDialog(DangTruyen.this, "'Đến chương' phải là số.");
-                    return;
-                }
-                try {
-                    entry.setToChapter(parsed);
-                    fireTableRowsUpdated(rowIndex, rowIndex);
-                } catch (IllegalArgumentException ex) {
-                    JOptionPane.showMessageDialog(DangTruyen.this, ex.getMessage());
-                }
-            }
-        }
-
-        private Integer parseInteger(Object value) {
-            if (value == null) {
-                return null;
-            }
-            if (value instanceof Number) {
-                return ((Number) value).intValue();
-            }
-            String text = value.toString().trim();
-            if (text.isEmpty()) {
-                return null;
-            }
-            try {
-                return Integer.parseInt(text);
-            } catch (NumberFormatException ex) {
-                return null;
-            }
-        }
-
-        void setEntries(List<BookEntry> newEntries) {
-            entries.clear();
-            if (newEntries != null) {
-                entries.addAll(newEntries);
-            }
-            suppressSelectAllEvents = true;
-            try {
-                jCheckBox1.setSelected(false);
-            } finally {
-                suppressSelectAllEvents = false;
-            }
-            fireTableDataChanged();
-        }
-
-        void setAllSelected(boolean selected) {
-            for (BookEntry entry : entries) {
-                entry.setSelected(selected);
-            }
-            if (!entries.isEmpty()) {
-                fireTableRowsUpdated(0, entries.size() - 1);
-            }
-        }
-
-        List<BookEntry> getSelectedEntries() {
-            return entries.stream()
-                .filter(BookEntry::isSelected)
-                .collect(Collectors.toList());
+        
+        boolean hasErrors() {
+            return !errorMessages.isEmpty();
         }
     }
   
