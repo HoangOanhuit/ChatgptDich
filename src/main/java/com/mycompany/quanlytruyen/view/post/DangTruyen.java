@@ -16,8 +16,13 @@ import com.mycompany.quanlytruyen.model.Post;
 import com.mycompany.quanlytruyen.database.DatabaseManager;
 
 import javax.swing.*;
+import javax.swing.LayoutStyle;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,7 +36,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import javax.sql.DataSource;
-
 
 public class DangTruyen extends javax.swing.JPanel {
 
@@ -82,9 +86,132 @@ public class DangTruyen extends javax.swing.JPanel {
         
         initComponents();
         initData();
+        configureCustomComponents();
 
     }
 
+ /**
+     * Thiết lập các thành phần UI tùy chỉnh sau khi form được tạo
+     */
+    private void configureCustomComponents() {
+        this.txtDay = this.day;
+        this.txtMonth = this.month;
+        this.txtYear = this.year;
+
+        if (this.tableModel == null) {
+            this.tableModel = new BookTableModel();
+        }
+        Tbooks.setModel(tableModel);
+        Tbooks.setFillsViewportHeight(true);
+        Tbooks.setRowHeight(28);
+        Tbooks.setAutoCreateRowSorter(true);
+
+        TableColumnModel columnModel = Tbooks.getColumnModel();
+        if (columnModel.getColumnCount() > 0) {
+            TableColumn selectColumn = columnModel.getColumn(0);
+            selectColumn.setMaxWidth(70);
+            selectColumn.setCellRenderer(new CheckBoxRenderer());
+            selectColumn.setCellEditor(new CheckBoxEditor());
+        }
+        if (columnModel.getColumnCount() > 3) {
+            columnModel.getColumn(1).setPreferredWidth(150);
+            columnModel.getColumn(2).setPreferredWidth(240);
+            columnModel.getColumn(3).setPreferredWidth(110);
+        }
+
+        initializeNumChapterControl();
+        setDefaultScheduleDate();
+    }
+
+    private void initializeNumChapterControl() {
+        txtNumChapter = new JTextField(String.valueOf(DEFAULT_NUM_CHAPTER));
+        txtNumChapter.setColumns(5);
+        txtNumChapter.setHorizontalAlignment(JTextField.CENTER);
+        txtNumChapter.setToolTipText("Số chương sẽ đăng cho mỗi truyện");
+        txtNumChapter.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateToChapters();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateToChapters();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateToChapters();
+            }
+        });
+
+        JPanel numChapterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        numChapterPanel.setOpaque(false);
+        JLabel lblNumChapter = new JLabel("Số chương/lần đăng:");
+        numChapterPanel.add(lblNumChapter);
+        numChapterPanel.add(txtNumChapter);
+
+        rebuildSidePanelLayout(numChapterPanel);
+    }
+
+    private void rebuildSidePanelLayout(JPanel numChapterPanel) {
+        GroupLayout layout = new GroupLayout(sideBox);
+        sideBox.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(FilterPanel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(numChapterPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel11)
+                                .addGroup(layout.createSequentialGroup()
+                                    .addComponent(day, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jLabel12)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(month, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jLabel13)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(year, GroupLayout.PREFERRED_SIZE, 60, GroupLayout.PREFERRED_SIZE)))
+                            .addGap(0, 20, Short.MAX_VALUE)))
+                    .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(25, 25, 25)
+                    .addComponent(FilterPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGap(18, 18, 18)
+                    .addComponent(numChapterPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGap(24, 24, 24)
+                    .addComponent(jLabel11)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                        .addComponent(day, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(month, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(year, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel12)
+                        .addComponent(jLabel13))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        sideBox.revalidate();
+        sideBox.repaint();
+    }
+
+    private void setDefaultScheduleDate() {
+        if (txtDay == null || txtMonth == null || txtYear == null) {
+            return;
+        }
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        txtDay.setText(String.format("%02d", tomorrow.getDayOfMonth()));
+        txtMonth.setText(String.format("%02d", tomorrow.getMonthValue()));
+        txtYear.setText(String.valueOf(tomorrow.getYear()));
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -467,7 +594,8 @@ public class DangTruyen extends javax.swing.JPanel {
 
     private void btnFilter5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilter5ActionPerformed
         // TODO add your handling code here:
-
+        tenTruyen1.setSelectedIndex(0);
+        loadBooks(null);
     }//GEN-LAST:event_btnFilter5ActionPerformed
 
     private void dayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dayActionPerformed
@@ -557,6 +685,7 @@ public class DangTruyen extends javax.swing.JPanel {
             }
             
             tableModel.fireTableDataChanged();
+            updateToChapters();
             
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, 
@@ -564,7 +693,9 @@ public class DangTruyen extends javax.swing.JPanel {
                 "Lỗi", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
+        
     }
+    
     
     /**
      * Lọc books theo accountId và postStatus
@@ -582,12 +713,26 @@ public class DangTruyen extends javax.swing.JPanel {
         return filtered;
     }
     
+    
     /**
      * Cập nhật "Đến chương" khi thay đổi số chương
      */
     private void updateToChapters() {
+        if (txtNumChapter == null || bookEntries == null) {
+            return;
+        }
+
+        String rawValue = txtNumChapter.getText();
+        if (rawValue == null) {
+            return;
+        }
+
+        rawValue = rawValue.trim();
+        if (rawValue.isEmpty()) {
+            return;
+        }        
         try {
-            int numChapter = Integer.parseInt(txtNumChapter.getText().trim());
+            int numChapter = Integer.parseInt(rawValue);
             if (numChapter <= 0) {
                 JOptionPane.showMessageDialog(this, "Số chương phải lớn hơn 0");
                 txtNumChapter.setText(String.valueOf(DEFAULT_NUM_CHAPTER));
@@ -598,8 +743,9 @@ public class DangTruyen extends javax.swing.JPanel {
                 entry.setToChapter(entry.getFromChapter() + numChapter);
             }
             
-            tableModel.fireTableDataChanged();
-            
+            if (tableModel != null) {
+                tableModel.fireTableDataChanged();
+            }
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Số chương không hợp lệ");
             txtNumChapter.setText(String.valueOf(DEFAULT_NUM_CHAPTER));
@@ -732,10 +878,15 @@ public class DangTruyen extends javax.swing.JPanel {
         }
         
         int fromChapter = entry.getFromChapter();
-        int toChapter = entry.getToChapter();
+        int numberOfChapters = entry.getChapterCount();
+        if (numberOfChapters <= 0) {
+            throw new IllegalStateException("Số chương cần đăng phải lớn hơn 0");
+        }
+        
         int chaptersPosted = 0;
         
-        for (int chapterNumber = fromChapter; chapterNumber <= toChapter; chapterNumber++) {
+        for (int offset = 0; offset < numberOfChapters; offset++) {
+            int chapterNumber = fromChapter + offset;
             Chapter chapter = chaptersMap.get(chapterNumber);
             
             if (chapter == null) {
@@ -756,7 +907,7 @@ public class DangTruyen extends javax.swing.JPanel {
             }
             
             // Lấy lịch đăng tương ứng
-            int scheduleIndex = (chapterNumber - fromChapter);
+            int scheduleIndex = offset;
             if (scheduleIndex >= schedule.size()) {
                 throw new IllegalStateException("Không đủ lịch đăng cho chương " + chapterNumber);
             }
@@ -767,6 +918,7 @@ public class DangTruyen extends javax.swing.JPanel {
             // Chia chapter thành 2 phần
             List<String> parts = splitChapterContent(chapter.getContent());
             
+            boolean chapterSuccess = true;
             for (int partIndex = 0; partIndex < parts.size(); partIndex++) {
                 String content = parts.get(partIndex);
                 if (content == null) {
@@ -777,10 +929,10 @@ public class DangTruyen extends javax.swing.JPanel {
                 String auth2 = buildAuth2(book.getId(), chapter.getChapterNumber(), partIndex);
                 String requestBody = buildRequestBody(entry, account, title, auth2, scheduleDateTime, content);
                 
-                executePostRequest(book, chapter.getChapterNumber(), partIndex, requestBody, summary);
+                //executePostRequest(book, chapter.getChapterNumber(), partIndex, requestBody, summary);
             }
             
-            chaptersPosted++;
+            //chaptersPosted++;
         }
         
         // Cập nhật posted trong database
@@ -840,28 +992,100 @@ public class DangTruyen extends javax.swing.JPanel {
             return Arrays.asList("", "");
         }
         
-        // Tìm điểm chia giữa content (split by paragraphs)
-        String[] paragraphs = content.split("\n");
-        int midPoint = paragraphs.length / 2;
-        
-        StringBuilder part1 = new StringBuilder();
-        StringBuilder part2 = new StringBuilder();
-        
-        for (int i = 0; i < paragraphs.length; i++) {
-            if (i < midPoint) {
-                if (part1.length() > 0) {
-                    part1.append("\n");
+        String normalizedContent = normalizeChapterContent(content);
+        String[] parts = splitContentIntoParts(normalizedContent, 2);
+
+        if (parts.length == 1) {
+            return Arrays.asList(parts[0], "");
+        }
+        return Arrays.asList(parts[0], parts[1]);
+    }
+
+    private String normalizeChapterContent(String content) {
+        if (content == null || content.isEmpty()) {
+            return "";
+        }
+
+        String normalized = content.replace("\r\n", "\n").replace("\r", "\n");
+        normalized = normalized.replaceAll("\\n\\s+\\n", "\n\n");
+        normalized = normalized.replaceAll("(?<=\\S)\\n(?=\\s*\\S)", "\n\n");
+        normalized = normalized.replaceAll("\\n{3,}", "\n\n");
+
+        String[] paragraphs = normalized.split("\\n{2}");
+        StringBuilder processed = new StringBuilder();
+        for (String paragraph : paragraphs) {
+            String cleanedParagraph = removeLeadingSpaces(paragraph);
+            if (cleanedParagraph.isEmpty()) {
+                continue;
+            }
+            String capitalizedParagraph = capitalizeFirstLetter(cleanedParagraph);
+            if (processed.length() > 0) {
+                processed.append("\n\n");
+            }
+            processed.append(capitalizedParagraph);
+        }
+        return processed.toString();
+    }
+
+    private String removeLeadingSpaces(String paragraph) {
+        int index = 0;
+        while (index < paragraph.length() && paragraph.charAt(index) == ' ') {
+            index++;
+        }
+        return paragraph.substring(index);
+    }
+
+    private String capitalizeFirstLetter(String paragraph) {
+        for (int i = 0; i < paragraph.length(); i++) {
+            char current = paragraph.charAt(i);
+            if (Character.isLetter(current)) {
+                if (!Character.isUpperCase(current)) {
+                    return paragraph.substring(0, i) + Character.toUpperCase(current) + paragraph.substring(i + 1);
                 }
-                part1.append(paragraphs[i]);
+                break;
+            }
+        }
+        return paragraph;
+    }
+
+    private String[] splitContentIntoParts(String content, int numberOfParts) {
+        String[] result = new String[numberOfParts];
+        if (content == null) {
+            Arrays.fill(result, "");
+            return result;
+        }
+
+        int len = content.length();
+        int start = 0;
+        for (int i = 0; i < numberOfParts; i++) {
+            start = Math.min(start, len);
+            if (i == numberOfParts - 1) {
+                result[i] = content.substring(start);
             } else {
-                if (part2.length() > 0) {
-                    part2.append("\n");
+                int approxEnd = start + (len - start) / (numberOfParts - i);
+                int idx = content.lastIndexOf('\n', approxEnd);
+                if (idx < start) {
+                    idx = approxEnd;
                 }
-                part2.append(paragraphs[i]);
+                int end = Math.max(start, Math.min(idx, len));
+                if (idx < len && idx >= start && content.charAt(idx) == '\n') {
+                    end = idx + 1;
+                }
+                result[i] = content.substring(start, Math.min(end, len));
+                start = Math.min(len, Math.max(end, start));
+                while (start < len && (content.charAt(start) == '\n' || content.charAt(start) == '\r')) {
+                    start++;
+                }
+
             }
         }
         
-        return Arrays.asList(part1.toString(), part2.toString());
+        for (int i = 0; i < result.length; i++) {
+            if (result[i] == null) {
+                result[i] = "";
+            }
+        }
+        return result;
     }
     
     /**
@@ -914,8 +1138,9 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Thực thi POST request
      */
-    private void executePostRequest(Book book, int chapterNumber, int partIndex, 
+    private boolean executePostRequest(Book book, int chapterNumber, int partIndex,
                                    String requestBody, PostingSummary summary) {
+        boolean success = false;
         try {
             ProcessBuilder pb = new ProcessBuilder(
                 "curl",
@@ -935,6 +1160,7 @@ public class DangTruyen extends javax.swing.JPanel {
             if (exitCode == 0) {
                 String partName = partIndex == 0 ? "phần 1" : "phần 2";
                 summary.addSuccess(String.format("  - Chương %d %s: OK", chapterNumber, partName));
+                success = true;
             } else {
                 throw new RuntimeException("cURL exit code: " + exitCode);
             }
@@ -944,6 +1170,7 @@ public class DangTruyen extends javax.swing.JPanel {
             summary.addError(String.format("Truyện '%s' chương %d %s: %s",
                 book.getTitle(), chapterNumber, partName, ex.getMessage()));
         }
+        return success;
     }
     
     /**
@@ -982,7 +1209,7 @@ public class DangTruyen extends javax.swing.JPanel {
      */
     private class BookTableModel extends AbstractTableModel {
         private final String[] columnNames = {
-            "Chọn", "Truyện", "Tài khoản", "Giá/chương", 
+            "Chọn", "Tài khoản", "Tên truyện", "Giá/chương",
             "Từ chương", "Đến chương"
         };
         
@@ -1021,8 +1248,8 @@ public class DangTruyen extends javax.swing.JPanel {
             
             switch (columnIndex) {
                 case 0: return entry.isSelected();
-                case 1: return entry.getBookTitle();
-                case 2: return entry.getAccountName();
+                case 1: return entry.getAccountName();
+                case 2: return entry.getBookTitle();
                 case 3: return entry.getPriceDisplay();
                 case 4: return entry.getFromChapter();
                 case 5: return entry.getToChapter();
@@ -1040,7 +1267,9 @@ public class DangTruyen extends javax.swing.JPanel {
                 try {
                     int toChapter = Integer.parseInt(value.toString());
                     entry.setToChapter(toChapter);
-                } catch (NumberFormatException | IllegalArgumentException ex) {
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(DangTruyen.this, ex.getMessage());
+                } catch (IllegalArgumentException ex) {
                     JOptionPane.showMessageDialog(DangTruyen.this, ex.getMessage());
                 }
             }
@@ -1130,6 +1359,10 @@ public class DangTruyen extends javax.swing.JPanel {
         int getToChapter() {
             return fromChapter + chapterOffset;
         }
+        
+        int getChapterCount() {
+            return chapterOffset;
+        }        
         
         void setToChapter(int toChapter) {
             if (toChapter < fromChapter) {

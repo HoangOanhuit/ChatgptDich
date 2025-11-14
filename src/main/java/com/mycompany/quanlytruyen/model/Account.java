@@ -9,7 +9,7 @@ import java.util.Objects;
  */
 public class Account {
     
-    private Long id;
+    private Long account_id;
     private String username;
     private String email;
     private String password;
@@ -28,18 +28,18 @@ public class Account {
     }
 
     public Account(Long id, String username, String email, String password) {
-        this.id = id;
+        this.account_id = account_id;
         this.username = username;
         this.email = email;
         this.password = password;
     }
 
     public Long getId() {
-        return id;
+        return account_id;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.account_id = account_id;
     }
 
     public String getUsername() {
@@ -159,18 +159,18 @@ public class Account {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Account account = (Account) o;
-        return Objects.equals(id, account.id);
+        return Objects.equals(account_id, account.account_id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(account_id);
     }
 
     @Override
     public String toString() {
         return "Account{" +
-            "id=" + id +
+            "account_id=" + account_id +
             ", username='" + username + '\'' +
             ", email='" + email + '\'' +
             '}';
