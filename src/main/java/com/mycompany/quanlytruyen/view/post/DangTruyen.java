@@ -701,7 +701,7 @@ public class DangTruyen extends javax.swing.JPanel {
      * Lọc books theo accountId và postStatus
      */
     private List<Book> filterBooksByAccountId(Long accountId, PostStatus postStatus) throws SQLException {
-        List<Book> allBooks = bookDao.getBooksByStatus(null, null, postStatus);
+        List<Book> allBooks = bookDao.getBooksByStatus(null, null, PostStatus.NOT_HOAN);
         List<Book> filtered = new ArrayList<>();
         
         for (Book book : allBooks) {

@@ -288,7 +288,8 @@ public class BookDao {
         StringBuilder sql = new StringBuilder("""
             SELECT id, title, author, slug, created_at,
                    raw_status, translate_status, post_status, total_revenue,
-                   guidelines, name_table, model_used, last_resumed_at
+                   guidelines, name_table, model_used, last_resumed_at,
+                                      account_id, short_title, posted, price
             FROM books WHERE 1=1
             """);
         
