@@ -23,6 +23,7 @@ public class Book {
     private String shortTitle;           // ✨ MỚI - Tên viết tắt
     private Integer posted;              // ✨ MỚI - Chương cuối đã đăng
     private BigDecimal price; 
+    private Integer chapterPerDay;      //Số chương đăng mỗi ngày
     
     // Translation metadata
     private String guidelines;
@@ -120,6 +121,7 @@ public class Book {
         this.postStatus = PostStatus.NOT_HOAN;
         this.totalRevenue = BigDecimal.ZERO;
         this.posted = 0;
+        this.chapterPerDay = 5; // ✅ Mặc định: 5 chương/ngày
     }
     
     public Book(String title) {
@@ -132,7 +134,8 @@ public class Book {
      */
     public Book(Long id, String title, String author, String slug, 
                 String guidelines, String nameTable, String modelUsed,
-                Long accountId, String shortTitle, Integer posted, BigDecimal price) {
+                Long accountId, String shortTitle, Integer posted, 
+                BigDecimal price, Integer chapterPerDay) {
         this.id = id;
         this.title = title;
         this.author = author;
@@ -144,6 +147,7 @@ public class Book {
         this.shortTitle = shortTitle;
         this.posted = posted != null ? posted : 0;
         this.price = price != null ? price : BigDecimal.ZERO;
+        this.chapterPerDay = chapterPerDay != null ? chapterPerDay : 5; // ✅ NEW
     }
     
     // Getters and Setters
@@ -219,6 +223,12 @@ public class Book {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }   
+
+    public Integer getChapterPerDay() { return chapterPerDay; }
+    
+    public void setChapterPerDay(Integer chapterPerDay) { 
+        this.chapterPerDay = chapterPerDay != null && chapterPerDay > 0 ? chapterPerDay : 5;
+    }    
 // STATISTICS FIELDS
     
     public Integer getTotalChapters() {

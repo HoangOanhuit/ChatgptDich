@@ -766,7 +766,7 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Đăng các truyện đã chọn
      */
-    private void postSelectedBooks() {
+        private void postSelectedBooks() {
         List<BookEntry> selectedBooks = new ArrayList<>();
         for (BookEntry entry : bookEntries) {
             if (entry.isSelected()) {
@@ -843,7 +843,7 @@ public class DangTruyen extends javax.swing.JPanel {
                 try {
                     PostingSummary summary = get();
                     showPostingSummary(summary);
-                    refreshData(); // Làm mới danh sách
+                    refreshData();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(DangTruyen.this,
                         "Lỗi không mong muốn: " + ex.getMessage(),
@@ -860,7 +860,7 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Đăng một truyện
      */
-    private void postBook(BookEntry entry, LocalDate scheduleDate, PostingSummary summary) throws Exception {
+        private void postBook(BookEntry entry, LocalDate scheduleDate, PostingSummary summary) throws Exception {
         Book book = entry.getBook();
         Account account = entry.getAccount();
         
@@ -868,27 +868,37 @@ public class DangTruyen extends javax.swing.JPanel {
             throw new IllegalStateException("Truyện chưa được gán tài khoản");
         }
         
-        // Load chapters của book
+        // Load chapters từ database
         Map<Integer, Chapter> chaptersMap = loadChaptersForBook(book.getId());
         
-        // Load lịch đăng
+        // Load lịch đăng (bảng posts)
         List<Post> schedule = postDao.findByBookId(book.getId());
         if (schedule.isEmpty()) {
             throw new IllegalStateException("Chưa có lịch đăng cho truyện này");
         }
         
+        // ✅ FIX: Lấy số chương từ chapter_per_day
         int fromChapter = entry.getFromChapter();
-        int numberOfChapters = entry.getChapterCount();
-        if (numberOfChapters <= 0) {
-            throw new IllegalStateException("Số chương cần đăng phải lớn hơn 0");
+        int numberOfChapters = getChapterPerDay(book); // Lấy từ book.chapter_per_day
+        
+        // ✅ FIX: Validate đủ slots
+        int requiredSlots = numberOfChapters * 2; // Mỗi chapter cần 2 parts
+        if (schedule.size() < requiredSlots) {
+            throw new IllegalStateException(
+                String.format("Không đủ lịch đăng! Cần %d slots (cho %d chương × 2 parts), chỉ có %d slots",
+                    requiredSlots, numberOfChapters, schedule.size())
+            );
         }
         
         int chaptersPosted = 0;
+        int slotIndex = 0; // ✅ FIX: Index cho slot hiện tại
         
+        // Duyệt qua từng chương cần đăng
         for (int offset = 0; offset < numberOfChapters; offset++) {
             int chapterNumber = fromChapter + offset;
             Chapter chapter = chaptersMap.get(chapterNumber);
             
+            // Validate chapter
             if (chapter == null) {
                 throw new IllegalStateException("Không tìm thấy chương " + chapterNumber);
             }
@@ -906,44 +916,75 @@ public class DangTruyen extends javax.swing.JPanel {
                 throw new IllegalStateException("Chương " + chapterNumber + " chưa có nội dung");
             }
             
-            // Lấy lịch đăng tương ứng
-            int scheduleIndex = offset;
-            if (scheduleIndex >= schedule.size()) {
-                throw new IllegalStateException("Không đủ lịch đăng cho chương " + chapterNumber);
-            }
-            
-            Post slot = schedule.get(scheduleIndex);
-            LocalDateTime scheduleDateTime = buildScheduleDateTime(scheduleDate, slot);
-            
-            // Chia chapter thành 2 phần
+            // ✅ FIX: Chia chapter thành 2 phần
             List<String> parts = splitChapterContent(chapter.getContent());
             
             boolean chapterSuccess = true;
+            
+            // ✅ FIX: Đăng từng phần với SLOT RIÊNG
             for (int partIndex = 0; partIndex < parts.size(); partIndex++) {
                 String content = parts.get(partIndex);
-                if (content == null) {
-                    content = "";
+                if (content == null) content = "";
+                
+                // ✅ FIX: Lấy slot tương ứng
+                if (slotIndex >= schedule.size()) {
+                    throw new IllegalStateException(
+                        String.format("Không đủ slot! Chapter %d part %d cần slot[%d], chỉ có %d slots",
+                            chapterNumber, partIndex + 1, slotIndex, schedule.size())
+                    );
                 }
                 
-                String title = buildChapterTitle(chapter, partIndex);
-                String auth2 = buildAuth2(book.getId(), chapter.getChapterNumber(), partIndex);
-                String requestBody = buildRequestBody(entry, account, title, auth2, scheduleDateTime, content);
+                Post slot = schedule.get(slotIndex);
+                LocalDateTime scheduleDateTime = buildScheduleDateTime(scheduleDate, slot);
                 
-                //executePostRequest(book, chapter.getChapterNumber(), partIndex, requestBody, summary);
+                // Tạo title: "Chương 101.1:..." hoặc "Chương 101.2:..."
+                String title = buildChapterTitle(chapter, partIndex);
+                
+                // Tạo auth2 token
+                String auth2 = buildAuth2(book.getId(), chapter.getChapterNumber(), partIndex);
+                
+                // Tạo request body JSON
+                String requestBody = buildRequestBody(entry, account, title, auth2, 
+                                                     scheduleDateTime, content);
+                
+                // 🚀 Gửi request qua cURL
+                boolean success = executePostRequest(book, chapter.getChapterNumber(), 
+                                                   partIndex, requestBody, summary);
+                
+                if (!success) {
+                    chapterSuccess = false;
+                }
+                
+                // ✅ FIX: Tăng slotIndex sau mỗi part
+                slotIndex++;
             }
             
-            //chaptersPosted++;
+            if (chapterSuccess) {
+                chaptersPosted++;
+            }
         }
         
-        // Cập nhật posted trong database
+        // Cập nhật số chương đã đăng vào database
         if (chaptersPosted > 0) {
             int newPosted = (book.getPosted() != null ? book.getPosted() : 0) + chaptersPosted;
             book.setPosted(newPosted);
             bookDao.updateBook(book);
             
-            summary.addSuccess(String.format("Truyện '%s': Đăng thành công %d chương (posted: %d)",
-                book.getTitle(), chaptersPosted, newPosted));
+            summary.addSuccess(String.format("Truyện '%s': Đăng thành công %d chương (posted: %d → %d)",
+                book.getTitle(), chaptersPosted, book.getPosted() - chaptersPosted, newPosted));
         }
+    }
+    /**
+     * ✅ NEW: Lấy chapter_per_day từ Book
+     */
+    private int getChapterPerDay(Book book) {
+        // Nếu Book model có field chapterPerDay
+        if (book.getChapterPerDay() != null && book.getChapterPerDay() > 0) {
+            return book.getChapterPerDay();
+        }
+        
+        // Mặc định: 5 chương/ngày
+        return DEFAULT_NUM_CHAPTER;
     }
     
     /**
@@ -959,9 +1000,8 @@ public class DangTruyen extends javax.swing.JPanel {
         }
         return result;
     }
-    
     /**
-     * Tạo LocalDateTime từ ngày và lịch đăng
+     * ✅ FIXED: Tạo LocalDateTime từ ngày và slot
      */
     private LocalDateTime buildScheduleDateTime(LocalDate baseDate, Post slot) {
         if (baseDate == null) {
@@ -975,6 +1015,7 @@ public class DangTruyen extends javax.swing.JPanel {
         int minute = slot.getMinute();
         
         try {
+            // Trường hợp đặc biệt: 24:00 → 00:00 ngày hôm sau
             if (hour == 24 && minute == 0) {
                 return LocalDateTime.of(baseDate.plusDays(1), LocalTime.MIDNIGHT);
             }
@@ -982,24 +1023,8 @@ public class DangTruyen extends javax.swing.JPanel {
         } catch (Exception e) {
             return LocalDateTime.of(baseDate, LocalTime.of(0, 0));
         }
-    }
+    }    
     
-    /**
-     * Chia content của chapter thành 2 phần
-     */
-    private List<String> splitChapterContent(String content) {
-        if (content == null || content.isEmpty()) {
-            return Arrays.asList("", "");
-        }
-        
-        String normalizedContent = normalizeChapterContent(content);
-        String[] parts = splitContentIntoParts(normalizedContent, 2);
-
-        if (parts.length == 1) {
-            return Arrays.asList(parts[0], "");
-        }
-        return Arrays.asList(parts[0], parts[1]);
-    }
 
     private String normalizeChapterContent(String content) {
         if (content == null || content.isEmpty()) {
@@ -1047,7 +1072,16 @@ public class DangTruyen extends javax.swing.JPanel {
         }
         return paragraph;
     }
+    private List<String> splitChapterContent(String content) {
+        if (content == null || content.isEmpty()) {
+            return Arrays.asList("", "");
+        }
 
+        // Chia content thành 2 phần bằng nhau
+        String[] parts = splitContentIntoParts(content, 2);
+        return Arrays.asList(parts[0], parts[1]);
+    }
+    
     private String[] splitContentIntoParts(String content, int numberOfParts) {
         String[] result = new String[numberOfParts];
         if (content == null) {
@@ -1095,7 +1129,7 @@ public class DangTruyen extends javax.swing.JPanel {
         int chapterNumber = chapter.getChapterNumber() != null ? chapter.getChapterNumber() : 0;
         String suffix = partIndex == 0 ? ".1" : ".2";
         String baseTitle = chapter.getChapterTitle() != null ? chapter.getChapterTitle() : "";
-        return "Chương " + chapterNumber + suffix + ":" + baseTitle;
+        return "Chương " + chapterNumber + suffix + ": " + baseTitle;
     }
     
     /**

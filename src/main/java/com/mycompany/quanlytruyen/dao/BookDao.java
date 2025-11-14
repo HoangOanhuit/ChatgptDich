@@ -283,7 +283,8 @@ public class BookDao {
     /**
      * Get books by status
      */
-    public List<Book> getBooksByStatus(RawStatus rawStatus, TranslateStatus translateStatus, 
+    public List<Book> getBooksByStatus
+        (RawStatus rawStatus, TranslateStatus translateStatus, 
                                      PostStatus postStatus) throws SQLException {
         StringBuilder sql = new StringBuilder("""
             SELECT id, title, author, slug, created_at,
