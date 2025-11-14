@@ -85,8 +85,8 @@ public class DangTruyen extends javax.swing.JPanel {
         }
         
         initComponents();
-        initData();
         configureCustomComponents();
+        initData();
 
     }
 
