@@ -39,6 +39,12 @@ import java.util.*;
 import java.util.List;
 import javax.sql.DataSource;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 public class DangTruyen extends javax.swing.JPanel {
 
     private static final int DEFAULT_NUM_CHAPTER = 5;
@@ -1145,96 +1151,185 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Tạo request body cho cURL
      */
-    private String buildRequestBody(BookEntry entry, Account account, String title, String auth2,
-                                    LocalDateTime scheduleDateTime, String content) throws IOException {
+      private String buildRequestBody(BookEntry entry, Account account, String title, String auth2,
+                                LocalDateTime scheduleDateTime, String content) throws IOException {
+
+        // ✅ DEBUG: Kiểm tra content trước khi đưa vào JSON
+        System.out.println("📝 Content preview (first 100 chars):");
+        String preview = content.length() > 100 ? content.substring(0, 100) : content;
+        System.out.println(preview);
+        System.out.println("📊 Content length: " + content.length() + " chars");
+
         Map<String, Object> payload = new LinkedHashMap<>();
-        
-        payload.put("price", entry.getPriceString());
-        payload.put("registered", defaultString(account.getRegistered(), 
-            DATE_TIME_FORMATTER.format(LocalDateTime.now())));
-        payload.put("title", title);
-        payload.put("auth2", auth2);
-        payload.put("user_id", account.getId() != null ? String.valueOf(account.getId()) : "");
-        payload.put("activation_key", defaultString(account.getActivationKey(), ""));
-        payload.put("versionIOS", "1");
-        payload.put("auth", defaultString(account.getAuth(), ""));
-        payload.put("date_schedule", DATE_TIME_FORMATTER.format(scheduleDateTime));
-        payload.put("suggest_password", "");
-        payload.put("id", String.valueOf(entry.getBook().getId()));
+
+        // ... rest of code
+
         payload.put("content", content);
-        payload.put("email", defaultString(account.getEmail(), ""));
-        payload.put("value_password", "");
-        payload.put("uuid", defaultString(account.getUuid(), ""));
-        payload.put("status", "future");
-        
+
+        // ... rest of code
+
+        // ✅ Tạo JSON với ObjectMapper (tự động handle UTF-8)
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(payload);
+        String json = mapper.writeValueAsString(payload);
+
+        // ✅ DEBUG: Kiểm tra JSON output
+        System.out.println("📋 JSON preview (first 200 chars):");
+        String jsonPreview = json.length() > 200 ? json.substring(0, 200) : json;
+        System.out.println(jsonPreview);
+
+        return json;
     }
-    
     /**
      * Thực thi POST request
      */
-    private boolean executePostRequest(Book book, int chapterNumber, int partIndex,
+private boolean executePostRequest(Book book, int chapterNumber, int partIndex,
                                    String requestBody, PostingSummary summary) {
-        boolean success = false;
-        try {
-            // ⭐ THÊM LOG ĐỂ DEBUG
-            System.out.println("═══════════════════════════════════");
-            System.out.println("📝 Đang đăng: " + book.getTitle());
-            System.out.println("📖 Chương: " + chapterNumber + " Phần: " + (partIndex + 1));
-            System.out.println("📏 Request body length: " + requestBody.length());
-
-            // In 200 ký tự đầu của request body
-            String preview = requestBody.length() > 200 
-                ? requestBody.substring(0, 200) + "..." 
-                : requestBody;
-            System.out.println("📄 Request preview: " + preview);
-            System.out.println("═══════════════════════════════════");         
-            
-            ProcessBuilder pb = new ProcessBuilder(
-                "curl",
-                "-H", "Host: s1apihd.com",
-                "-H", "accept: */*",
-                "-H", "content-type: application/json",
-                //"-H", "accept-encoding: gzip, deflate",  // ✅ Thêm dòng này
-                "-H", "user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0",
-                "-H", "accept-language: vi-VN;q=1.0, en-VN;q=0.9",
-                "--data-binary", requestBody,
-               // "--compressed",
-                API_ENDPOINT
-            );
-            
-                    // ⭐ REDIRECT ERROR STREAM ĐỂ XEM LỖI TỪ cURL
-             pb.redirectErrorStream(true);
-            
-            Process process = pb.start();
-            
-           // ⭐ ĐỌC OUTPUT/ERROR từ cURL
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()))) {
-                String line;
-                StringBuilder output = new StringBuilder();
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
-                System.out.println("🔍 cURL output: " + output.toString());
-            }            
-            int exitCode = process.waitFor();
-            
-            if (exitCode == 0) {
-                String partName = partIndex == 0 ? "phần 1" : "phần 2";
-                summary.addSuccess(String.format("  - Chương %d %s: OK", chapterNumber, partName));
-                success = true;
-            } else {
-                throw new RuntimeException("cURL exit code: " + exitCode);
+    File tempFile = null;
+    boolean success = false;
+    
+    try {
+        // Tạo file tạm
+        tempFile = File.createTempFile("curl_request_", ".json");
+        
+        // ✅ QUAN TRỌNG: Ghi file với UTF-8 encoding
+        java.nio.file.Files.write(
+            tempFile.toPath(), 
+            requestBody.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+        );
+        
+        System.out.println("═══════════════════════════════════");
+        System.out.println("📝 Đang đăng: " + book.getTitle());
+        System.out.println("📖 Chương: " + chapterNumber + " Phần: " + (partIndex + 1));
+        System.out.println("📏 Request body length: " + requestBody.length());
+        System.out.println("📄 Temp file: " + tempFile.getAbsolutePath());
+        
+        ProcessBuilder pb = new ProcessBuilder(
+            "curl",
+            "-X", "POST",
+            "-H", "Host: s1apihd.com",
+            "-H", "accept: */*",
+            "-H", "content-type: application/json; charset=utf-8",  // ✅ Thêm charset
+            "-H", "user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0",
+            "-H", "accept-language: vi-VN;q=1.0, en-VN;q=0.9",
+            "--data-binary", "@" + tempFile.getAbsolutePath(),
+            API_ENDPOINT
+        );
+        
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        
+        // ✅ Đọc output với UTF-8
+        StringBuilder output = new StringBuilder();
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream(), 
+                    java.nio.charset.StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
             }
-            
-        } catch (Exception ex) {
-            String partName = partIndex == 0 ? "phần 1" : "phần 2";
-            summary.addError(String.format("Truyện '%s' chương %d %s: %s",
-                book.getTitle(), chapterNumber, partName, ex.getMessage()));
         }
-        return success;
+        
+        int exitCode = process.waitFor();
+        String curlOutput = output.toString();
+        
+        System.out.println("🔍 cURL output: " + curlOutput);
+        System.out.println("🎯 cURL exit code: " + exitCode);
+        System.out.println("═══════════════════════════════════");
+        
+        // ✅ Parse response
+        if (exitCode == 0) {
+            if (curlOutput.contains("\"error\":0")) {
+                // Thành công - extract post ID
+                String postId = extractPostId(curlOutput);
+                String partName = partIndex == 0 ? "phần 1" : "phần 2";
+                summary.addSuccess(String.format("  - Chương %d %s: OK (Post ID: %s)", 
+                    chapterNumber, partName, postId));
+                success = true;
+            } else if (curlOutput.contains("\"error\":1")) {
+                // Lỗi từ API
+                String errorMsg = extractErrorMessage(curlOutput);
+                throw new RuntimeException("API Error: " + errorMsg);
+            } else {
+                throw new RuntimeException("Unexpected response: " + curlOutput);
+            }
+        } else {
+            throw new RuntimeException("cURL exit code: " + exitCode);
+        }
+        
+    } catch (Exception ex) {
+        String partName = partIndex == 0 ? "phần 1" : "phần 2";
+        summary.addError(String.format("Truyện '%s' chương %d %s: %s",
+            book.getTitle(), chapterNumber, partName, ex.getMessage()));
+        ex.printStackTrace();
+    } finally {
+        // Xóa file tạm
+        if (tempFile != null && tempFile.exists()) {
+            try {
+                tempFile.delete();
+            } catch (Exception e) {
+                System.err.println("⚠️ Không xóa được file tạm: " + tempFile.getAbsolutePath());
+            }
+        }
+    }
+    
+    return success;
+}
+
+// ✅ Helper method để extract Post ID từ response
+private String extractPostId(String jsonResponse) {
+    try {
+        int statusIndex = jsonResponse.indexOf("\"status\":\"");
+        if (statusIndex > 0) {
+            int start = statusIndex + 10;  // Length of "status":"
+            int end = jsonResponse.indexOf("\"", start);
+            if (end > start) {
+                return jsonResponse.substring(start, end);
+            }
+        }
+        return "unknown";
+    } catch (Exception e) {
+        return "unknown";
+    }
+}
+    // ⭐ Thêm helper method để extract error message
+    private String extractErrorMessage(String jsonResponse) {
+        try {
+            // Extract status field from JSON
+            int statusIndex = jsonResponse.indexOf("\"status\":");
+            if (statusIndex > 0) {
+                int start = jsonResponse.indexOf("\"", statusIndex + 9) + 1;
+                int end = jsonResponse.indexOf("\"", start);
+                if (start > 0 && end > start) {
+                    String msg = jsonResponse.substring(start, end);
+                    // Decode unicode
+                    return decodeUnicode(msg);
+                }
+            }
+            return jsonResponse;
+        } catch (Exception e) {
+            return jsonResponse;
+        }
+    }
+
+    private String decodeUnicode(String str) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < str.length()) {
+            if (str.charAt(i) == '\\' && i + 1 < str.length() && str.charAt(i + 1) == 'u') {
+                String unicode = str.substring(i + 2, Math.min(i + 6, str.length()));
+                try {
+                    sb.append((char) Integer.parseInt(unicode, 16));
+                    i += 6;
+                } catch (Exception e) {
+                    sb.append(str.charAt(i));
+                    i++;
+                }
+            } else {
+                sb.append(str.charAt(i));
+                i++;
+            }
+        }
+        return sb.toString();
     }
     
     /**
