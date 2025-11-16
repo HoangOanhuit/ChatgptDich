@@ -26,7 +26,9 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -1176,19 +1178,47 @@ public class DangTruyen extends javax.swing.JPanel {
                                    String requestBody, PostingSummary summary) {
         boolean success = false;
         try {
+            // ⭐ THÊM LOG ĐỂ DEBUG
+            System.out.println("═══════════════════════════════════");
+            System.out.println("📝 Đang đăng: " + book.getTitle());
+            System.out.println("📖 Chương: " + chapterNumber + " Phần: " + (partIndex + 1));
+            System.out.println("📏 Request body length: " + requestBody.length());
+
+            // In 200 ký tự đầu của request body
+            String preview = requestBody.length() > 200 
+                ? requestBody.substring(0, 200) + "..." 
+                : requestBody;
+            System.out.println("📄 Request preview: " + preview);
+            System.out.println("═══════════════════════════════════");         
+            
             ProcessBuilder pb = new ProcessBuilder(
                 "curl",
                 "-H", "Host: s1apihd.com",
                 "-H", "accept: */*",
                 "-H", "content-type: application/json",
+                //"-H", "accept-encoding: gzip, deflate",  // ✅ Thêm dòng này
                 "-H", "user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0",
                 "-H", "accept-language: vi-VN;q=1.0, en-VN;q=0.9",
                 "--data-binary", requestBody,
-                "--compressed",
+               // "--compressed",
                 API_ENDPOINT
             );
             
+                    // ⭐ REDIRECT ERROR STREAM ĐỂ XEM LỖI TỪ cURL
+             pb.redirectErrorStream(true);
+            
             Process process = pb.start();
+            
+           // ⭐ ĐỌC OUTPUT/ERROR từ cURL
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String line;
+                StringBuilder output = new StringBuilder();
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+                System.out.println("🔍 cURL output: " + output.toString());
+            }            
             int exitCode = process.waitFor();
             
             if (exitCode == 0) {
