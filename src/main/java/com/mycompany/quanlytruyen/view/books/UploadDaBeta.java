@@ -17,6 +17,7 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.sql.SQLException;
@@ -26,6 +27,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 public class UploadDaBeta extends javax.swing.JDialog {
 
@@ -478,12 +483,31 @@ public class UploadDaBeta extends javax.swing.JDialog {
         if (info == null) {
             throw new IllegalArgumentException("Tên file không đúng định dạng 'Chương <số>_ <tiêu đề>'");
         }
-        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        String content = readFileContent(file);
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("Nội dung file rỗng");
         }
         return new ChapterFileData(info.chapterNumber, info.chapterTitle, content);
     }
+    
+    private String readFileContent(File file) throws IOException {
+        String lowerName = file.getName().toLowerCase();
+        if (lowerName.endsWith(".docx")) {
+            try (InputStream in = Files.newInputStream(file.toPath());
+                 XWPFDocument document = new XWPFDocument(in);
+                 XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
+                return extractor.getText();
+            }
+        }
+        if (lowerName.endsWith(".doc")) {
+            try (InputStream in = Files.newInputStream(file.toPath());
+                 HWPFDocument document = new HWPFDocument(in);
+                 WordExtractor extractor = new WordExtractor(document)) {
+                return extractor.getText();
+            }
+        }
+        return Files.readString(file.toPath(), StandardCharsets.UTF_8);
+    }    
 
     private ChapterFileNameInfo parseChapterInfo(String fileName) {
         if (fileName == null) {
