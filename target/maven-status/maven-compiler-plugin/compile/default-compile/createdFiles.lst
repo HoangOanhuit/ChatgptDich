@@ -262,6 +262,7 @@ com\mycompany\quanlytruyen\model\Post.class
 com\mycompany\quanlytruyen\view\books\ThemSach.class
 com\mycompany\quanlytruyen\view\translate\QLDich$5.class
 com\mycompany\quanlytruyen\view\books\ThemSach$14.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$16.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$6.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong$8.class
 com\mycompany\quanlytruyen\view\books\QLSach$12.class

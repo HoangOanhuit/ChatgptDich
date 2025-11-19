@@ -65,6 +65,7 @@ public class DangTruyen extends javax.swing.JPanel {
     private JTextField txtMonth; // Tháng đăng
     private JTextField txtYear; // Năm đăng
     private JButton btnRefresh; // Nút "Làm mới"
+    private JTextField txtDays; 
     
     // Data
     private BookTableModel tableModel;
@@ -105,6 +106,7 @@ public class DangTruyen extends javax.swing.JPanel {
         this.txtDay = this.day;
         this.txtMonth = this.month;
         this.txtYear = this.year;
+        this.txtDays = this.day1; 
 
         if (this.tableModel == null) {
             this.tableModel = new BookTableModel();
@@ -128,6 +130,7 @@ public class DangTruyen extends javax.swing.JPanel {
         }
 
         initializeNumChapterControl();
+        initializeDaysControl(); 
         setDefaultScheduleDate();
     }
 
@@ -154,6 +157,34 @@ public class DangTruyen extends javax.swing.JPanel {
         });
     }
 
+    private void initializeDaysControl() {
+        if (txtDays == null) {
+            return;
+        }
+
+        txtDays.setText("1"); // Mặc định 1 ngày
+        txtDays.setHorizontalAlignment(JTextField.CENTER);
+        txtDays.setToolTipText("Số ngày liên tục đăng (mỗi ngày 5 chương)");
+
+        // Thêm listener để tự động cập nhật "Đến chương"
+        txtDays.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateToChaptersWithDays();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateToChaptersWithDays();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateToChaptersWithDays();
+            }
+        });
+    }  
+    
     private void rebuildSidePanelLayout(JPanel numChapterPanel) {
         GroupLayout layout = new GroupLayout(sideBox);
         sideBox.setLayout(layout);
@@ -477,8 +508,8 @@ public class DangTruyen extends javax.swing.JPanel {
                                 .addGap(5, 5, 5)
                                 .addComponent(jLabel13)
                                 .addGap(5, 5, 5)
-                                .addComponent(year, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(year, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap(113, Short.MAX_VALUE))
                     .addGroup(sideBoxLayout.createSequentialGroup()
                         .addComponent(jLabel14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -628,6 +659,7 @@ public class DangTruyen extends javax.swing.JPanel {
 
     private void day1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_day1ActionPerformed
         // TODO add your handling code here:
+        updateToChaptersWithDays();
     }//GEN-LAST:event_day1ActionPerformed
 
     /**
@@ -771,6 +803,41 @@ public class DangTruyen extends javax.swing.JPanel {
             txtNumChapter.setText(String.valueOf(DEFAULT_NUM_CHAPTER));
         }
     }
+    private void updateToChaptersWithDays() {
+        if (txtDays == null || bookEntries == null) {
+            return;
+        }
+
+        String rawValue = txtDays.getText();
+        if (rawValue == null || rawValue.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            int days = Integer.parseInt(rawValue.trim());
+            if (days <= 0) {
+                JOptionPane.showMessageDialog(this, "Số ngày phải lớn hơn 0");
+                txtDays.setText("1");
+                return;
+            }
+
+            // Công thức: "Đến chương" = "Từ chương" + days * 5 - 1
+            // Số chương = days * 5
+            int numChapters = days * 5;
+
+            for (BookEntry entry : bookEntries) {
+                entry.setChapterOffset(numChapters);
+            }
+
+            if (tableModel != null) {
+                tableModel.fireTableDataChanged();
+            }
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Số ngày không hợp lệ");
+            txtDays.setText("1");
+        }
+    }
     
     /**
      * Toggle chọn tất cả / bỏ chọn tất cả
@@ -880,17 +947,18 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Đăng một truyện
      */
-        private void postBook(BookEntry entry, LocalDate scheduleDate, PostingSummary summary) throws Exception {
+    private void postBook(BookEntry entry, LocalDate scheduleDate, PostingSummary summary) 
+        throws Exception {
         Book book = entry.getBook();
         Account account = entry.getAccount();
-        
+
         if (account == null) {
             throw new IllegalStateException("Truyện chưa được gán tài khoản");
         }
-        
+
         // Load chapters từ database
         Map<Integer, Chapter> chaptersMap = loadChaptersForBook(book.getId());
-        
+
         if (account.getId() == null) {
             throw new IllegalStateException("Tài khoản chưa có ID hợp lệ");
         }
@@ -900,103 +968,103 @@ public class DangTruyen extends javax.swing.JPanel {
         if (schedule.isEmpty()) {
             throw new IllegalStateException(String.format(
                 "Chưa có lịch đăng cho tài khoản %s",
-                account.getUsername() != null ? account.getUsername() : account.getId()
-            ));
-        }
-        
-        // ✅ FIX: Lấy số chương từ chapter_per_day
-        int fromChapter = entry.getFromChapter();
-        int numberOfChapters = getChapterPerDay(book); // Lấy từ book.chapter_per_day
-        
-        // ✅ FIX: Validate đủ slots
-        int requiredSlots = numberOfChapters * 2; // Mỗi chapter cần 2 parts
-        if (schedule.size() < requiredSlots) {
-            throw new IllegalStateException(
-                String.format("Không đủ lịch đăng! Cần %d slots (cho %d chương × 2 parts), chỉ có %d slots",
-                    requiredSlots, numberOfChapters, schedule.size())
+                account.getUsername() != null ? account.getUsername() : account.getEmail())
             );
         }
-        
+
+        // ✅ TÍNH SỐ NGÀY CẦN ĐĂNG
+        int fromChapter = entry.getFromChapter(); 
+        int toChapter = entry.getToChapter(); 
+        int totalChapters = toChapter - fromChapter + 1;
+
+        // Mỗi chapter = 2 parts, nên cần totalChapters * 2 slots
+        int totalSlotsNeeded = totalChapters * 2;
+
+        // Số slots mỗi ngày
+        int slotsPerDay = schedule.size();
+
+        // Tính số ngày cần
+        int daysNeeded = (int) Math.ceil((double) totalSlotsNeeded / slotsPerDay);
+
+        System.out.println("═══════════════════════════════════");
+        System.out.println("📚 ĐĂNG TRUYỆN: " + book.getTitle());
+        System.out.println("📖 Từ chương: " + fromChapter + " → Đến chương: " + toChapter);
+        System.out.println("📊 Tổng số chương: " + totalChapters);
+        System.out.println("📊 Tổng số parts: " + totalSlotsNeeded);
+        System.out.println("📅 Slots mỗi ngày: " + slotsPerDay);
+        System.out.println("📅 Số ngày cần đăng: " + daysNeeded);
+        System.out.println("═══════════════════════════════════");
+
+        int slotIndex = 0;
         int chaptersPosted = 0;
-        int slotIndex = 0; // ✅ FIX: Index cho slot hiện tại
-        
-        // Duyệt qua từng chương cần đăng
-        for (int offset = 0; offset < numberOfChapters; offset++) {
-            int chapterNumber = fromChapter + offset;
-            Chapter chapter = chaptersMap.get(chapterNumber);
-            
-            // Validate chapter
+        LocalDate currentDate = scheduleDate;
+
+        for (int chapterNum = fromChapter; chapterNum <= toChapter; chapterNum++) {
+            Chapter chapter = chaptersMap.get(chapterNum);
+
             if (chapter == null) {
-                throw new IllegalStateException("Không tìm thấy chương " + chapterNumber);
+                summary.addError(String.format("Không tìm thấy chương %d của truyện '%s'", 
+                    chapterNum, book.getTitle()));
+                continue;
             }
-            
-            if (chapter.getChapterNumber() == null) {
-                throw new IllegalStateException("Chương " + chapterNumber + " chưa có số thứ tự hợp lệ");
+
+            String content = chapter.getContent();
+            if (content == null || content.trim().isEmpty()) {
+                summary.addError(String.format("Chương %d của truyện '%s' chưa có nội dung", 
+                    chapterNum, book.getTitle()));
+                continue;
             }
-            
-            if (chapter.getBetaStatus() != BetaStatus.DONE_BETA && 
-                chapter.getBetaStatus() != BetaStatus.DONE_POST) {
-                throw new IllegalStateException("Chương " + chapterNumber + " chưa beta xong");
-            }
-            
-            if (chapter.getContent() == null || chapter.getContent().isBlank()) {
-                throw new IllegalStateException("Chương " + chapterNumber + " chưa có nội dung");
-            }
-            
-            // ✅ FIX: Chia chapter thành 2 phần
-            List<String> parts = splitChapterContent(chapter.getContent());
-            
+
+            // Chia content thành 2 phần
+            List<String> parts = splitChapterContent(content);
+
             boolean chapterSuccess = true;
-            
-            // ✅ FIX: Đăng từng phần với SLOT RIÊNG
             for (int partIndex = 0; partIndex < parts.size(); partIndex++) {
-                String content = parts.get(partIndex);
-                if (content == null) content = "";
-                
-                // ✅ FIX: Lấy slot tương ứng
+                String partContent = parts.get(partIndex);
+
+                // ✅ KIỂM TRA NẾU HẾT SLOTS TRONG NGÀY → CHUYỂN SANG NGÀY TIẾP THEO
                 if (slotIndex >= schedule.size()) {
-                    throw new IllegalStateException(
-                        String.format("Không đủ slot! Chapter %d part %d cần slot[%d], chỉ có %d slots",
-                            chapterNumber, partIndex + 1, slotIndex, schedule.size())
-                    );
+                    slotIndex = 0; // Reset về slot đầu tiên
+                    currentDate = currentDate.plusDays(1); // Sang ngày tiếp theo
+
+                    System.out.println("🔄 Chuyển sang ngày mới: " + currentDate);
                 }
-                
+
                 Post slot = schedule.get(slotIndex);
-                LocalDateTime scheduleDateTime = buildScheduleDateTime(scheduleDate, slot);
-                
+                LocalDateTime scheduleDateTime = buildScheduleDateTime(currentDate, slot);
+
                 // Tạo title: "Chương 101.1:..." hoặc "Chương 101.2:..."
                 String title = buildChapterTitle(chapter, partIndex);
-                
+
                 // Tạo auth2 token
                 String auth2 = buildAuth2(book.getId(), chapter.getChapterNumber(), partIndex);
-                
+
                 // Tạo request body JSON
                 String requestBody = buildRequestBody(entry, account, title, auth2, 
-                                                     scheduleDateTime, content);
-                
+                                                     scheduleDateTime, partContent);
+
                 // 🚀 Gửi request qua cURL
                 boolean success = executePostRequest(book, chapter.getChapterNumber(), 
                                                    partIndex, requestBody, summary);
-                
+
                 if (!success) {
                     chapterSuccess = false;
                 }
-                
-                // ✅ FIX: Tăng slotIndex sau mỗi part
+
                 slotIndex++;
             }
-            
+
             if (chapterSuccess) {
                 chaptersPosted++;
             }
         }
-        
+
         // Cập nhật số chương đã đăng vào database
         if (chaptersPosted > 0) {
             int newPosted = (book.getPosted() != null ? book.getPosted() : 0) + chaptersPosted;
             book.setPosted(newPosted);
             bookDao.updateBook(book);
-            
+
             summary.addSuccess(String.format("Truyện '%s': Đăng thành công %d chương (posted: %d → %d)",
                 book.getTitle(), chaptersPosted, book.getPosted() - chaptersPosted, newPosted));
         }
@@ -1261,98 +1329,171 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Thực thi POST request
      */
-private boolean executePostRequest(Book book, int chapterNumber, int partIndex,
+    private boolean executePostRequest(Book book, int chapterNumber, int partIndex,
                                    String requestBody, PostingSummary summary) {
-    File tempFile = null;
-    boolean success = false;
-    
-    try {
-        // Tạo file tạm
-        tempFile = File.createTempFile("curl_request_", ".json");
-        
-        // ✅ QUAN TRỌNG: Ghi file với UTF-8 encoding
-        java.nio.file.Files.write(
-            tempFile.toPath(), 
-            requestBody.getBytes(java.nio.charset.StandardCharsets.UTF_8)
-        );
-        
-        System.out.println("═══════════════════════════════════");
-        System.out.println("📝 Đang đăng: " + book.getTitle());
-        System.out.println("📖 Chương: " + chapterNumber + " Phần: " + (partIndex + 1));
-        System.out.println("📏 Request body length: " + requestBody.length());
-        System.out.println("📄 Temp file: " + tempFile.getAbsolutePath());
-        
-        ProcessBuilder pb = new ProcessBuilder(
-            "curl",
-            "-X", "POST",
-            "-H", "Host: s1apihd.com",
-            "-H", "accept: */*",
-            "-H", "content-type: application/json; charset=utf-8",  // ✅ Thêm charset
-            "-H", "user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0",
-            "-H", "accept-language: vi-VN;q=1.0, en-VN;q=0.9",
-            "--data-binary", "@" + tempFile.getAbsolutePath(),
-            API_ENDPOINT
-        );
-        
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
-        
-        // ✅ Đọc output với UTF-8
-        StringBuilder output = new StringBuilder();
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(process.getInputStream(), 
-                    java.nio.charset.StandardCharsets.UTF_8))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-            }
-        }
-        
-        int exitCode = process.waitFor();
-        String curlOutput = output.toString();
-        
-        System.out.println("🔍 cURL output: " + curlOutput);
-        System.out.println("🎯 cURL exit code: " + exitCode);
-        System.out.println("═══════════════════════════════════");
-        
-        // ✅ Parse response
-        if (exitCode == 0) {
-            if (curlOutput.contains("\"error\":0")) {
-                // Thành công - extract post ID
-                String postId = extractPostId(curlOutput);
-                String partName = partIndex == 0 ? "phần 1" : "phần 2";
-                summary.addSuccess(String.format("  - Chương %d %s: OK (Post ID: %s)", 
-                    chapterNumber, partName, postId));
-                success = true;
-            } else if (curlOutput.contains("\"error\":1")) {
-                // Lỗi từ API
-                String errorMsg = extractErrorMessage(curlOutput);
-                throw new RuntimeException("API Error: " + errorMsg);
-            } else {
-                throw new RuntimeException("Unexpected response: " + curlOutput);
-            }
-        } else {
-            throw new RuntimeException("cURL exit code: " + exitCode);
-        }
-        
-    } catch (Exception ex) {
-        String partName = partIndex == 0 ? "phần 1" : "phần 2";
-        summary.addError(String.format("Truyện '%s' chương %d %s: %s",
-            book.getTitle(), chapterNumber, partName, ex.getMessage()));
-        ex.printStackTrace();
-    } finally {
-        // Xóa file tạm
-        if (tempFile != null && tempFile.exists()) {
+        File tempFile = null;
+        boolean success = false;
+
+        try {
+            // Tạo file tạm
+            tempFile = File.createTempFile("curl_request_", ".json");
+
+            // Ghi file với UTF-8 encoding
+            java.nio.file.Files.write(
+                tempFile.toPath(), 
+                requestBody.getBytes(java.nio.charset.StandardCharsets.UTF_8)
+            );
+
+            System.out.println("═══════════════════════════════════");
+            System.out.println("📝 ĐANG ĐĂNG CHƯƠNG");
+            System.out.println("═══════════════════════════════════");
+            System.out.println("📚 Truyện: " + book.getTitle());
+            System.out.println("📖 Chương: " + chapterNumber + " - Phần: " + (partIndex + 1));
+            System.out.println("🔗 API Endpoint: " + API_ENDPOINT);
+            System.out.println("📄 Temp file: " + tempFile.getAbsolutePath());
+            System.out.println("📏 Request body length: " + requestBody.length() + " chars");
+
+            // ✅ IN RA CHI TIẾT CÁC TRƯỜNG QUAN TRỌNG
             try {
-                tempFile.delete();
+                ObjectMapper mapper = new ObjectMapper();
+                Map<String, Object> jsonMap = mapper.readValue(requestBody, Map.class);
+
+                System.out.println("\n📋 REQUEST FIELDS:");
+                System.out.println("  - email: " + jsonMap.get("email"));
+                System.out.println("  - title: " + jsonMap.get("title"));
+                System.out.println("  - auth: " + jsonMap.get("auth"));
+                System.out.println("  - auth2: " + jsonMap.get("auth2"));
+                System.out.println("  - user_id: " + jsonMap.get("user_id"));
+                System.out.println("  - id (book_id): " + jsonMap.get("id"));
+                System.out.println("  - uuid: " + jsonMap.get("uuid"));
+                System.out.println("  - versionIOS: " + jsonMap.get("versionIOS"));
+                System.out.println("  - registered: " + jsonMap.get("registered"));
+                System.out.println("  - activation_key: " + jsonMap.get("activation_key"));
+                System.out.println("  - status: " + jsonMap.get("status"));
+                System.out.println("  - date_schedule: " + jsonMap.get("date_schedule"));
+                System.out.println("  - price: " + jsonMap.get("price"));
+
+                String content = (String) jsonMap.get("content");
+                if (content != null) {
+                    String preview = content.length() > 100 ? content.substring(0, 100) + "..." : content;
+                    System.out.println("  - content (preview): " + preview);
+                    System.out.println("  - content length: " + content.length() + " chars");
+                }
+
             } catch (Exception e) {
-                System.err.println("⚠️ Không xóa được file tạm: " + tempFile.getAbsolutePath());
+                System.out.println("⚠️ Không thể parse JSON để hiển thị: " + e.getMessage());
+            }
+
+            System.out.println("\n🔧 CURL COMMAND:");
+            ProcessBuilder pb = new ProcessBuilder(
+                "curl",
+                "-X", "POST",
+                "-H", "Host: s1apihd.com",
+                "-H", "accept: */*",
+                "-H", "content-type: application/json; charset=utf-8",
+                "-H", "user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0",
+                "-H", "accept-language: vi-VN;q=1.0, en-VN;q=0.9",
+                "--data-binary", "@" + tempFile.getAbsolutePath(),
+                API_ENDPOINT
+            );
+
+            // In ra command để có thể test thủ công
+            System.out.println("curl -X POST \\");
+            System.out.println("  -H 'Host: s1apihd.com' \\");
+            System.out.println("  -H 'accept: */*' \\");
+            System.out.println("  -H 'content-type: application/json; charset=utf-8' \\");
+            System.out.println("  -H 'user-agent: TruyenHD/2.3 (com.vnvnads.TruyenHD; build:32; iOS 18.3.1) Alamofire/5.9.0' \\");
+            System.out.println("  -H 'accept-language: vi-VN;q=1.0, en-VN;q=0.9' \\");
+            System.out.println("  --data-binary '@" + tempFile.getAbsolutePath() + "' \\");
+            System.out.println("  " + API_ENDPOINT);
+
+            pb.redirectErrorStream(true);
+            Process process = pb.start();
+
+            // Đọc output với UTF-8
+            StringBuilder output = new StringBuilder();
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(process.getInputStream(), 
+                        java.nio.charset.StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+
+            int exitCode = process.waitFor();
+            String curlOutput = output.toString();
+
+            System.out.println("\n📥 RESPONSE:");
+            System.out.println("  - Exit code: " + exitCode);
+            System.out.println("  - Output: " + curlOutput);
+
+            // Parse response
+            if (exitCode == 0) {
+                if (curlOutput.contains("\"error\":0")) {
+                    // Thành công
+                    String postId = extractPostId(curlOutput);
+                    String partName = partIndex == 0 ? ".1" : ".2";
+
+                    summary.addSuccess(String.format(
+                        "✅ %s - Chương %d%s (Post ID: %s)",
+                        book.getTitle(), chapterNumber, partName, postId
+                    ));
+
+                    System.out.println("✅ SUCCESS - Post ID: " + postId);
+                    success = true;
+
+                } else {
+                    // API trả về lỗi
+                    summary.addError(String.format(
+                        "❌ %s - Chương %d.%d: API error - %s",
+                        book.getTitle(), chapterNumber, partIndex + 1, curlOutput
+                    ));
+
+                    System.out.println("❌ API ERROR: " + curlOutput);
+                    success = false;
+                }
+            } else {
+                // cURL thất bại
+                summary.addError(String.format(
+                    "❌ %s - Chương %d.%d: cURL failed (exit %d) - %s",
+                    book.getTitle(), chapterNumber, partIndex + 1, exitCode, curlOutput
+                ));
+
+                System.out.println("❌ CURL FAILED: " + curlOutput);
+                success = false;
+            }
+
+            System.out.println("═══════════════════════════════════\n");
+
+        } catch (IOException ex) {
+            summary.addError(String.format(
+                "❌ %s - Chương %d.%d: IO error - %s",
+                book.getTitle(), chapterNumber, partIndex + 1, ex.getMessage()
+            ));
+            ex.printStackTrace();
+
+        } catch (InterruptedException ex) {
+            summary.addError(String.format(
+                "❌ %s - Chương %d.%d: Interrupted - %s",
+                book.getTitle(), chapterNumber, partIndex + 1, ex.getMessage()
+            ));
+            Thread.currentThread().interrupt();
+            ex.printStackTrace();
+
+        } finally {
+            // Dọn dẹp file tạm
+            if (tempFile != null && tempFile.exists()) {
+                try {
+                    tempFile.delete();
+                } catch (Exception e) {
+                    System.err.println("Không thể xóa file tạm: " + e.getMessage());
+                }
             }
         }
+
+        return success;
     }
-    
-    return success;
-}
 
 // ✅ Helper method để extract Post ID từ response
 private String extractPostId(String jsonResponse) {
@@ -1625,6 +1766,13 @@ private String extractPostId(String jsonResponse) {
         String getPriceString() {
             return price != null ? price.stripTrailingZeros().toPlainString() : "0";
         }
+
+    void setChapterOffset(int offset) {
+        if (offset <= 0) {
+            throw new IllegalArgumentException("Chapter offset phải lớn hơn 0");
+        }
+        this.chapterOffset = offset;
+    }
     }
     
     /**

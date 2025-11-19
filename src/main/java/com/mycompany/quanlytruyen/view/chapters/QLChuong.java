@@ -615,7 +615,6 @@ public class QLChuong extends javax.swing.JPanel {
                         .addGap(30, 30, 30))
                     .addGroup(FilterPanel1Layout.createSequentialGroup()
                         .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(stTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                 .addGroup(FilterPanel1Layout.createSequentialGroup()
                                     .addComponent(btnFilter2)
@@ -628,7 +627,8 @@ public class QLChuong extends javax.swing.JPanel {
                                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                     .addGroup(FilterPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 43, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel9)))))
+                                        .addComponent(jLabel9))))
+                            .addComponent(stTranslate, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         FilterPanel1Layout.setVerticalGroup(
