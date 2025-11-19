@@ -4,6 +4,7 @@ import com.mycompany.quanlytruyen.config.AppConfig;
 import com.mycompany.quanlytruyen.dao.AccountDAO;
 import com.mycompany.quanlytruyen.dao.DataSourceFactory;
 import com.mycompany.quanlytruyen.model.Account;
+import com.mycompany.quanlytruyen.view.post.SuaLichPost;
 
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
@@ -11,7 +12,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.AbstractCellEditor;
+import javax.swing.JButton;
+import javax.swing.JTable;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
@@ -24,6 +33,8 @@ public class QLTK extends javax.swing.JPanel {
     private DefaultTableModel tableModel;
     private final List<Account> accounts = new ArrayList<>();
     private Account selectedAccount;
+    private DataSource dataSource;
+    private static final int COLUMN_SCHEDULE = 5;
 
     /**
      * Creates new form QLSach
@@ -42,27 +53,36 @@ public class QLTK extends javax.swing.JPanel {
 
     private void setupTable() {
         tableModel = new DefaultTableModel(new Object[]{
-            "ID", "Tên TK", "Email", "Mật khẩu", "Ghi chú"
+            "ID", "Tên TK", "Email", "Mật khẩu", "Ghi chú", "Lịch Đăng"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return column == COLUMN_SCHEDULE;
             }
         };
         Tbooks.setModel(tableModel);
         Tbooks.setAutoCreateRowSorter(true);
         Tbooks.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        configureScheduleColumn();
     }
 
+    private void configureScheduleColumn() {
+        TableCellRenderer renderer = new ScheduleButtonRenderer();
+        TableCellEditor editor = new ScheduleButtonEditor();
+        Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setCellRenderer(renderer);
+        Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setCellEditor(editor);
+        Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setPreferredWidth(110);
+    }
+    
     private void initDao() {
         try {
             AppConfig config = AppConfig.getInstance();
-            DataSource ds = DataSourceFactory.create(
+            dataSource = DataSourceFactory.create(
                 config.getDatabaseUrl(),
                 config.getDatabaseUser(),
                 config.getDatabasePassword()
             );
-            accountDao = new AccountDAO(ds);
+            accountDao = new AccountDAO(dataSource);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu: " + e.getMessage());
         }
@@ -81,6 +101,15 @@ public class QLTK extends javax.swing.JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    int viewRow = Tbooks.rowAtPoint(e.getPoint());
+                    int viewColumn = Tbooks.columnAtPoint(e.getPoint());
+                    if (viewRow < 0 || viewColumn < 0) {
+                        return;
+                    }
+                    int modelColumn = Tbooks.convertColumnIndexToModel(viewColumn);
+                    if (modelColumn == COLUMN_SCHEDULE) {
+                        return;
+                    }                    
                     openEditDialog();
                 }
             }
@@ -112,7 +141,8 @@ public class QLTK extends javax.swing.JPanel {
                 account.getUsername(),
                 account.getEmail(),
                 account.getPassword(),
-                account.getNote()
+                account.getNote(),
+                "Lịch"
             });
         }
     }
@@ -151,6 +181,92 @@ public class QLTK extends javax.swing.JPanel {
         SuaTK dialog = new SuaTK(frame, true, this, selectedAccount);
         dialog.setLocationRelativeTo(frame);
         dialog.setVisible(true);
+    }
+
+    private void openScheduleDialogFromRow(int modelRow) {
+        if (modelRow < 0) {
+            return;
+        }
+        if (dataSource == null) {
+            JOptionPane.showMessageDialog(this, "Chưa kết nối được tới cơ sở dữ liệu");
+            return;
+        }
+        Account account = getAccountFromTable(modelRow);
+        if (account == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin tài khoản");
+            return;
+        }
+        Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+        SuaLichPost dialog = new SuaLichPost(frame, true, dataSource, null, account);
+        dialog.setLocationRelativeTo(frame);
+        dialog.setVisible(true);
+    }
+
+    private Account getAccountFromTable(int modelRow) {
+        if (modelRow < 0 || modelRow >= tableModel.getRowCount()) {
+            return null;
+        }
+        Object value = tableModel.getValueAt(modelRow, 0);
+        if (!(value instanceof Number)) {
+            return null;
+        }
+        long accountId = ((Number) value).longValue();
+        return findAccountById(accountId);
+    }
+
+    private Account findAccountById(long accountId) {
+        for (Account account : accounts) {
+            if (account.getId() != null && account.getId() == accountId) {
+                return account;
+            }
+        }
+        return null;
+    }
+
+    private static class ScheduleButtonRenderer extends JButton implements TableCellRenderer {
+        private ScheduleButtonRenderer() {
+            setOpaque(true);
+            setText("Lịch");
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            setText(value != null ? value.toString() : "Lịch");
+            return this;
+        }
+    }
+
+    private class ScheduleButtonEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+        private final JButton button = new JButton();
+        private int currentRow = -1;
+
+        private ScheduleButtonEditor() {
+            button.addActionListener(this);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return button.getText();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected,
+                                                     int row, int column) {
+            button.setText(value != null ? value.toString() : "Lịch");
+            currentRow = row;
+            return button;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            fireEditingStopped();
+            if (currentRow < 0) {
+                return;
+            }
+            int modelRow = Tbooks.convertRowIndexToModel(currentRow);
+            openScheduleDialogFromRow(modelRow);
+        }
     }
     
     private void deleteSelectedAccount() {
@@ -340,13 +456,13 @@ public class QLTK extends javax.swing.JPanel {
 
         Tbooks.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null},
+                {null, null, null, null, null, null}
             },
             new String [] {
-                "ID", "Tên TK", "email", "Mật khẩu", "Sửa Lịch Đăng"
+                "ID", "Tên TK", "Email", "Mật khẩu", "Ghi chú", "Lịch Đăng"
             }
         ));
         jScrollPane1.setViewportView(Tbooks);

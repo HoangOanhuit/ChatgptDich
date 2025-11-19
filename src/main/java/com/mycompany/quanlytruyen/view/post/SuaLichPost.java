@@ -49,7 +49,7 @@ public class SuaLichPost extends javax.swing.JDialog {
     }
 
    private void initializeForm() {
-        setTitle("Lịch Post của Truyện");
+        setTitle(buildDialogTitle());
         Tbooks.setModel(scheduleTableModel);
         Tbooks.setRowHeight(28);
         Tbooks.setFillsViewportHeight(true);
@@ -66,10 +66,12 @@ public class SuaLichPost extends javax.swing.JDialog {
     private void loadAccountInfo() {
         if (account != null && account.getUsername() != null) {
             txtYeuCau3.setText(account.getUsername());
+            setTitle(buildDialogTitle());
             return;
         }
         if (book == null || book.getAccountId() == null || accountDao == null) {
             txtYeuCau3.setText("(Chưa gán)");
+            setTitle(buildDialogTitle());
             return;
         }
         try {
@@ -77,6 +79,7 @@ public class SuaLichPost extends javax.swing.JDialog {
             txtYeuCau3.setText(account != null && account.getUsername() != null
                 ? account.getUsername()
                 : "(Chưa gán)");
+            setTitle(buildDialogTitle());
         } catch (SQLException ex) {
             LOGGER.log(Level.WARNING, "Không thể tải thông tin tài khoản", ex);
             txtYeuCau3.setText("(Không tải được)");
@@ -84,13 +87,23 @@ public class SuaLichPost extends javax.swing.JDialog {
         }
     }
 
+    private String buildDialogTitle() {
+        if (account != null && account.getUsername() != null && !account.getUsername().isBlank()) {
+            return "Lịch Post của Tài Khoản - " + account.getUsername();
+        }
+        return "Lịch Post của Tài Khoản";
+    }
+
     private void updatePriceField() {
         if (book != null && book.getPrice() != null) {
             price.setText(book.getPrice().stripTrailingZeros().toPlainString());
+            price.setEnabled(true);
         } else {
             price.setText("");
+            price.setEnabled(false);
         }
     }
+
 
     private String resolveBookTitle() {
         if (book == null) {
@@ -104,13 +117,16 @@ public class SuaLichPost extends javax.swing.JDialog {
 
     private void loadExistingSchedule() {
         int defaultCount = Math.max(1, parseChapterPerDay());
-        if (book == null || book.getId() == null || postDao == null) {
+        if (account == null || account.getId() == null || postDao == null) {
             scheduleTableModel.setRowCount(defaultCount);
             setChapterPerDayField(scheduleTableModel.getRowCount());
+            if (account == null || account.getId() == null) {
+                JOptionPane.showMessageDialog(this, "Chưa có tài khoản để tải lịch post.");
+            }            
             return;
         }
         try {
-            List<Post> posts = postDao.findByBookId(book.getId());
+            List<Post> posts = postDao.findByAccountId(account.getId());
             if (!posts.isEmpty()) {
                 scheduleTableModel.setPosts(posts);
                 setChapterPerDayField(posts.size());
@@ -154,8 +170,8 @@ public class SuaLichPost extends javax.swing.JDialog {
     }
 
     private void onSave() {
-        if (book == null || book.getId() == null) {
-            JOptionPane.showMessageDialog(this, "Thiếu thông tin truyện để lưu lịch post.");
+        if (account == null || account.getId() == null) {
+            JOptionPane.showMessageDialog(this, "Thiếu thông tin tài khoản để lưu lịch post.");
             return;
         }
         if (Tbooks.isEditing()) {
@@ -163,11 +179,13 @@ public class SuaLichPost extends javax.swing.JDialog {
         }
         List<Post> posts;
         try {
-            posts = scheduleTableModel.buildPosts(book.getId());
-            BigDecimal newPrice = parsePriceFromField();
-            if (bookDao != null && !Objects.equals(book.getPrice(), newPrice)) {
-                book.setPrice(newPrice);
-                bookDao.updateBook(book);
+            posts = scheduleTableModel.buildPosts(account.getId());
+            if (book != null) {
+                BigDecimal newPrice = parsePriceFromField();
+                if (bookDao != null && !Objects.equals(book.getPrice(), newPrice)) {
+                    book.setPrice(newPrice);
+                    bookDao.updateBook(book);
+                }
             }
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());
@@ -180,7 +198,7 @@ public class SuaLichPost extends javax.swing.JDialog {
 
         try {
             if (postDao != null) {
-                postDao.replaceBookPosts(book.getId(), posts);
+                postDao.replaceAccountPosts(account.getId(), posts);
             }
             JOptionPane.showMessageDialog(this, "Đã lưu lịch post thành công.");
             dispose();
@@ -575,7 +593,7 @@ public class SuaLichPost extends javax.swing.JDialog {
             fireTableDataChanged();
         }
 
-        List<Post> buildPosts(long bookId) {
+        List<Post> buildPosts(long accountId) {
             List<Post> posts = new ArrayList<>();
             int previousHour = -1;
             int previousMinute = -1;
@@ -598,7 +616,7 @@ public class SuaLichPost extends javax.swing.JDialog {
                     throw new IllegalArgumentException("Giờ/phút của chương thứ " + row.getOrder() + " phải lớn hơn chương trước đó.");
                 }
                 Post post = new Post();
-                post.setBookId(bookId);
+                post.setAccountId(accountId);
                 post.setChapterOrder(row.getOrder());
                 post.setHour(hour);
                 post.setMinute(minute);

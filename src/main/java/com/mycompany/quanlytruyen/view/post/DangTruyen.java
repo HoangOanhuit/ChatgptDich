@@ -877,10 +877,17 @@ public class DangTruyen extends javax.swing.JPanel {
         // Load chapters từ database
         Map<Integer, Chapter> chaptersMap = loadChaptersForBook(book.getId());
         
-        // Load lịch đăng (bảng posts)
-        List<Post> schedule = postDao.findByBookId(book.getId());
+        if (account.getId() == null) {
+            throw new IllegalStateException("Tài khoản chưa có ID hợp lệ");
+        }
+
+        // Load lịch đăng theo tài khoản
+        List<Post> schedule = postDao.findByAccountId(account.getId());
         if (schedule.isEmpty()) {
-            throw new IllegalStateException("Chưa có lịch đăng cho truyện này");
+            throw new IllegalStateException(String.format(
+                "Chưa có lịch đăng cho tài khoản %s",
+                account.getUsername() != null ? account.getUsername() : account.getId()
+            ));
         }
         
         // ✅ FIX: Lấy số chương từ chapter_per_day
@@ -1149,8 +1156,10 @@ public class DangTruyen extends javax.swing.JPanel {
     /**
      * Tạo request body cho cURL
      */
-      private String buildRequestBody(BookEntry entry, Account account, String title, String auth2,
-                                LocalDateTime scheduleDateTime, String content) throws IOException {
+      private String buildRequestBody(BookEntry entry, Account account, String title, String auth2, LocalDateTime scheduleDateTime, String content) throws IOException {          
+        if (account == null) {
+            throw new IllegalArgumentException("Thiếu thông tin tài khoản khi tạo request đăng truyện");
+        }          
 
         // ✅ DEBUG: Kiểm tra content trước khi đưa vào JSON
         System.out.println("📝 Content preview (first 100 chars):");
@@ -1160,11 +1169,25 @@ public class DangTruyen extends javax.swing.JPanel {
 
         Map<String, Object> payload = new LinkedHashMap<>();
 
-        // ... rest of code
+        Book book = entry != null ? entry.getBook() : null;
+        String scheduleString = formatScheduleDate(scheduleDateTime);
 
-        payload.put("content", content);
-
-        // ... rest of code
+        payload.put("email", safeString(account.getEmail()));
+        payload.put("content", content != null ? content : "");
+        payload.put("auth", safeString(book != null ? book.getAuth() : null));
+        payload.put("price", entry != null ? entry.getPriceString() : "0");
+        payload.put("auth2", auth2);
+        payload.put("versionIOS", resolveVersionIos(account));
+        payload.put("uuid", safeString(account.getUuid()));
+        payload.put("suggest_password", "");
+        payload.put("title", title != null ? title : "");
+        payload.put("registered", resolveRegisteredAt(account));
+        payload.put("id", book != null && book.getId() != null ? String.valueOf(book.getId()) : "");
+        payload.put("status", resolveStatus(scheduleDateTime));
+        payload.put("date_schedule", scheduleString);
+        payload.put("user_id", account.getId() != null ? String.valueOf(account.getId()) : "");
+        payload.put("activation_key", safeString(account.getActivationKey()));
+        payload.put("value_password", safeString(account.getPassword()));
 
         // ✅ Tạo JSON với ObjectMapper (tự động handle UTF-8)
         ObjectMapper mapper = new ObjectMapper();
@@ -1177,6 +1200,50 @@ public class DangTruyen extends javax.swing.JPanel {
 
         return json;
     }
+
+    private String resolveVersionIos(Account account) {
+        if (account == null || account.getVersionIos() == null || account.getVersionIos().isBlank()) {
+            return "1";
+        }
+        return account.getVersionIos();
+    }
+
+    private String resolveRegisteredAt(Account account) {
+        if (account == null || account.getRegistered() == null || account.getRegistered().isBlank()) {
+            return DATE_TIME_FORMATTER.format(LocalDateTime.now());
+        }
+        String registered = account.getRegistered().trim();
+        String normalized = registered.replace('T', ' ');
+        try {
+            LocalDateTime parsed = LocalDateTime.parse(normalized, DATE_TIME_FORMATTER);
+            return parsed.format(DATE_TIME_FORMATTER);
+        } catch (Exception ex) {
+            try {
+                LocalDateTime parsed = LocalDateTime.parse(registered);
+                return parsed.format(DATE_TIME_FORMATTER);
+            } catch (Exception ignored) {
+                return normalized;
+            }
+        }
+    }
+
+    private String resolveStatus(LocalDateTime scheduleDateTime) {
+        if (scheduleDateTime == null) {
+            return "future";
+        }
+        return scheduleDateTime.isAfter(LocalDateTime.now()) ? "future" : "publish";
+    }
+
+    private String formatScheduleDate(LocalDateTime scheduleDateTime) {
+        if (scheduleDateTime == null) {
+            return DATE_TIME_FORMATTER.format(LocalDateTime.now());
+        }
+        return scheduleDateTime.format(DATE_TIME_FORMATTER);
+    }
+
+    private String safeString(String value) {
+        return value == null ? "" : value;
+    }      
     /**
      * Thực thi POST request
      */
@@ -1538,11 +1605,11 @@ private String extractPostId(String jsonResponse) {
         }
         
         String getPriceDisplay() {
-            return price != null ? price.toString() : "0";
+            return price != null ? price.stripTrailingZeros().toPlainString() : "0";
         }
         
         String getPriceString() {
-            return price != null ? price.toString() : "0";
+            return price != null ? price.stripTrailingZeros().toPlainString() : "0";
         }
     }
     

@@ -4,11 +4,11 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * Model đại diện cho lịch đăng chương của một truyện.
+ * Model đại diện cho lịch đăng chương của một tài khoản.
  */
 public class Post {
     private Long id;
-    private Long bookId;
+    private Long accountId;
     private int chapterOrder;
     private int hour;
     private int minute;
@@ -17,9 +17,9 @@ public class Post {
     public Post() {
     }
 
-    public Post(Long id, Long bookId, int chapterOrder, int hour, int minute, LocalDateTime dateSchedule) {
+    public Post(Long id, Long accountId, int chapterOrder, int hour, int minute, LocalDateTime dateSchedule) {
         this.id = id;
-        this.bookId = bookId;
+        this.accountId = accountId;
         this.chapterOrder = chapterOrder;
         this.hour = hour;
         this.minute = minute;
@@ -34,12 +34,12 @@ public class Post {
         this.id = id;
     }
 
-    public Long getBookId() {
-        return bookId;
+    public Long getAccountId() {
+        return accountId;
     }
 
-    public void setBookId(Long bookId) {
-        this.bookId = bookId;
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public int getChapterOrder() {
@@ -82,20 +82,20 @@ public class Post {
             && hour == post.hour
             && minute == post.minute
             && Objects.equals(id, post.id)
-            && Objects.equals(bookId, post.bookId)
+            && Objects.equals(accountId, post.accountId)
             && Objects.equals(dateSchedule, post.dateSchedule);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, bookId, chapterOrder, hour, minute, dateSchedule);
+        return Objects.hash(id, accountId, chapterOrder, hour, minute, dateSchedule);
     }
 
     @Override
     public String toString() {
         return "Post{" +
             "id=" + id +
-            ", bookId=" + bookId +
+            ", accountId=" + accountId +
             ", chapterOrder=" + chapterOrder +
             ", hour=" + hour +
             ", minute=" + minute +

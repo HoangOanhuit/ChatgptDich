@@ -21,17 +21,17 @@ public class PostDao {
         this.dataSource = dataSource;
     }
 
-    public List<Post> findByBookId(long bookId) throws SQLException {
+    public List<Post> findByAccountId(long accountId) throws SQLException {
         String sql = """
-            SELECT id, book_id, chapter_order, hour, minute, date_schedule
+            SELECT id, account_id, chapter_order, hour, minute, date_schedule
             FROM posts
-            WHERE book_id = ?
+            WHERE account_id = ?
             ORDER BY chapter_order ASC
             """;
         List<Post> posts = new ArrayList<>();
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setLong(1, bookId);
+            ps.setLong(1, accountId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     posts.add(mapRow(rs));
@@ -41,10 +41,10 @@ public class PostDao {
         return posts;
     }
 
-    public void replaceBookPosts(long bookId, List<Post> posts) throws SQLException {
-        String deleteSql = "DELETE FROM posts WHERE book_id = ?";
+    public void replaceAccountPosts(long accountId, List<Post> posts) throws SQLException {
+        String deleteSql = "DELETE FROM posts WHERE account_id = ?";
         String insertSql = """
-            INSERT INTO posts (book_id, chapter_order, hour, minute, date_schedule)
+            INSERT INTO posts (account_id, chapter_order, hour, minute, date_schedule)
             VALUES (?, ?, ?, ?, ?)
             """;
 
@@ -53,12 +53,12 @@ public class PostDao {
              PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
             conn.setAutoCommit(false);
             try {
-                deletePs.setLong(1, bookId);
+                deletePs.setLong(1, accountId);
                 deletePs.executeUpdate();
 
                 if (posts != null) {
                     for (Post post : posts) {
-                        insertPs.setLong(1, bookId);
+                        insertPs.setLong(1, accountId);
                         insertPs.setInt(2, post.getChapterOrder());
                         insertPs.setInt(3, post.getHour());
                         insertPs.setInt(4, post.getMinute());
@@ -84,7 +84,10 @@ public class PostDao {
     private Post mapRow(ResultSet rs) throws SQLException {
         Post post = new Post();
         post.setId(rs.getLong("id"));
-        post.setBookId(rs.getLong("book_id"));
+        long accountId = rs.getLong("account_id");
+        if (!rs.wasNull()) {
+            post.setAccountId(accountId);
+        }
         post.setChapterOrder(rs.getInt("chapter_order"));
         post.setHour(rs.getInt("hour"));
         post.setMinute(rs.getInt("minute"));
