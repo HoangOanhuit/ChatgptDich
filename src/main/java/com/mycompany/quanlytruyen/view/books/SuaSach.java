@@ -81,7 +81,6 @@ public class SuaSach extends javax.swing.JDialog {
     private void initComponents() {
 
         pnProfile = new javax.swing.JPanel();
-        jLabel11 = new javax.swing.JLabel();
         pnProfile1 = new javax.swing.JPanel();
         jLabel17 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
@@ -109,6 +108,7 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         accounts = new javax.swing.JComboBox<>();
         jLabel19 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -118,9 +118,6 @@ public class SuaSach extends javax.swing.JDialog {
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         pnProfile.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel11.setText("Sửa Truyện");
 
         pnProfile1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -433,25 +430,30 @@ public class SuaSach extends javax.swing.JDialog {
                 .addGap(26, 26, 26))
         );
 
+        jLabel11.setFont(new java.awt.Font("UTM Americana EB", 1, 18)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(0, 40, 85));
+        jLabel11.setText("Sửa Truyện");
+
         javax.swing.GroupLayout pnProfileLayout = new javax.swing.GroupLayout(pnProfile);
         pnProfile.setLayout(pnProfileLayout);
         pnProfileLayout.setHorizontalGroup(
             pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfileLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel11)
-                .addGap(291, 291, 291))
-            .addGroup(pnProfileLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnProfileLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(pnProfileLayout.createSequentialGroup()
+                        .addGap(222, 222, 222)
+                        .addComponent(jLabel11)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnProfileLayout.setVerticalGroup(
             pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfileLayout.createSequentialGroup()
-                .addGap(25, 25, 25)
+                .addContainerGap(20, Short.MAX_VALUE)
                 .addComponent(jLabel11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(20, 20, 20)
                 .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
