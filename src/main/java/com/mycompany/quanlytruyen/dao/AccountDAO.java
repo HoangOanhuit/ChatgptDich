@@ -44,7 +44,7 @@ public class AccountDAO {
     }
 
     public List<Account> getAllAccounts() throws SQLException {
-        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
+        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
             "FROM " + tableName + " ORDER BY ten_tk";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -58,8 +58,8 @@ public class AccountDAO {
     }
     
     public Account getAccountById(long accountId) throws SQLException {
-        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
-            "FROM " + tableName + " WHERE account_id = ?";
+        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
+        "FROM " + tableName + " WHERE account_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, accountId);
@@ -73,8 +73,8 @@ public class AccountDAO {
     }    
 
     public List<Account> searchAccounts(String keyword) throws SQLException {
-        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
-            "FROM " + tableName + " WHERE ten_tk LIKE ? OR email LIKE ? OR uuid LIKE ? ORDER BY ten_tk";
+        String sql = "SELECT account_id, ten_tk, email, mat_khau, uuid, registered, activation_key, version_ios, ghi_chu, total_book, posted_hoan, created_at, updated_at, status " +
+        "FROM " + tableName + " WHERE ten_tk LIKE ? OR email LIKE ? OR uuid LIKE ? ORDER BY ten_tk";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String like = "%" + keyword + "%";
@@ -93,8 +93,8 @@ public class AccountDAO {
 
     public long insertAccount(Account account) throws SQLException {
         boolean hasCustomId = account.getId() != null;
-        String columns = "ten_tk, email, mat_khau, uuid, registered, activation_key, auth, version_ios, ghi_chu, total_book, posted_hoan, status";
-        String placeholders = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?";
+        String columns = "ten_tk, email, mat_khau, uuid, registered, activation_key, version_ios, ghi_chu, total_book, posted_hoan, status";
+        String placeholders = "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?";
         String sql = "INSERT INTO " + tableName +
             (hasCustomId
                 ? " (account_id, " + columns + ") VALUES (?, " + placeholders + ")"
@@ -127,8 +127,7 @@ public class AccountDAO {
             throw new SQLException("Thiếu account_id gốc để cập nhật");
         }
         String sql = "UPDATE " + tableName +
-            " SET account_id = ?, ten_tk = ?, email = ?, mat_khau = ?, uuid = ?, registered = ?, activation_key = ?, auth = ?, " +
-            "version_ios = ?, ghi_chu = ?, total_book = ?, posted_hoan = ?, status = ?" +                
+            " SET account_id = ?, ten_tk = ?, email = ?, mat_khau = ?, uuid = ?, registered = ?, activation_key = ?, version_ios = ?, ghi_chu = ?, total_book = ?, posted_hoan = ?, status = ?" +               
             " WHERE account_id = ?";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -155,7 +154,6 @@ public class AccountDAO {
         ps.setString(index++, safeString(account.getUuid()));
         setTimestamp(ps, index++, account.getRegistered(), true);
         ps.setString(index++, safeString(account.getActivationKey()));
-        ps.setString(index++, safeString(account.getAuth()));
         ps.setString(index++, safeString(account.getVersionIos()));
         ps.setString(index++, safeString(account.getNote()));
         setInteger(ps, index++, account.getTotalBook(), 0);
@@ -173,7 +171,6 @@ public class AccountDAO {
         account.setUuid(rs.getString("uuid"));
         account.setRegistered(timestampToString(rs.getTimestamp("registered")));
         account.setActivationKey(rs.getString("activation_key"));
-        account.setAuth(rs.getString("auth"));
         account.setVersionIos(rs.getString("version_ios"));
         account.setNote(rs.getString("ghi_chu"));
         account.setTotalBook(getNullableInt(rs, "total_book"));

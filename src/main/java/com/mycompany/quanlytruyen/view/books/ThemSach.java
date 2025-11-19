@@ -573,6 +573,7 @@ public class ThemSach extends javax.swing.JDialog {
 
         String shortTitle = emptyToNull(textOf(txtName3));
         String author = emptyToNull(textOf(txtAuthor));
+        String authToken = emptyToNull(textOf(txtAuthor6));
         BigDecimal price;
         try {
             price = parsePrice(textOf(txtName2));
@@ -599,6 +600,7 @@ public class ThemSach extends javax.swing.JDialog {
         String guidelinesPath = resolveFilePath(txtYeuCau1.getText(), guidelinePlaceholder);
         String nameTablePath = resolveFilePath(txtBangTen.getText(), nameTablePlaceholder);
 
+        
         Book book = new Book();
         book.setId(requestedBookId);
         book.setTitle(title);
@@ -612,6 +614,7 @@ public class ThemSach extends javax.swing.JDialog {
         book.setPrice(price);
         book.setPosted(postedChapters);
         book.setAccountId(selectedAccount != null ? selectedAccount.getId() : null);
+        book.setAuth(authToken);
 
         try {
             bookDao.createBook(book);

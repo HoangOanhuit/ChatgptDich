@@ -40,6 +40,7 @@ com\mycompany\quanlytruyen\view\accounts\SuaTK$13.class
 com\mycompany\quanlytruyen\view\books\QLSach$2.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$6.class
 com\mycompany\quanlytruyen\view\books\ThemSach$4.class
+com\mycompany\quanlytruyen\view\books\SuaSach$19.class
 com\mycompany\quanlytruyen\view\ResumeDialog$1.class
 com\mycompany\quanlytruyen\view\translate\QLDich.class
 com\mycompany\quanlytruyen\model\Book$PostStatus.class
@@ -81,6 +82,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$9.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$11.class
 com\mycompany\quanlytruyen\utils\FileUtils$FileFilter.class
 com\mycompany\quanlytruyen\view\books\SuaSach$3.class
+com\mycompany\quanlytruyen\view\books\ThemSach$21.class
 com\mycompany\quanlytruyen\service\OpenAIClient.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$1.class
 com\mycompany\quanlytruyen\service\SeleniumClaudeService.class
@@ -208,6 +210,7 @@ com\mycompany\quanlytruyen\view\chapters\SuaChuong$5.class
 com\mycompany\quanlytruyen\view\translate\QLDich$12.class
 com\mycompany\quanlytruyen\view\HomeFrame$2.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1.class
+com\mycompany\quanlytruyen\view\books\ThemSach$20.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$1.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$2.class
 com\mycompany\quanlytruyen\view\HomeFrame$7.class

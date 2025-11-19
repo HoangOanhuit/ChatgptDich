@@ -366,7 +366,6 @@ public class ThemTK extends javax.swing.JDialog {
         account.setUuid(emptyToNull(textOf(txtAuthor3)));
         account.setRegistered(emptyToNull(textOf(txtAuthor4)));
         account.setActivationKey(emptyToNull(textOf(txtAuthor5)));
-        account.setAuth(emptyToNull(textOf(txtAuthor6)));
         account.setVersionIos(emptyToNull(textOf(txtAuthor7)));
         account.setTotalBook(0);
         account.setPostedHoan(0);

@@ -517,6 +517,7 @@ public class SuaSach extends javax.swing.JDialog {
 
         String shortTitle = emptyToNull(textOf(txtName2));
         String author = emptyToNull(textOf(txtAuthor));
+        String authToken = emptyToNull(textOf(txtAuthor6));
 
         BigDecimal price;
         try {
@@ -547,6 +548,7 @@ public class SuaSach extends javax.swing.JDialog {
         currentBook.setTitle(title);
         currentBook.setShortTitle(shortTitle);
         currentBook.setAuthor(author);
+        currentBook.setAuth(authToken);
         currentBook.setPrice(price);
         currentBook.setPosted(postedChapters);
         currentBook.setRawStatus(rawStatus);
@@ -737,6 +739,7 @@ public class SuaSach extends javax.swing.JDialog {
         txtName.setText(nonNull(currentBook.getTitle()));
         txtName2.setText(nonNull(currentBook.getShortTitle()));
         txtAuthor.setText(nonNull(currentBook.getAuthor()));
+        txtAuthor6.setText(nonNull(currentBook.getAuth()));
         txtName1.setText(formatPrice(currentBook.getPrice()));
         txtName3.setText(currentBook.getPosted() != null ? String.valueOf(currentBook.getPosted()) : "");
 

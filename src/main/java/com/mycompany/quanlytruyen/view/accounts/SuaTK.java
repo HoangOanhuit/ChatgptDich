@@ -42,7 +42,6 @@ public class SuaTK extends javax.swing.JDialog {
         txtAuthor3.setText(nullToEmpty(account.getUuid()));
         txtAuthor4.setText(nullToEmpty(account.getRegistered()));
         txtAuthor5.setText(nullToEmpty(account.getActivationKey()));
-        txtAuthor6.setText(nullToEmpty(account.getAuth()));
         txtAuthor7.setText(nullToEmpty(account.getVersionIos()));
     }
 
@@ -398,7 +397,6 @@ public class SuaTK extends javax.swing.JDialog {
         account.setUuid(emptyToNull(textOf(txtAuthor3)));
         account.setRegistered(emptyToNull(textOf(txtAuthor4)));
         account.setActivationKey(emptyToNull(textOf(txtAuthor5)));
-        account.setAuth(emptyToNull(textOf(txtAuthor6)));
         account.setVersionIos(emptyToNull(textOf(txtAuthor7)));
 
         try {

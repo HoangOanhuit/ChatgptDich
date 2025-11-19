@@ -29,6 +29,7 @@ public class Book {
     private String guidelines;
     private String nameTable;
     private String modelUsed;
+    private String auth;
     private LocalDateTime lastResumedAt;
 
     // Statistics (computed fields, not in database)
@@ -188,6 +189,14 @@ public class Book {
 
     public String getModelUsed() { return modelUsed; }
     public void setModelUsed(String modelUsed) { this.modelUsed = modelUsed; }
+
+    public String getAuth() {
+        return auth;
+    }
+
+    public void setAuth(String auth) {
+        this.auth = auth;
+    }    
 
     public LocalDateTime getLastResumedAt() { return lastResumedAt; }
     public void setLastResumedAt(LocalDateTime lastResumedAt) { this.lastResumedAt = lastResumedAt; }

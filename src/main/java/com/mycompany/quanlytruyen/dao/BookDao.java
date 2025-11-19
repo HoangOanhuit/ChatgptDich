@@ -28,7 +28,7 @@ public class BookDao {
         String sql = """
             SELECT id, title, author, slug, created_at,
                    raw_status, translate_status, post_status, total_revenue,
-                   guidelines, name_table, model_used, last_resumed_at,
+                   guidelines, name_table, model_used, auth, last_resumed_at,
                                       account_id, short_title, posted, price
                                FROM books 
             ORDER BY created_at DESC
@@ -52,7 +52,7 @@ public class BookDao {
         String sql = """
             SELECT id, title, author, slug, created_at,
                    raw_status, translate_status, post_status, total_revenue,
-                   guidelines, name_table, model_used, last_resumed_at,
+                   guidelines, name_table, model_used, auth, last_resumed_at,   
                                       account_id, short_title, posted, price
                                FROM books
             WHERE id = ?
@@ -78,14 +78,14 @@ public class BookDao {
         boolean hasManualId = book.getId() != null;
         String baseColumns = "title, author, slug, raw_status, translate_status," +
             " post_status, total_revenue, guidelines, name_table," +
-            " model_used, account_id, short_title, posted, price, created_at";
+            " model_used, auth, account_id, short_title, posted, price, created_at";
         String sql;
         if (hasManualId) {
             sql = "INSERT INTO books (id, " + baseColumns + ") " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         } else {
             sql = "INSERT INTO books (" + baseColumns + ") " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
         }
         
         try (Connection conn = dataSource.getConnection();
@@ -108,6 +108,7 @@ public class BookDao {
             ps.setString(index++, book.getGuidelines());
             ps.setString(index++, book.getNameTable());
             ps.setString(index++, book.getModelUsed());
+            ps.setString(index++, book.getAuth());
 
             if (book.getAccountId() != null) {
                 ps.setLong(index++, book.getAccountId());
@@ -151,7 +152,7 @@ public class BookDao {
             UPDATE books SET
                 title = ?, author = ?, raw_status = ?, translate_status = ?,
                 post_status = ?, total_revenue = ?, guidelines = ?,
-                name_table = ?, model_used = ?, account_id = ?,
+                name_table = ?, model_used = ?, auth = ?, account_id = ?,
                 short_title = ?, posted = ?, price = ?
             WHERE id = ?
             """;
@@ -168,23 +169,24 @@ public class BookDao {
             ps.setString(7, book.getGuidelines());
             ps.setString(8, book.getNameTable());
             ps.setString(9, book.getModelUsed());
+            ps.setString(10, book.getAuth());
             if (book.getAccountId() != null) {
-                ps.setLong(10, book.getAccountId());
+                ps.setLong(11, book.getAccountId());
             } else {
-                ps.setNull(10, Types.BIGINT);
+                ps.setNull(11, Types.BIGINT);
             }
-            ps.setString(11, book.getShortTitle());
+            ps.setString(12, book.getShortTitle());
             if (book.getPosted() != null) {
-                ps.setInt(12, book.getPosted());
+                ps.setInt(13, book.getPosted());
             } else {
-                ps.setNull(12, Types.INTEGER);
+                ps.setNull(13, Types.INTEGER);
             }
             if (book.getPrice() != null) {
-                ps.setBigDecimal(13, book.getPrice());
+                ps.setBigDecimal(14, book.getPrice());
             } else {
-                ps.setNull(13, Types.DECIMAL);
+                ps.setNull(14, Types.DECIMAL);
             }
-            ps.setLong(14, book.getId());
+            ps.setLong(15, book.getId());
             
             int affected = ps.executeUpdate();
             if (affected == 0) {
@@ -305,7 +307,7 @@ public class BookDao {
         StringBuilder sql = new StringBuilder("""
             SELECT id, title, author, slug, created_at,
                    raw_status, translate_status, post_status, total_revenue,
-                   guidelines, name_table, model_used, last_resumed_at,
+                   guidelines, name_table, model_used, auth, last_resumed_at,
                                       account_id, short_title, posted, price
             FROM books WHERE 1=1
             """);
@@ -413,6 +415,7 @@ public class BookDao {
         book.setGuidelines(rs.getString("guidelines"));
         book.setNameTable(rs.getString("name_table"));
         book.setModelUsed(rs.getString("model_used"));
+        book.setAuth(rs.getString("auth"));
         
 
         Timestamp lastResumed = rs.getTimestamp("last_resumed_at");

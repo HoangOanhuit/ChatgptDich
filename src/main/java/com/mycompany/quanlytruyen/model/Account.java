@@ -17,7 +17,6 @@ public class Account {
     private String uuid;
     private String registered;
     private String activationKey;
-    private String auth;
     private String versionIos;
     private Integer totalBook;
     private Integer postedHoan;
@@ -98,15 +97,6 @@ public class Account {
         this.activationKey = activationKey;
     }
 
-    public String getAuth() {
-        return auth;
-    }
-
-    public void setAuth(String auth) {
-        this.auth = auth;
-    }
-
-
     public String getVersionIos() {
         return versionIos;
     }
@@ -114,7 +104,7 @@ public class Account {
     public void setVersionIos(String versionIos) {
         this.versionIos = versionIos;
     }
-   public Integer getTotalBook() {
+    public Integer getTotalBook() {
         return totalBook;
     }
 
