@@ -56,7 +56,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         Tbooks.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 
         loadAccountInfo();
-        txtYeuCau4.setText(resolveBookTitle());
         updatePriceField();
 
         chapterPerDay.getDocument().addDocumentListener(new SimpleDocumentListener(this::handleChapterPerDayChanged));
@@ -218,14 +217,12 @@ public class SuaLichPost extends javax.swing.JDialog {
         pnProfile = new javax.swing.JPanel();
         jLabel11 = new javax.swing.JLabel();
         pnProfile1 = new javax.swing.JPanel();
-        jLabel17 = new javax.swing.JLabel();
         btnCancel = new javax.swing.JButton();
         btnCreate = new javax.swing.JButton();
         chapterPerDay = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
         jLabel19 = new javax.swing.JLabel();
         txtYeuCau3 = new javax.swing.JTextField();
-        txtYeuCau4 = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tbooks = new javax.swing.JTable();
         jLabel8 = new javax.swing.JLabel();
@@ -242,12 +239,9 @@ public class SuaLichPost extends javax.swing.JDialog {
 
         jLabel11.setFont(new java.awt.Font("UTM Americana EB", 1, 18)); // NOI18N
         jLabel11.setForeground(new java.awt.Color(0, 40, 85));
-        jLabel11.setText("Lịch Post của Truyện");
+        jLabel11.setText("Lịch Post của Tài Khoản");
 
         pnProfile1.setBackground(new java.awt.Color(255, 255, 255));
-
-        jLabel17.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel17.setText("Tên Truyện:");
 
         btnCancel.setBackground(new java.awt.Color(255, 51, 51));
         btnCancel.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -279,7 +273,7 @@ public class SuaLichPost extends javax.swing.JDialog {
             }
         });
 
-        chapterPerDay.setText("5");
+        chapterPerDay.setText("10");
         chapterPerDay.setToolTipText("");
         chapterPerDay.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -301,17 +295,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         txtYeuCau3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtYeuCau3ActionPerformed(evt);
-            }
-        });
-
-        txtYeuCau4.setEditable(false);
-        txtYeuCau4.setForeground(new java.awt.Color(153, 153, 153));
-        txtYeuCau4.setEnabled(false);
-        txtYeuCau4.setFocusable(false);
-        txtYeuCau4.setRequestFocusEnabled(false);
-        txtYeuCau4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtYeuCau4ActionPerformed(evt);
             }
         });
 
@@ -347,7 +330,6 @@ public class SuaLichPost extends javax.swing.JDialog {
                 .addGap(58, 58, 58)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel19)
-                    .addComponent(jLabel17)
                     .addComponent(jLabel7)
                     .addComponent(jLabel8))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -360,7 +342,6 @@ public class SuaLichPost extends javax.swing.JDialog {
                             .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtYeuCau3, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtYeuCau4, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 334, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(chapterPerDay, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 65, Short.MAX_VALUE))
@@ -373,10 +354,6 @@ public class SuaLichPost extends javax.swing.JDialog {
                     .addComponent(jLabel19)
                     .addComponent(txtYeuCau3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(12, 12, 12)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel17)
-                    .addComponent(txtYeuCau4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(chapterPerDay, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -458,10 +435,6 @@ public class SuaLichPost extends javax.swing.JDialog {
     private void txtYeuCau3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau3ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtYeuCau3ActionPerformed
-
-    private void txtYeuCau4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtYeuCau4ActionPerformed
 
     private void priceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priceActionPerformed
         // TODO add your handling code here:
@@ -691,7 +664,6 @@ public class SuaLichPost extends javax.swing.JDialog {
     private javax.swing.JButton btnCreate;
     private javax.swing.JTextField chapterPerDay;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -700,7 +672,6 @@ public class SuaLichPost extends javax.swing.JDialog {
     private javax.swing.JPanel pnProfile1;
     private javax.swing.JTextField price;
     private javax.swing.JTextField txtYeuCau3;
-    private javax.swing.JTextField txtYeuCau4;
     // End of variables declaration//GEN-END:variables
 
 }

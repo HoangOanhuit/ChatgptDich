@@ -487,7 +487,7 @@ public class QLSach extends javax.swing.JPanel {
                 {null, null, null, null}
             },
             new String [] {
-                "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên", "Raw", "TT Dịch", "TT Đăng", "Lịch Đăng"
+                "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên", "Raw", "TT Dịch", "TT Đăng", "Tải lên Chương đã beta"
             }
         ));
         jScrollPane1.setViewportView(Tbooks);

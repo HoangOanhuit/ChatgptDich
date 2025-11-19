@@ -495,10 +495,10 @@ public class ThemSach extends javax.swing.JDialog {
 
         Integer postedChapters;
         try {
-            postedChapters = parsePostedChapters(textOf(txtName1));
+            postedChapters = parsePostedChapters(textOf(txtName3));
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Số chương đã đăng phải là số nguyên không âm");
-            txtName1.requestFocus();
+            txtName3.requestFocus();
             return;
         }
 

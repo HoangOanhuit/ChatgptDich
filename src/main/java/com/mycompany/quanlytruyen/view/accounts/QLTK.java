@@ -346,7 +346,7 @@ public class QLTK extends javax.swing.JPanel {
                 {null, null, null, null}
             },
             new String [] {
-                "ID", "Tên TK", "email", "Mật khẩu", "Ghi chú"
+                "ID", "Tên TK", "email", "Mật khẩu", "Sửa Lịch Đăng"
             }
         ));
         jScrollPane1.setViewportView(Tbooks);
