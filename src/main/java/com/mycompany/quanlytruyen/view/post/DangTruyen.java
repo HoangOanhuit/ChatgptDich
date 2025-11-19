@@ -152,14 +152,6 @@ public class DangTruyen extends javax.swing.JPanel {
                 updateToChapters();
             }
         });
-
-        JPanel numChapterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
-        numChapterPanel.setOpaque(false);
-        JLabel lblNumChapter = new JLabel("Số chương/lần đăng:");
-        numChapterPanel.add(lblNumChapter);
-        numChapterPanel.add(txtNumChapter);
-
-        rebuildSidePanelLayout(numChapterPanel);
     }
 
     private void rebuildSidePanelLayout(JPanel numChapterPanel) {
