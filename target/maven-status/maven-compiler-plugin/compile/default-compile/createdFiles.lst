@@ -164,6 +164,7 @@ com\mycompany\quanlytruyen\view\chapters\ChiaChuong$10.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$8.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$2.class
 com\mycompany\quanlytruyen\view\books\SuaSach.class
+com\mycompany\quanlytruyen\view\chapters\QLChuong$ComboItem.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$13.class
 com\mycompany\quanlytruyen\view\books\QLSach$UploadButtonRenderer.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1$5.class

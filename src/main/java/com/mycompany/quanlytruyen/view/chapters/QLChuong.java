@@ -21,6 +21,7 @@ import java.awt.Component;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.awt.Window;
+import javax.swing.table.TableColumn;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -44,6 +45,7 @@ public class QLChuong extends javax.swing.JPanel {
     private BookDao bookDao;
     private DefaultTableModel tableModel;
     private final List<Chapter> allChapters = new ArrayList<>();
+    private final List<Chapter> displayedChapters = new ArrayList<>();
     private final Map<Long, String> bookTitleMap = new HashMap<>();
 
     /**
@@ -70,7 +72,7 @@ public class QLChuong extends javax.swing.JPanel {
         }
 
         tableModel = new DefaultTableModel(new Object[]{
-            "ID", "ID Truyên", "Tên Truyện", "STT Chương", "Tên Chương", "Nội dung", "Tình trạng Beta", "Copy1", "Copy2", "Chia Chương"
+            "Tên Truyện", "STT Chương", "Tên Chương", "Nội dung", "Tình trạng Beta", "Copy1", "Copy2", "Chia Chương"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -78,17 +80,20 @@ public class QLChuong extends javax.swing.JPanel {
             }
         };
         Tbooks.setModel(tableModel);
+        /*
         Tbooks.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer("Copy"));
         Tbooks.getColumnModel().getColumn(7).setCellEditor(new CopyButtonEditor("Copy"));
         Tbooks.getColumnModel().getColumn(8).setCellRenderer(new ButtonRenderer("Copy"));
         Tbooks.getColumnModel().getColumn(8).setCellEditor(new CopyButtonEditor("Copy"));
         Tbooks.getColumnModel().getColumn(9).setCellRenderer(new ButtonRenderer("Chia"));
         Tbooks.getColumnModel().getColumn(9).setCellEditor(new SplitButtonEditor());
+        */
         
         tableModel = new ChapterTableModel(new Object[]{
-            "ID", "ID Truyên", "Tên Truyện", "STT Chương", "Tên Chương", "Nội dung", "Tình trạng Beta", "Copy1", "Copy2", "Chia Chương"
+            "Tên Truyện", "STT Chương", "Tên Chương", "Nội dung", "Tình trạng Beta", "Copy1", "Copy2", "Chia Chương", "Chọn"
         }, 0);
         Tbooks.setModel(tableModel);
+        /*
         Tbooks.getColumnModel().getColumn(7).setCellRenderer(new ButtonRenderer("Copy"));
         Tbooks.getColumnModel().getColumn(7).setCellEditor(new CopyButtonEditor("Copy"));
         Tbooks.getColumnModel().getColumn(8).setCellRenderer(new ButtonRenderer("Copy"));
@@ -97,20 +102,19 @@ public class QLChuong extends javax.swing.JPanel {
         Tbooks.getColumnModel().getColumn(9).setCellEditor(new SplitButtonEditor());
         Tbooks.getColumnModel().getColumn(6).setCellRenderer(new BetaStatusRenderer());
         Tbooks.getColumnModel().getColumn(6).setCellEditor(new BetaStatusEditor());
+        */
+        
         Tbooks.setAutoCreateRowSorter(true);
-
+        Tbooks.getColumnModel().moveColumn(tableModel.getColumnCount() - 1, 0);
+        configureActionColumns();
+        
         Tbooks.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
                     int viewRow = Tbooks.rowAtPoint(e.getPoint());
-                    if (viewRow < 0) {
-                        return;
-                    }
-                    int modelRow = Tbooks.convertRowIndexToModel(viewRow);
-                    Object bookIdValue = tableModel.getValueAt(modelRow, 1);
-                    if (bookIdValue instanceof Number number) {
-                        openBookEditor(number.longValue());
+                     if (viewRow >= 0) {
+                        openChapterEditorFromViewRow(viewRow);
                     }
                 }
             }
@@ -118,7 +122,7 @@ public class QLChuong extends javax.swing.JPanel {
         
         initCombos();
         loadAllChapters();
-
+        /*
         tableModel.addColumn("Chọn");
         Tbooks.setModel(tableModel);
         Tbooks.getColumnModel().moveColumn(tableModel.getColumnCount() - 1, 0);
@@ -132,18 +136,20 @@ public class QLChuong extends javax.swing.JPanel {
         
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             tableModel.setValueAt(Boolean.FALSE, i, tableModel.getColumnCount() - 1);
-        }        
+        }       
+        */
     }
 
     private void initCombos() {
         tenTruyen.removeAllItems();
-        tenTruyen.addItem("Tất cả");
+        tenTruyen.addItem(new ComboItem(null, "Tất cả"));
         if (bookDao != null) {
             try {
                 List<Book> books = bookDao.getAllBooks();
                 for (Book b : books) {
-                    tenTruyen.addItem(b.getId() + " - " + b.getTitle());
-                    bookTitleMap.put(b.getId(), b.getTitle());
+                    String displayTitle = getDisplayTitle(b);
+                    tenTruyen.addItem(new ComboItem(b.getId(), displayTitle));
+                    bookTitleMap.put(b.getId(), displayTitle);
                 }
             } catch (SQLException e) {
                 JOptionPane.showMessageDialog(this, "Lỗi khi tải truyện: " + e.getMessage());
@@ -165,7 +171,7 @@ public class QLChuong extends javax.swing.JPanel {
             allChapters.clear();
             List<Book> books = bookDao.getAllBooks();
             for (Book b : books) {
-                bookTitleMap.put(b.getId(), b.getTitle());
+                bookTitleMap.put(b.getId(), getDisplayTitle(b));
                 allChapters.addAll(chapterDao.findByBookId(b.getId()));
             }
             refreshTable(allChapters);
@@ -176,13 +182,16 @@ public class QLChuong extends javax.swing.JPanel {
 
     private void refreshTable(List<Chapter> chapters) {
         tableModel.setRowCount(0);
+        displayedChapters.clear();
         if (chapters == null) return;
         for (Chapter c : chapters) {
+            displayedChapters.add(c);
             String title = bookTitleMap.get(c.getBookId());
+            if (title == null) {
+                title = "ID " + c.getBookId();
+            }
             String[] parts = splitContent(c.getContent());
             tableModel.addRow(new Object[]{
-                c.getId(),
-                c.getBookId(),
                 title,
                 c.getChapterNumber(),
                 c.getChapterTitle(),
@@ -190,11 +199,46 @@ public class QLChuong extends javax.swing.JPanel {
                 c.getBetaStatus() != null ? c.getBetaStatus().getDisplayName() : "",
                 parts[0],
                 parts[1],
-                "Chia"
+                "Chia",
+                Boolean.FALSE
             });
             tableModel.setValueAt(Boolean.FALSE, tableModel.getRowCount() - 1, tableModel.getColumnCount() - 1);
         }
     }
+
+    private void configureActionColumns() {
+        try {
+            TableColumn copy1Column = Tbooks.getColumn("Copy1");
+            copy1Column.setCellRenderer(new ButtonRenderer("Copy"));
+            copy1Column.setCellEditor(new CopyButtonEditor("Copy"));
+        } catch (IllegalArgumentException ignored) {}
+        try {
+            TableColumn copy2Column = Tbooks.getColumn("Copy2");
+            copy2Column.setCellRenderer(new ButtonRenderer("Copy"));
+            copy2Column.setCellEditor(new CopyButtonEditor("Copy"));
+        } catch (IllegalArgumentException ignored) {}
+        try {
+            TableColumn splitColumn = Tbooks.getColumn("Chia Chương");
+            splitColumn.setCellRenderer(new ButtonRenderer("Chia"));
+            splitColumn.setCellEditor(new SplitButtonEditor());
+        } catch (IllegalArgumentException ignored) {}
+        try {
+            TableColumn betaColumn = Tbooks.getColumn("Tình trạng Beta");
+            betaColumn.setCellRenderer(new BetaStatusRenderer());
+            betaColumn.setCellEditor(new BetaStatusEditor());
+        } catch (IllegalArgumentException ignored) {}
+    }
+
+    private String getDisplayTitle(Book book) {
+        if (book == null) {
+            return "";
+        }
+        String shortTitle = book.getShortTitle();
+        if (shortTitle != null && !shortTitle.trim().isEmpty()) {
+            return shortTitle.trim();
+        }
+        return book.getTitle();
+    }    
 
     private String[] splitContent(String content) {
         if (content == null) return new String[]{"", ""};
@@ -206,40 +250,33 @@ public class QLChuong extends javax.swing.JPanel {
         part2 = part2.replaceFirst("^(\\s*\\r?\\n)+", "");
         return new String[]{part1, part2};
     }
-    private void openBookEditor(long bookId) {
-        if (bookDao == null) {
+
+    private Chapter getChapterAtModelRow(int modelRow) {
+        if (modelRow < 0 || modelRow >= displayedChapters.size()) {
+            return null;
+        }  
+        return displayedChapters.get(modelRow);
+    }
+
+    private void openChapterEditorFromViewRow(int viewRow) {
+        int modelRow = Tbooks.convertRowIndexToModel(viewRow);
+        Chapter selected = getChapterAtModelRow(modelRow);
+        if (selected == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy chương đã chọn");
             return;
         }
-        try {
-            Book book = bookDao.getBookById(bookId);
-            if (book == null) {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy truyện để sửa");
-                return;
-            }
-            Window window = SwingUtilities.getWindowAncestor(this);
-            java.awt.Frame frame = window instanceof java.awt.Frame ? (java.awt.Frame) window : null;
-            SuaSach dialog = new SuaSach(frame, true, null, book);
-            dialog.setLocationRelativeTo(this);
-            dialog.setVisible(true);
-            loadAllChapters();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Không thể mở hộp thoại sửa sách: " + ex.getMessage());
-        }
+        java.awt.Frame frame = (java.awt.Frame) SwingUtilities.getWindowAncestor(this);
+        SuaChuong dialog = new SuaChuong(frame, true, this, selected);
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
+    
     private Long getSelectedBookId() {
         int idx = tenTruyen.getSelectedIndex();
         if (idx <= 0) return null;
         Object item = tenTruyen.getSelectedItem();
-        if (item instanceof String) {
-            String str = (String) item;
-            int dash = str.indexOf(" - ");
-            if (dash > 0) {
-                try {
-                    return Long.parseLong(str.substring(0, dash));
-                } catch (NumberFormatException ex) {
-                    return null;
-                }
-            }
+        if (item instanceof ComboItem comboItem) {
+            return comboItem.id();
         }
         return null;
     }
@@ -263,12 +300,17 @@ public class QLChuong extends javax.swing.JPanel {
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            return column == 6 || column >= 7;
+            String name = getColumnName(column);
+            return "Tình trạng Beta".equals(name)
+                    || "Copy1".equals(name)
+                    || "Copy2".equals(name)
+                    || "Chia Chương".equals(name)
+                    || "Chọn".equals(name);
         }
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
-            if (columnIndex == getColumnCount() - 1) {
+            if ("Chọn".equals(getColumnName(columnIndex))) {
                 return Boolean.class;
             }
             return super.getColumnClass(columnIndex);
@@ -321,8 +363,13 @@ public class QLChuong extends javax.swing.JPanel {
         public boolean stopCellEditing() {
             String selected = (String) comboBox.getSelectedItem();
             try {
-                Long bookId = Long.parseLong(Tbooks.getValueAt(row, 1).toString());
-                int chapterNumber = Integer.parseInt(Tbooks.getValueAt(row, 3).toString());
+                int modelRow = Tbooks.convertRowIndexToModel(row);
+                Chapter chapter = getChapterAtModelRow(modelRow);
+                if (chapter == null) {
+                    return super.stopCellEditing();
+                }
+                Long bookId = chapter.getBookId();
+                Integer chapterNumber = chapter.getChapterNumber();
                 BetaStatus status = BetaStatus.fromDisplayName(selected);
                 chapterDao.updateBetaStatus(bookId, chapterNumber, status);
                 for (Chapter c : allChapters) {
@@ -330,6 +377,11 @@ public class QLChuong extends javax.swing.JPanel {
                         c.setBetaStatus(status);
                         break;
                     }
+                }
+                chapter.setBetaStatus(status);
+                int betaColumn = tableModel.findColumn("Tình trạng Beta");
+                if (betaColumn >= 0) {
+                    tableModel.setValueAt(status.getDisplayName(), modelRow, betaColumn);
                 }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(QLChuong.this, "Lỗi cập nhật tình trạng: " + ex.getMessage());
@@ -483,7 +535,7 @@ public class QLChuong extends javax.swing.JPanel {
         FilterPanel1.setBackground(new java.awt.Color(249, 245, 245));
         FilterPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        tenTruyen.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        tenTruyen.setModel(new javax.swing.DefaultComboBoxModel<ComboItem>());
         tenTruyen.setPreferredSize(new java.awt.Dimension(100, 22));
         tenTruyen.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -530,7 +582,7 @@ public class QLChuong extends javax.swing.JPanel {
         jLabel9.setForeground(new java.awt.Color(153, 153, 153));
         jLabel9.setText("đến chương:");
 
-        jTextField1.setText("100");
+        jTextField1.setText("1000");
         jTextField1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jTextField1ActionPerformed(evt);
@@ -627,7 +679,7 @@ public class QLChuong extends javax.swing.JPanel {
                 {null, null, null, null}
             },
             new String [] {
-                "Chọn","ID", "ID Truyên", "Tên Truyện", "STT Chương", "Tên Chương", "Nội dung", "Tình trạng Beta", "Copy1", "Copy2", "Chia Chương"
+                "Chọn", "Tên Truyện", "STT Chương", "Tên Chương", "Nội dung", "Tình trạng Beta", "Copy1", "Copy2", "Chia Chương"
             }
         ));
         jScrollPane1.setViewportView(Tbooks);
@@ -731,13 +783,18 @@ public class QLChuong extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn chương cần xóa");
             return;
         }
-        long id = ((Number) tableModel.getValueAt(row, 0)).longValue();
+        int modelRow = Tbooks.convertRowIndexToModel(row);
+        Chapter selected = getChapterAtModelRow(modelRow);
+        if (selected == null || selected.getId() == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy chương đã chọn");
+            return;
+        }
         int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa chương này?", "Xác nhận", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) {
             return;
         }
         try {
-            chapterDao.deleteChapter(id);
+            chapterDao.deleteChapter(selected.getId());
             loadAllChapters();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Lỗi khi xóa: " + e.getMessage());
@@ -751,23 +808,7 @@ public class QLChuong extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn chương cần sửa");
             return;
         }
-        long id = ((Number) tableModel.getValueAt(row, 0)).longValue();
-        Chapter selected = null;
-        for (Chapter c : allChapters) {
-            if (c.getId() != null && c.getId() == id) {
-                selected = c;
-                break;
-            }
-        }
-        if (selected == null) {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy chương đã chọn");
-            return;
-        }
-        java.awt.Frame frame = (java.awt.Frame) SwingUtilities.getWindowAncestor(this);
-        SuaChuong dialog = new SuaChuong(frame, true, this, selected);
-        dialog.setLocationRelativeTo(this);
-        dialog.setVisible(true);
-        loadAllChapters();        
+        openChapterEditorFromViewRow(row);      
 
     }//GEN-LAST:event_btnEditActionPerformed
 
@@ -838,7 +879,7 @@ public class QLChuong extends javax.swing.JPanel {
                 List<Book> books = bookDao.getAllBooks();
                 for (Book b : books) {
                     chapters.addAll(chapterDao.findByBookIdAndBetaStatus(b.getId(), beta));
-                    bookTitleMap.put(b.getId(), b.getTitle());
+                    bookTitleMap.put(b.getId(), getDisplayTitle(b));
                 }
             } else {
                 chapters.addAll(allChapters);
@@ -893,10 +934,13 @@ public class QLChuong extends javax.swing.JPanel {
             for (int i = 0; i < tableModel.getRowCount(); i++) {
                 Object val = tableModel.getValueAt(i, tableModel.getColumnCount() - 1);
                 if (Boolean.TRUE.equals(val)) {
-                    Object numObj = tableModel.getValueAt(i, 3);
-                    String number = numObj != null ? numObj.toString() : String.valueOf(i + 1);
-                    Object contentObj = tableModel.getValueAt(i, 5);
-                    String content = contentObj != null ? contentObj.toString() : "";
+                    Chapter chapter = getChapterAtModelRow(i);
+                    String number = chapter != null && chapter.getChapterNumber() != null
+                            ? chapter.getChapterNumber().toString()
+                            : String.valueOf(i + 1);
+                    String content = chapter != null && chapter.getContent() != null
+                            ? chapter.getContent()
+                            : "";                    
                     File f = new File(dir, "C" + number + ".docx");
                     try (FileWriter fw = new FileWriter(f)) {
                         fw.write(content);
@@ -987,7 +1031,9 @@ public class QLChuong extends javax.swing.JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             fireEditingStopped();
-            String content = (String) tableModel.getValueAt(row, 5);
+            int modelRow = Tbooks.convertRowIndexToModel(row);
+            Chapter chapter = getChapterAtModelRow(modelRow);
+            String content = chapter != null && chapter.getContent() != null ? chapter.getContent() : "";
             java.awt.Frame frame = (java.awt.Frame) SwingUtilities.getWindowAncestor(QLChuong.this);
             ChiaChuong dialog = new ChiaChuong(frame, true, QLChuong.this, content);
             dialog.setLocationRelativeTo(frame);
@@ -1017,6 +1063,13 @@ public class QLChuong extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(this, "Giá trị " + fieldLabel + " phải là số.");
             return null;
         }
+    }   
+    
+    private record ComboItem(Long id, String label) {
+        @Override
+        public String toString() {
+            return label != null ? label : "";
+        }
     }    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1043,7 +1096,7 @@ public class QLChuong extends javax.swing.JPanel {
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JComboBox<String> stTranslate;
-    private javax.swing.JComboBox<String> tenTruyen;
+    private javax.swing.JComboBox<ComboItem> tenTruyen;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }
