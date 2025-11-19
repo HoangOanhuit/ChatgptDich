@@ -103,6 +103,8 @@ public class ThemSach extends javax.swing.JDialog {
         jLabel20 = new javax.swing.JLabel();
         txtIDBook = new javax.swing.JTextField();
         jLabel21 = new javax.swing.JLabel();
+        jLabel29 = new javax.swing.JLabel();
+        txtAuthor6 = new javax.swing.JTextField();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -315,6 +317,11 @@ public class ThemSach extends javax.swing.JDialog {
         jLabel19.setText("Tài khoản:");
 
         accounts.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        accounts.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                accountsActionPerformed(evt);
+            }
+        });
 
         jLabel20.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel20.setForeground(new java.awt.Color(255, 0, 51));
@@ -330,6 +337,17 @@ public class ThemSach extends javax.swing.JDialog {
         jLabel21.setFont(new java.awt.Font("Segoe UI", 2, 12)); // NOI18N
         jLabel21.setForeground(new java.awt.Color(102, 102, 102));
         jLabel21.setText("* Lưu ý: Phải nhập đúng ID Truyện");
+
+        jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel29.setForeground(new java.awt.Color(153, 153, 153));
+        jLabel29.setText("auth:");
+
+        txtAuthor6.setForeground(new java.awt.Color(102, 102, 102));
+        txtAuthor6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtAuthor6ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnProfile1Layout = new javax.swing.GroupLayout(pnProfile1);
         pnProfile1.setLayout(pnProfile1Layout);
@@ -399,6 +417,12 @@ public class ThemSach extends javax.swing.JDialog {
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(jLabel4))))
                 .addGap(81, 81, 81))
+            .addGroup(pnProfile1Layout.createSequentialGroup()
+                .addGap(62, 62, 62)
+                .addComponent(jLabel29)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(txtAuthor6, javax.swing.GroupLayout.PREFERRED_SIZE, 443, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(58, 58, 58))
         );
         pnProfile1Layout.setVerticalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -407,12 +431,16 @@ public class ThemSach extends javax.swing.JDialog {
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel19))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(8, 8, 8)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel20)
                     .addComponent(txtIDBook, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel21))
-                .addGap(20, 20, 20)
+                .addGap(8, 8, 8)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(txtAuthor6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(25, 25, 25)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
                     .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -474,7 +502,7 @@ public class ThemSach extends javax.swing.JDialog {
             .addGroup(pnProfileLayout.createSequentialGroup()
                 .addGap(25, 25, 25)
                 .addComponent(jLabel11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -504,6 +532,37 @@ public class ThemSach extends javax.swing.JDialog {
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu để thêm truyện");
             return;
         }
+
+        String bookIdText = textOf(txtIDBook);
+        if (bookIdText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập ID truyện");
+            txtIDBook.requestFocus();
+            return;
+        }
+
+        long requestedBookId;
+        try {
+            requestedBookId = Long.parseLong(bookIdText);
+            if (requestedBookId <= 0) {
+                throw new NumberFormatException("non-positive");
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "ID Truyện phải là số nguyên dương hợp lệ");
+            txtIDBook.requestFocus();
+            return;
+        }
+
+        try {
+            if (bookDao.getBookById(requestedBookId) != null) {
+                JOptionPane.showMessageDialog(this, "ID Truyện đã tồn tại, vui lòng nhập ID khác");
+                txtIDBook.requestFocus();
+                return;
+            }
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "Không thể kiểm tra ID truyện", ex);
+            JOptionPane.showMessageDialog(this, "Không thể kiểm tra ID truyện: " + ex.getMessage());
+            return;
+        }        
 
         String title = textOf(txtName);
         if (title.isEmpty()) {
@@ -541,6 +600,7 @@ public class ThemSach extends javax.swing.JDialog {
         String nameTablePath = resolveFilePath(txtBangTen.getText(), nameTablePlaceholder);
 
         Book book = new Book();
+        book.setId(requestedBookId);
         book.setTitle(title);
         book.setShortTitle(shortTitle);
         book.setAuthor(author);
@@ -628,6 +688,14 @@ public class ThemSach extends javax.swing.JDialog {
     private void txtIDBookActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIDBookActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtIDBookActionPerformed
+
+    private void txtAuthor6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAuthor6ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtAuthor6ActionPerformed
+
+    private void accountsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accountsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_accountsActionPerformed
 
     private DataSource createDataSource() {
         try {
@@ -948,6 +1016,7 @@ public class ThemSach extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -959,6 +1028,7 @@ public class ThemSach extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> stRaw;
     private javax.swing.JComboBox<String> stTranslate;
     private javax.swing.JTextField txtAuthor;
+    private javax.swing.JTextField txtAuthor6;
     private javax.swing.JTextField txtBangTen;
     private javax.swing.JTextField txtIDBook;
     private javax.swing.JTextField txtName;

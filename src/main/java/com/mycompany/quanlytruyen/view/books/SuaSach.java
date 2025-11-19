@@ -108,6 +108,8 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel7 = new javax.swing.JLabel();
         accounts = new javax.swing.JComboBox<>();
         jLabel19 = new javax.swing.JLabel();
+        txtAuthor6 = new javax.swing.JTextField();
+        jLabel29 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -318,34 +320,21 @@ public class SuaSach extends javax.swing.JDialog {
         jLabel19.setForeground(new java.awt.Color(51, 51, 51));
         jLabel19.setText("Tài khoản:");
 
+        txtAuthor6.setForeground(new java.awt.Color(102, 102, 102));
+        txtAuthor6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtAuthor6ActionPerformed(evt);
+            }
+        });
+
+        jLabel29.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jLabel29.setForeground(new java.awt.Color(153, 153, 153));
+        jLabel29.setText("auth:");
+
         javax.swing.GroupLayout pnProfile1Layout = new javax.swing.GroupLayout(pnProfile1);
         pnProfile1.setLayout(pnProfile1Layout);
         pnProfile1Layout.setHorizontalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnProfile1Layout.createSequentialGroup()
-                .addGap(24, 24, 24)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(pnProfile1Layout.createSequentialGroup()
-                            .addComponent(btnCreate, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(126, 126, 126)
-                            .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(pnProfile1Layout.createSequentialGroup()
-                            .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabel17)
-                                .addComponent(jLabel23)
-                                .addComponent(jLabel18))
-                            .addGap(18, 18, 18)
-                            .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(txtAuthor, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
-                                .addComponent(txtName)
-                                .addComponent(txtName2, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                    .addGroup(pnProfile1Layout.createSequentialGroup()
-                        .addGap(84, 84, 84)
-                        .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(bangTenPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnProfile1Layout.createSequentialGroup()
                 .addGap(263, 263, 263)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -379,6 +368,38 @@ public class SuaSach extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(pnProfile1Layout.createSequentialGroup()
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(pnProfile1Layout.createSequentialGroup()
+                        .addGap(24, 24, 24)
+                        .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(pnProfile1Layout.createSequentialGroup()
+                                    .addComponent(btnCreate, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addGap(126, 126, 126)
+                                    .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(pnProfile1Layout.createSequentialGroup()
+                                    .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(jLabel17)
+                                        .addComponent(jLabel23)
+                                        .addComponent(jLabel18))
+                                    .addGap(18, 18, 18)
+                                    .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(txtAuthor, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE)
+                                        .addComponent(txtName)
+                                        .addComponent(txtName2, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(pnProfile1Layout.createSequentialGroup()
+                                .addGap(84, 84, 84)
+                                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(bangTenPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(yeuCauPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                    .addGroup(pnProfile1Layout.createSequentialGroup()
+                        .addGap(58, 58, 58)
+                        .addComponent(jLabel29)
+                        .addGap(20, 20, 20)
+                        .addComponent(txtAuthor6, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         pnProfile1Layout.setVerticalGroup(
             pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -387,6 +408,10 @@ public class SuaSach extends javax.swing.JDialog {
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(accounts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel19))
+                .addGap(8, 8, 8)
+                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel29)
+                    .addComponent(txtAuthor6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(25, 25, 25)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
@@ -451,7 +476,7 @@ public class SuaSach extends javax.swing.JDialog {
         pnProfileLayout.setVerticalGroup(
             pnProfileLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnProfileLayout.createSequentialGroup()
-                .addContainerGap(20, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel11)
                 .addGap(20, 20, 20)
                 .addComponent(pnProfile1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -602,6 +627,10 @@ public class SuaSach extends javax.swing.JDialog {
     private void txtName3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtName3ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtName3ActionPerformed
+
+    private void txtAuthor6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtAuthor6ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtAuthor6ActionPerformed
     private DataSource createDataSource() {
         try {
             AppConfig config = AppConfig.getInstance();
@@ -998,6 +1027,7 @@ public class SuaSach extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1009,6 +1039,7 @@ public class SuaSach extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> stRaw;
     private javax.swing.JComboBox<String> stTranslate;
     private javax.swing.JTextField txtAuthor;
+    private javax.swing.JTextField txtAuthor6;
     private javax.swing.JTextField txtBangTen;
     private javax.swing.JTextField txtName;
     private javax.swing.JTextField txtName1;

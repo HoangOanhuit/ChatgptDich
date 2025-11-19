@@ -146,6 +146,7 @@ com\mycompany\quanlytruyen\view\post\DangTruyen$BookTableModel.class
 com\mycompany\quanlytruyen\view\books\SuaSach$2.class
 com\mycompany\quanlytruyen\view\translate\QLDich$15.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$4.class
+com\mycompany\quanlytruyen\view\books\ThemSach$19.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$3.class
 com\mycompany\quanlytruyen\service\TranslationRunner$ProgressListener.class
 com\mycompany\quanlytruyen\view\books\QLSach.class
@@ -165,6 +166,7 @@ com\mycompany\quanlytruyen\view\chapters\ChiaChuong$8.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$2.class
 com\mycompany\quanlytruyen\view\books\SuaSach.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$ComboItem.class
+com\mycompany\quanlytruyen\view\translate\QLDich$17.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$13.class
 com\mycompany\quanlytruyen\view\books\QLSach$UploadButtonRenderer.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1$5.class

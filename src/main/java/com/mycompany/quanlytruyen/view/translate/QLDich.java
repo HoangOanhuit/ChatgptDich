@@ -64,7 +64,7 @@ public class QLDich extends javax.swing.JPanel {
     private String nameTable = "";
     private String[] availableModels;
     private String selectedModel = "";
-    private String selectedProvider = PROVIDER_CHATGPT;
+    private String selectedProvider = PROVIDER_DEEPSEEK;
     private Map<String, ProviderInfo> providerInfoMap;
     private Map<String, String> providerApiKeys;
     private Map<String, String> providerModels;
@@ -905,6 +905,15 @@ public class QLDich extends javax.swing.JPanel {
 
         // Add action listener for Enter key
         txtapiKey.addActionListener(e -> validateAndSetApiKey());
+                txtapiKey.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                String placeholder = (String) txtapiKey.getClientProperty("placeholder");
+                if (placeholder != null && isPlaceholderActive(txtapiKey, placeholder)) {
+                    clearPlaceholderText(txtapiKey);
+                }
+            }
+        });
 /*
         // Enable standard copy/paste shortcuts explicitly
         enableStandardShortcuts(txtChatgpt);

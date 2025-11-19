@@ -75,46 +75,62 @@ public class BookDao {
      * Create new book
      */
     public long createBook(Book book) throws SQLException {
-        String sql = """
-            INSERT INTO books (title, author, slug, raw_status, translate_status,
-                             post_status, total_revenue, guidelines, name_table,
-                             model_used, account_id, short_title, posted, price,
-                             created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-            """;
+        boolean hasManualId = book.getId() != null;
+        String baseColumns = "title, author, slug, raw_status, translate_status," +
+            " post_status, total_revenue, guidelines, name_table," +
+            " model_used, account_id, short_title, posted, price, created_at";
+        String sql;
+        if (hasManualId) {
+            sql = "INSERT INTO books (id, " + baseColumns + ") " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        } else {
+            sql = "INSERT INTO books (" + baseColumns + ") " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        }
         
         try (Connection conn = dataSource.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            
-            ps.setString(1, book.getTitle());
-            ps.setString(2, book.getAuthor());
-            ps.setString(3, book.getSlug() != null ? book.getSlug() : createSlug(book.getTitle()));
-            ps.setString(4, book.getRawStatus().getValue());
-            ps.setString(5, book.getTranslateStatus().getValue());
-            ps.setString(6, book.getPostStatus().getValue());
-            ps.setBigDecimal(7, book.getTotalRevenue());
-            ps.setString(8, book.getGuidelines());
-            ps.setString(9, book.getNameTable());
-            ps.setString(10, book.getModelUsed());
+             PreparedStatement ps = hasManualId
+                 ? conn.prepareStatement(sql)
+                 : conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            int index = 1;
+            if (hasManualId) {
+                ps.setLong(index++, book.getId());
+            }
+
+            ps.setString(index++, book.getTitle());
+            ps.setString(index++, book.getAuthor());
+            ps.setString(index++, book.getSlug() != null ? book.getSlug() : createSlug(book.getTitle()));
+            ps.setString(index++, book.getRawStatus().getValue());
+            ps.setString(index++, book.getTranslateStatus().getValue());
+            ps.setString(index++, book.getPostStatus().getValue());
+            ps.setBigDecimal(index++, book.getTotalRevenue());
+            ps.setString(index++, book.getGuidelines());
+            ps.setString(index++, book.getNameTable());
+            ps.setString(index++, book.getModelUsed());
 
             if (book.getAccountId() != null) {
-                ps.setLong(11, book.getAccountId());
+                ps.setLong(index++, book.getAccountId());
             } else {
-                ps.setNull(11, Types.BIGINT);
+                ps.setNull(index++, Types.BIGINT);
             }
-            ps.setString(12, book.getShortTitle());
+            ps.setString(index++, book.getShortTitle());
             if (book.getPosted() != null) {
-                ps.setInt(13, book.getPosted());
+                ps.setInt(index++, book.getPosted());
             } else {
-                ps.setNull(13, Types.INTEGER);
+                ps.setNull(index++, Types.INTEGER);
             }
             if (book.getPrice() != null) {
-                ps.setBigDecimal(14, book.getPrice());
+                ps.setBigDecimal(index++, book.getPrice());
             } else {
-                ps.setNull(14, Types.DECIMAL);
+                ps.setNull(index++, Types.DECIMAL);
             }
             
             ps.executeUpdate();
+            
+            if (hasManualId) {
+                return book.getId();
+            }            
             
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
