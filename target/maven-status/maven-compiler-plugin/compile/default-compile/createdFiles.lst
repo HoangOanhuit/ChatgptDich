@@ -184,7 +184,6 @@ com\mycompany\quanlytruyen\view\books\QLSach$UploadButtonEditor.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$2.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$4.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$7.class
-com\mycompany\quanlytruyen\view\post\SuaLichPost$8.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$BookEntry.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$11.class
 com\mycompany\quanlytruyen\view\books\QLSach$5.class
@@ -215,6 +214,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$20.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$1.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$2.class
 com\mycompany\quanlytruyen\view\HomeFrame$7.class
+com\mycompany\quanlytruyen\view\post\DangTruyen$15.class
 com\mycompany\quanlytruyen\view\post\DangTruyen.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$3.class
 com\mycompany\quanlytruyen\service\src.class

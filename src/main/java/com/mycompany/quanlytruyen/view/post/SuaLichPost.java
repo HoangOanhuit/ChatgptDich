@@ -25,6 +25,18 @@ import java.util.logging.Logger;
 public class SuaLichPost extends javax.swing.JDialog {
 
     private static final Logger LOGGER = Logger.getLogger(SuaLichPost.class.getName());
+    private static final int[][] DEFAULT_SCHEDULE = {
+        {10, 3},
+        {11, 3},
+        {14, 3},
+        {16, 3},
+        {19, 3},
+        {20, 3},
+        {20, 51},
+        {21, 33},
+        {22, 33},
+        {23, 33}
+    };
 
     private final DataSource dataSource;
     private final BookDao bookDao;
@@ -56,7 +68,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         Tbooks.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
 
         loadAccountInfo();
-        updatePriceField();
 
         chapterPerDay.getDocument().addDocumentListener(new SimpleDocumentListener(this::handleChapterPerDayChanged));
 
@@ -94,16 +105,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         return "Lịch Post của Tài Khoản";
     }
 
-    private void updatePriceField() {
-        if (book != null && book.getPrice() != null) {
-            price.setText(book.getPrice().stripTrailingZeros().toPlainString());
-            price.setEnabled(true);
-        } else {
-            price.setText("");
-            price.setEnabled(false);
-        }
-    }
-
 
     private String resolveBookTitle() {
         if (book == null) {
@@ -116,9 +117,8 @@ public class SuaLichPost extends javax.swing.JDialog {
     }
 
     private void loadExistingSchedule() {
-        int defaultCount = Math.max(1, parseChapterPerDay());
         if (account == null || account.getId() == null || postDao == null) {
-            scheduleTableModel.setRowCount(defaultCount);
+            scheduleTableModel.applyDefaultSchedule();
             setChapterPerDayField(scheduleTableModel.getRowCount());
             if (account == null || account.getId() == null) {
                 JOptionPane.showMessageDialog(this, "Chưa có tài khoản để tải lịch post.");
@@ -131,13 +131,13 @@ public class SuaLichPost extends javax.swing.JDialog {
                 scheduleTableModel.setPosts(posts);
                 setChapterPerDayField(posts.size());
             } else {
-                scheduleTableModel.setRowCount(defaultCount);
+                scheduleTableModel.applyDefaultSchedule();
                 setChapterPerDayField(scheduleTableModel.getRowCount());
             }
         } catch (SQLException ex) {
             LOGGER.log(Level.WARNING, "Không thể tải lịch post", ex);
             JOptionPane.showMessageDialog(this, "Không thể tải lịch post: " + ex.getMessage());
-            scheduleTableModel.setRowCount(defaultCount);
+            scheduleTableModel.applyDefaultSchedule();
             setChapterPerDayField(scheduleTableModel.getRowCount());
         }
     }
@@ -177,24 +177,7 @@ public class SuaLichPost extends javax.swing.JDialog {
         if (Tbooks.isEditing()) {
             Tbooks.getCellEditor().stopCellEditing();
         }
-        List<Post> posts;
-        try {
-            posts = scheduleTableModel.buildPosts(account.getId());
-            if (book != null) {
-                BigDecimal newPrice = parsePriceFromField();
-                if (bookDao != null && !Objects.equals(book.getPrice(), newPrice)) {
-                    book.setPrice(newPrice);
-                    bookDao.updateBook(book);
-                }
-            }
-        } catch (IllegalArgumentException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage());
-            return;
-        } catch (SQLException ex) {
-            LOGGER.log(Level.SEVERE, "Không thể cập nhật giá truyện", ex);
-            JOptionPane.showMessageDialog(this, "Không thể cập nhật giá truyện: " + ex.getMessage());
-            return;
-        }
+        List<Post> posts = null;
 
         try {
             if (postDao != null) {
@@ -208,21 +191,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         }
     }
 
-    private BigDecimal parsePriceFromField() {
-        String text = price.getText();
-        if (text == null || text.isBlank()) {
-            return null;
-        }
-        try {
-            BigDecimal value = new BigDecimal(text.trim());
-            if (value.signum() < 0) {
-                throw new IllegalArgumentException("Giá mỗi chương phải lớn hơn hoặc bằng 0.");
-            }
-            return value;
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Giá mỗi chương không hợp lệ.");
-        }
-    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -243,8 +211,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         txtYeuCau3 = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         Tbooks = new javax.swing.JTable();
-        jLabel8 = new javax.swing.JLabel();
-        price = new javax.swing.JTextField();
 
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
@@ -257,7 +223,7 @@ public class SuaLichPost extends javax.swing.JDialog {
 
         jLabel11.setFont(new java.awt.Font("UTM Americana EB", 1, 18)); // NOI18N
         jLabel11.setForeground(new java.awt.Color(0, 40, 85));
-        jLabel11.setText("Lịch Post của Tài Khoản");
+        jLabel11.setText("Lịch Đăng TRUYỆN của Tài Khoản");
 
         pnProfile1.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -329,17 +295,6 @@ public class SuaLichPost extends javax.swing.JDialog {
         ));
         jScrollPane1.setViewportView(Tbooks);
 
-        jLabel8.setForeground(new java.awt.Color(51, 51, 51));
-        jLabel8.setText("Giá mỗi chương:");
-
-        price.setText("250");
-        price.setToolTipText("");
-        price.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                priceActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout pnProfile1Layout = new javax.swing.GroupLayout(pnProfile1);
         pnProfile1.setLayout(pnProfile1Layout);
         pnProfile1Layout.setHorizontalGroup(
@@ -348,11 +303,9 @@ public class SuaLichPost extends javax.swing.JDialog {
                 .addGap(58, 58, 58)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel19)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel8))
+                    .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addGroup(pnProfile1Layout.createSequentialGroup()
                             .addComponent(btnCreate, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -375,11 +328,7 @@ public class SuaLichPost extends javax.swing.JDialog {
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
                     .addComponent(chapterPerDay, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(10, 10, 10)
-                .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
-                    .addComponent(price, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(15, 15, 15)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26)
                 .addGroup(pnProfile1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -453,10 +402,6 @@ public class SuaLichPost extends javax.swing.JDialog {
     private void txtYeuCau3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtYeuCau3ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtYeuCau3ActionPerformed
-
-    private void priceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priceActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_priceActionPerformed
  private static class ScheduleRow {
         private int order;
         private Integer hour;
@@ -593,6 +538,18 @@ public class SuaLichPost extends javax.swing.JDialog {
             fireTableDataChanged();
         }
 
+        void applyDefaultSchedule() {
+            rows.clear();
+            int order = 1;
+            for (int[] defaultTime : DEFAULT_SCHEDULE) {
+                ScheduleRow row = new ScheduleRow(order++);
+                row.setHour(defaultTime[0]);
+                row.setMinute(defaultTime[1]);
+                rows.add(row);
+            }
+            fireTableDataChanged();
+        }        
+
         List<Post> buildPosts(long accountId) {
             List<Post> posts = new ArrayList<>();
             int previousHour = -1;
@@ -684,11 +641,9 @@ public class SuaLichPost extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel pnProfile;
     private javax.swing.JPanel pnProfile1;
-    private javax.swing.JTextField price;
     private javax.swing.JTextField txtYeuCau3;
     // End of variables declaration//GEN-END:variables
 
