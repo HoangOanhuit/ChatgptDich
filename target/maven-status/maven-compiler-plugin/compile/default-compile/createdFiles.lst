@@ -30,6 +30,7 @@ com\mycompany\quanlytruyen\view\books\QLSach$13.class
 com\mycompany\quanlytruyen\view\books\SuaSach$1.class
 com\mycompany\quanlytruyen\view\books\SuaSach$14.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$13.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$6.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$5.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$1.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$3.class
@@ -63,6 +64,7 @@ com\mycompany\quanlytruyen\view\translate\QLDich$4.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$SimpleDocumentListener.class
 com\mycompany\quanlytruyen\dao\BookDao$RevenueStatistics.class
 com\mycompany\quanlytruyen\database\DatabaseManager$ChapterInfo.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$1.class
 com\mycompany\quanlytruyen\config\AppConfig.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$7.class
 com\mycompany\quanlytruyen\utils\TextFieldKeyboardUtils$2.class
@@ -83,6 +85,7 @@ com\mycompany\quanlytruyen\service\OpenAIClient.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$1.class
 com\mycompany\quanlytruyen\service\SeleniumClaudeService.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$14.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$7.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$6.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$1.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong.class
@@ -125,6 +128,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$7.class
 com\mycompany\quanlytruyen\view\ResumeDialog.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$10.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$12.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$5.class
 com\mycompany\quanlytruyen\service\TranslationService.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$2.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$3.class
@@ -133,6 +137,7 @@ com\mycompany\quanlytruyen\view\books\QLSach$6.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$12.class
 com\mycompany\quanlytruyen\service\EnhancedOpenAIClient.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$3.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$4.class
 com\mycompany\quanlytruyen\config\AppConfig$ConfigValidationResult.class
 com\mycompany\quanlytruyen\view\books\SuaSach$16.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong$2.class
@@ -146,6 +151,7 @@ com\mycompany\quanlytruyen\service\TranslationRunner$ProgressListener.class
 com\mycompany\quanlytruyen\view\books\QLSach.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$4.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$ChapterFileData.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$5.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$CopyButtonEditor.class
 com\mycompany\quanlytruyen\view\books\ThemSach$2.class
@@ -159,6 +165,7 @@ com\mycompany\quanlytruyen\view\chapters\ChiaChuong$8.class
 com\mycompany\quanlytruyen\view\accounts\QLTK$2.class
 com\mycompany\quanlytruyen\view\books\SuaSach.class
 com\mycompany\quanlytruyen\view\accounts\ThemTK$13.class
+com\mycompany\quanlytruyen\view\books\QLSach$UploadButtonRenderer.class
 com\mycompany\quanlytruyen\view\chiachuong\ChiaChuong1$5.class
 com\mycompany\quanlytruyen\view\translate\QLDich$1.class
 com\mycompany\quanlytruyen\dao\BookDao.class
@@ -167,6 +174,7 @@ com\mycompany\quanlytruyen\view\books\ThemSach$18.class
 com\mycompany\quanlytruyen\view\books\ThemSach$8.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$10.class
 com\mycompany\quanlytruyen\view\books\SuaSach$11.class
+com\mycompany\quanlytruyen\view\books\QLSach$UploadButtonEditor.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$2.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$4.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$7.class
@@ -174,10 +182,12 @@ com\mycompany\quanlytruyen\view\post\SuaLichPost$8.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$BookEntry.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$11.class
 com\mycompany\quanlytruyen\view\books\QLSach$5.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$ChapterFileNameInfo.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$SplitButtonEditor.class
 com\mycompany\quanlytruyen\view\accounts\SuaTK$9.class
 com\mycompany\quanlytruyen\view\post\DangTruyen$CheckBoxEditor.class
 com\mycompany\quanlytruyen\view\post\SuaLichPost$2.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$3.class
 com\mycompany\quanlytruyen\view\books\SuaSach$17.class
 com\mycompany\quanlytruyen\view\books\SuaSach$4.class
 com\mycompany\quanlytruyen\model\ProgressEvent$ProgressStatus.class
@@ -187,8 +197,9 @@ com\mycompany\quanlytruyen\view\post\DangTruyen$5.class
 com\mycompany\quanlytruyen\view\chapters\ChiaChuong$3.class
 com\mycompany\quanlytruyen\view\books\SuaSach$5.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$8.class
-com\mycompany\quanlytruyen\view\post\SuaLichPost$9.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta.class
 com\mycompany\quanlytruyen\view\books\SuaSach$18.class
+com\mycompany\quanlytruyen\view\books\UploadDaBeta$2.class
 com\mycompany\quanlytruyen\view\chapters\QLChuong$1.class
 com\mycompany\quanlytruyen\view\chapters\SuaChuong$5.class
 com\mycompany\quanlytruyen\view\translate\QLDich$12.class

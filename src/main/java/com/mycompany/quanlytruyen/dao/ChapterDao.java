@@ -246,6 +246,29 @@ public class ChapterDao {
             }
         }
     }
+
+    public void updateChapterBetaContent(long bookId, int chapterNumber, String chapterTitle, String content) throws SQLException {
+        try (Connection c = ds.getConnection()) {
+            try (PreparedStatement ps = c.prepareStatement("""
+                UPDATE chapters SET
+                    chapter_title = ?,
+                    content = ?,
+                    beta_status = ?,
+                    updated_at = NOW()
+                WHERE book_id = ? AND chapter_number = ?
+            """)) {
+                ps.setString(1, chapterTitle);
+                ps.setString(2, content);
+                ps.setString(3, BetaStatus.DONE_BETA.getDbValue());
+                ps.setLong(4, bookId);
+                ps.setInt(5, chapterNumber);
+                int updated = ps.executeUpdate();
+                if (updated == 0) {
+                    throw new SQLException("Không tìm thấy chương số " + chapterNumber + " để cập nhật");
+                }
+            }
+        }
+    }    
     /**
      * Update beta status cho nhiều chương cùng lúc
      */

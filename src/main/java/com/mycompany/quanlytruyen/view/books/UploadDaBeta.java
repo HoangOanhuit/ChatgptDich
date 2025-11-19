@@ -1,15 +1,64 @@
 package com.mycompany.quanlytruyen.view.books;
 
+import com.mycompany.quanlytruyen.dao.AccountDAO;
+import com.mycompany.quanlytruyen.dao.BookDao;
+import com.mycompany.quanlytruyen.dao.ChapterDao;
+import com.mycompany.quanlytruyen.model.Account;
+import com.mycompany.quanlytruyen.model.Book;
 
+import javax.sql.DataSource;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DropMode;
+import javax.swing.JOptionPane;
+import javax.swing.TransferHandler;
+import javax.swing.table.DefaultTableModel;
+import java.awt.Frame;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class UploadDaBeta extends javax.swing.JDialog {
 
 
-    public UploadDaBeta() {
-        initComponents();
+    private static final Logger LOGGER = Logger.getLogger(UploadDaBeta.class.getName());
+    private static final Pattern CHAPTER_PATTERN = Pattern.compile("^Chương\\s+(\\d+)\\s*_\\s*(.+)$", Pattern.CASE_INSENSITIVE);
 
+    private final DataSource dataSource;
+    private final AccountDAO accountDao;
+    private final BookDao bookDao;
+    private final ChapterDao chapterDao;
+    private final List<Account> accounts = new ArrayList<>();
+    private final List<Book> books = new ArrayList<>();
+    private final List<File> droppedFiles = new ArrayList<>();
+    private DefaultTableModel fileTableModel;
+    private Book selectedBook;
+
+    public UploadDaBeta(Frame parent, DataSource dataSource) {
+        super(parent, true);
+        this.dataSource = dataSource;
+        this.accountDao = dataSource != null ? new AccountDAO(dataSource) : null;
+        this.bookDao = dataSource != null ? new BookDao(dataSource) : null;
+        this.chapterDao = dataSource != null ? new ChapterDao(dataSource) : null;
+        initComponents();
+        initFileTable();
+        initComboActions();
+        setupFileDrop();
+        loadAccounts();
     }
 
+    public UploadDaBeta() {
+        this(null, null);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -183,7 +232,7 @@ public class UploadDaBeta extends javax.swing.JDialog {
     }//GEN-LAST:event_closeDialog
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
-
+        processUpload();
     }//GEN-LAST:event_btnCreateActionPerformed
 
     private void btnCreateMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCreateMouseClicked
@@ -203,7 +252,283 @@ public class UploadDaBeta extends javax.swing.JDialog {
     private void btnRefresh1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefresh1ActionPerformed
 
     }//GEN-LAST:event_btnRefresh1ActionPerformed
- 
+
+    public void setBook(Book book) {
+        selectedBook = book;
+        if (book == null) {
+            jComboAccounts.setSelectedIndex(0);
+            return;
+        }
+        if (!accounts.isEmpty() && book.getAccountId() != null) {
+            for (int i = 0; i < accounts.size(); i++) {
+                if (book.getAccountId().equals(accounts.get(i).getId())) {
+                    jComboAccounts.setSelectedIndex(i + 1);
+                    break;
+                }
+            }
+            selectBookInCombo(book.getId());
+        } else {
+            loadBooksForAccount(null);
+            selectBookInCombo(book.getId());
+        }
+    }
+
+    private void initFileTable() {
+        fileTableModel = new DefaultTableModel(new Object[]{"STT", "Tên file", "Chương", "Tiêu đề"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        Tbooks.setModel(fileTableModel);
+        Tbooks.setFillsViewportHeight(true);
+        Tbooks.setDropMode(DropMode.INSERT_ROWS);
+    }
+
+    private void initComboActions() {
+        jComboAccounts.addActionListener(e -> handleAccountSelection());
+        jComboBooks.addActionListener(e -> handleBookSelection());
+    }
+
+    private void setupFileDrop() {
+        TransferHandler handler = new TransferHandler() {
+            @Override
+            public boolean canImport(TransferSupport support) {
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                if (!canImport(support)) {
+                    return false;
+                }
+                try {
+                    @SuppressWarnings("unchecked")
+                    List<File> files = (List<File>) support.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+                    addFiles(files);
+                    return true;
+                } catch (UnsupportedFlavorException | IOException ex) {
+                    LOGGER.log(Level.WARNING, "Không thể đọc file được kéo thả", ex);
+                    JOptionPane.showMessageDialog(UploadDaBeta.this, "Không thể đọc file: " + ex.getMessage());
+                }
+                return false;
+            }
+        };
+        Tbooks.setTransferHandler(handler);
+        ChapterBetaed.setTransferHandler(handler);
+    }
+
+    private void handleAccountSelection() {
+        Account account = getSelectedAccount();
+        loadBooksForAccount(account);
+    }
+
+    private void handleBookSelection() {
+        int index = jComboBooks.getSelectedIndex();
+        if (index <= 0 || index - 1 >= books.size()) {
+            selectedBook = null;
+            return;
+        }
+        selectedBook = books.get(index - 1);
+    }
+
+    private Account getSelectedAccount() {
+        int index = jComboAccounts.getSelectedIndex();
+        if (index <= 0 || index - 1 >= accounts.size()) {
+            return null;
+        }
+        return accounts.get(index - 1);
+    }
+
+    private void loadAccounts() {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("-- Chọn tài khoản --");
+        if (accountDao != null) {
+            try {
+                accounts.clear();
+                accounts.addAll(accountDao.getAllAccounts());
+                for (Account account : accounts) {
+                    model.addElement(account.getUsername());
+                }
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, "Không thể tải danh sách tài khoản", e);
+                JOptionPane.showMessageDialog(this, "Không thể tải tài khoản: " + e.getMessage());
+            }
+        }
+        jComboAccounts.setModel(model);
+        if (!accounts.isEmpty()) {
+            jComboAccounts.setSelectedIndex(1);
+        }
+    }
+
+    private void loadBooksForAccount(Account account) {
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("-- Chọn truyện --");
+        books.clear();
+        boolean shouldAutoSelectFirst = account != null;
+        if (bookDao != null) {
+            try {
+                List<Book> allBooks = bookDao.getAllBooks();
+                for (Book book : allBooks) {
+                    if (account == null) {
+                        books.add(book);
+                        model.addElement(book.getShortTitle() != null ? book.getShortTitle() : book.getTitle());
+                    } else if (book.getAccountId() != null && book.getAccountId().equals(account.getId())) {
+                        books.add(book);
+                        model.addElement(book.getShortTitle() != null ? book.getShortTitle() : book.getTitle());
+                    }
+                }
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, "Không thể tải danh sách truyện", e);
+                JOptionPane.showMessageDialog(this, "Không thể tải truyện: " + e.getMessage());
+            }
+        }
+        jComboBooks.setModel(model);
+        selectedBook = null;
+        if (shouldAutoSelectFirst && !books.isEmpty()) {
+            jComboBooks.setSelectedIndex(1);
+        }
+    }
+
+    private void selectBookInCombo(Long bookId) {
+        if (bookId == null) {
+            jComboBooks.setSelectedIndex(0);
+            selectedBook = null;
+            return;
+        }
+        for (int i = 0; i < books.size(); i++) {
+            if (bookId.equals(books.get(i).getId())) {
+                jComboBooks.setSelectedIndex(i + 1);
+                selectedBook = books.get(i);
+                return;
+            }
+        }
+    }
+
+    private void addFiles(List<File> files) {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+        for (File file : files) {
+            if (file == null || !file.isFile() || containsFile(file)) {
+                continue;
+            }
+            droppedFiles.add(file);
+            ChapterFileNameInfo info = parseChapterInfo(file.getName());
+            fileTableModel.addRow(new Object[]{
+                droppedFiles.size(),
+                file.getName(),
+                info != null ? info.chapterNumber : "",
+                info != null ? info.chapterTitle : ""
+            });
+        }
+    }
+
+    private boolean containsFile(File file) {
+        for (File existing : droppedFiles) {
+            if (existing.getAbsolutePath().equals(file.getAbsolutePath())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void processUpload() {
+        if (chapterDao == null) {
+            JOptionPane.showMessageDialog(this, "Không có kết nối cơ sở dữ liệu");
+            return;
+        }
+        if (selectedBook == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn truyện cần cập nhật");
+            return;
+        }
+        if (droppedFiles.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng kéo thả ít nhất một file chương đã beta");
+            return;
+        }
+        int success = 0;
+        List<String> errors = new ArrayList<>();
+        for (File file : droppedFiles) {
+            try {
+                ChapterFileData data = readChapterFile(file);
+                chapterDao.updateChapterBetaContent(selectedBook.getId(), data.chapterNumber, data.chapterTitle, data.content);
+                success++;
+            } catch (IOException | SQLException | IllegalArgumentException ex) {
+                LOGGER.log(Level.WARNING, "Không thể cập nhật chương từ file " + file.getName(), ex);
+                errors.add(file.getName() + ": " + ex.getMessage());
+            }
+        }
+        StringBuilder message = new StringBuilder();
+        if (success > 0) {
+            message.append("Đã cập nhật ").append(success).append(" chương thành công.\n");
+        }
+        if (!errors.isEmpty()) {
+            message.append("Có lỗi với các file:\n").append(String.join("\n", errors));
+        }
+        if (message.length() > 0) {
+            JOptionPane.showMessageDialog(this, message.toString());
+        }
+        if (errors.isEmpty()) {
+            dispose();
+        }
+    }
+
+    private ChapterFileData readChapterFile(File file) throws IOException {
+        ChapterFileNameInfo info = parseChapterInfo(file.getName());
+        if (info == null) {
+            throw new IllegalArgumentException("Tên file không đúng định dạng 'Chương <số>_ <tiêu đề>'");
+        }
+        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Nội dung file rỗng");
+        }
+        return new ChapterFileData(info.chapterNumber, info.chapterTitle, content);
+    }
+
+    private ChapterFileNameInfo parseChapterInfo(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+        String nameWithoutExtension = removeExtension(fileName);
+        Matcher matcher = CHAPTER_PATTERN.matcher(nameWithoutExtension.trim());
+        if (!matcher.matches()) {
+            return null;
+        }
+        int chapterNumber = Integer.parseInt(matcher.group(1));
+        String chapterTitle = matcher.group(2).trim();
+        return new ChapterFileNameInfo(chapterNumber, chapterTitle);
+    }
+
+    private String removeExtension(String name) {
+        int index = name.lastIndexOf('.');
+        if (index > 0) {
+            return name.substring(0, index);
+        }
+        return name;
+    }
+
+    private static class ChapterFileNameInfo {
+        private final int chapterNumber;
+        private final String chapterTitle;
+
+        private ChapterFileNameInfo(int chapterNumber, String chapterTitle) {
+            this.chapterNumber = chapterNumber;
+            this.chapterTitle = chapterTitle;
+        }
+    }
+
+    private static class ChapterFileData {
+        private final int chapterNumber;
+        private final String chapterTitle;
+        private final String content;
+
+        private ChapterFileData(int chapterNumber, String chapterTitle, String content) {
+            this.chapterNumber = chapterNumber;
+            this.chapterTitle = chapterTitle;
+            this.content = content;
+        }
+    }
+    
     /**
      * @param args the command line arguments
      */   

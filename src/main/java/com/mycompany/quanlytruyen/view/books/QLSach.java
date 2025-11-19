@@ -8,6 +8,7 @@ import com.mycompany.quanlytruyen.view.books.SuaSach;
 import com.mycompany.quanlytruyen.view.books.ThemSach;
 import com.mycompany.quanlytruyen.utils.UIUtils;
 import com.mycompany.quanlytruyen.view.post.SuaLichPost;
+import com.mycompany.quanlytruyen.view.books.UploadDaBeta;
 
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
@@ -42,6 +43,7 @@ public class QLSach extends javax.swing.JPanel {
     private long lastEditDialogTimestamp = 0L;
     private DataSource dataSource;
     private static final int COLUMN_SCHEDULE = 8;
+    private static final int COLUMN_UPLOAD = 9;
 
     /**
      * Creates new form QLSach
@@ -68,11 +70,11 @@ public class QLSach extends javax.swing.JPanel {
 
         tableModel = new DefaultTableModel(new Object[]{
             "ID", "Tên Truyện", "Tác giả", "Yêu Cầu", "Bảng tên",
-            "Raw", "Tình trạng Dịch", "Tình trạng Đăng", "Lịch Đăng"
+            "Raw", "Tình trạng Dịch", "Tình trạng Đăng", "Lịch Đăng", "Tải lên Chương đã beta"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == COLUMN_SCHEDULE;
+                return column == COLUMN_SCHEDULE || column == COLUMN_UPLOAD;
             }
         };
         Tbooks.setModel(tableModel);
@@ -80,6 +82,7 @@ public class QLSach extends javax.swing.JPanel {
         Tbooks.getColumnModel().getColumn(6).setCellRenderer(new StatusCellRenderer());
         Tbooks.getColumnModel().getColumn(7).setCellRenderer(new StatusCellRenderer());
         configureScheduleColumn();
+        configureUploadColumn();
         Tbooks.setAutoCreateRowSorter(true);
 
         initStatusCombos();
@@ -132,7 +135,8 @@ public class QLSach extends javax.swing.JPanel {
                 b.getRawStatus().getDisplayName(),
                 b.getTranslateStatus().getDisplayName(),
                 b.getPostStatus().getDisplayName(),
-                "Lịch"
+                "Lịch",
+                "Upload"
             });
         }
     }
@@ -227,6 +231,15 @@ public class QLSach extends javax.swing.JPanel {
         Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setCellEditor(editor);
         Tbooks.getColumnModel().getColumn(COLUMN_SCHEDULE).setPreferredWidth(100);
     }
+
+    private void configureUploadColumn() {
+        TableCellRenderer renderer = new UploadButtonRenderer();
+        TableCellEditor editor = new UploadButtonEditor();
+        Tbooks.getColumnModel().getColumn(COLUMN_UPLOAD).setCellRenderer(renderer);
+        Tbooks.getColumnModel().getColumn(COLUMN_UPLOAD).setCellEditor(editor);
+        Tbooks.getColumnModel().getColumn(COLUMN_UPLOAD).setPreferredWidth(160);
+    }
+    
     private void openBookEditorFromRow(int viewRow) {
         if (bookDao == null) {
             JOptionPane.showMessageDialog(this, "Không thể kết nối cơ sở dữ liệu");
@@ -287,6 +300,36 @@ public class QLSach extends javax.swing.JPanel {
         return bookDao.getBookById(bookId);
     }
 
+    private void openUploadDialogFromRow(int modelRow) {
+        if (modelRow < 0) {
+            return;
+        }
+        if (dataSource == null) {
+            JOptionPane.showMessageDialog(this, "Không thể mở cửa sổ upload khi chưa kết nối cơ sở dữ liệu.");
+            return;
+        }
+        Object value = tableModel.getValueAt(modelRow, 0);
+        if (!(value instanceof Number)) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy ID truyện hợp lệ");
+            return;
+        }
+        long bookId = ((Number) value).longValue();
+        try {
+            Book book = fetchBookById(bookId);
+            if (book == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin truyện");
+                return;
+            }
+            Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+            UploadDaBeta dialog = new UploadDaBeta(frame, dataSource);
+            dialog.setBook(book);
+            dialog.setLocationRelativeTo(this);
+            dialog.setVisible(true);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi mở upload beta: " + ex.getMessage());
+        }
+    }
+    
     private void openEditDialog(Book book) {
         if (book == null) {
             return;
@@ -341,7 +384,48 @@ public class QLSach extends javax.swing.JPanel {
             return comp;
         }
     }
+    private static class UploadButtonRenderer extends JButton implements TableCellRenderer {
+        private UploadButtonRenderer() {
+            setOpaque(true);
+        }
 
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            setText(value != null ? value.toString() : "Upload");
+            return this;
+        }
+    }
+
+    private class UploadButtonEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+        private final JButton button = new JButton();
+        private int currentRow = -1;
+
+        private UploadButtonEditor() {
+            button.addActionListener(this);
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return button.getText();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            button.setText(value != null ? value.toString() : "Upload");
+            currentRow = row;
+            return button;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            fireEditingStopped();
+            if (currentRow < 0) {
+                return;
+            }
+            int modelRow = Tbooks.convertRowIndexToModel(currentRow);
+            openUploadDialogFromRow(modelRow);
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
