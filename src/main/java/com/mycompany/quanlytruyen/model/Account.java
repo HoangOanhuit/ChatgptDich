@@ -1,5 +1,6 @@
 package com.mycompany.quanlytruyen.model;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -23,6 +24,11 @@ public class Account {
     private String createdAt;
     private String updatedAt;
     private String status;
+    
+    private String authToken;
+    private LocalDateTime tokenExpiresAt;
+
+// Getters/Setters
     public Account() {
     }
 
@@ -142,6 +148,30 @@ public class Account {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getAccount_id() {
+        return account_id;
+    }
+
+    public void setAccount_id(Long account_id) {
+        this.account_id = account_id;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }
+
+    public LocalDateTime getTokenExpiresAt() {
+        return tokenExpiresAt;
+    }
+
+    public void setTokenExpiresAt(LocalDateTime tokenExpiresAt) {
+        this.tokenExpiresAt = tokenExpiresAt;
     }
 
     @Override

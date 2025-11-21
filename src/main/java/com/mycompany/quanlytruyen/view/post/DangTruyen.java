@@ -1736,7 +1736,7 @@ private String extractPostId(String jsonResponse) {
         }
         
         int getToChapter() {
-            return fromChapter + chapterOffset;
+            return fromChapter + chapterOffset - 1;
         }
         
         int getChapterCount() {
